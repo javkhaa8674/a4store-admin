@@ -74,6 +74,7 @@ const csvConfig = mkConfig({
       displayLabel: "Нэр",
     },
   ],
+  quoteStrings: '"',
 });
 
 function validateUser(user) {
@@ -86,7 +87,10 @@ const exportToExcel = (data) => {
   // Function to exclude specific columns from the data
   const excludeColumns = (data, columnsToRemove) => {
     return data.map((item) => {
-      const newItem = { ...item }; // Create a copy of the item
+      const newItem = {
+        ...item,
+        pointId: item.pointId ? `="${item.pointId}"` : "",
+      }; // Create a copy of the item
       columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
       return newItem;
     });
@@ -130,7 +134,7 @@ const Example = () => {
                 p: "0.25rem",
               })}
             >
-              {value.toLocaleString("MN-mn")+"₮"}
+              {value.toLocaleString("MN-mn") + "₮"}
             </Box>
           );
         },

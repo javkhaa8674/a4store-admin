@@ -32,12 +32,7 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
-import {
-  ref,
-  set,
-  update,
-  remove,
-} from "firebase/database";
+import { ref, set, update, remove } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import { read, utils } from "xlsx";
 import axiosA4 from "storeaxios";
@@ -81,8 +76,9 @@ const csvConfig = mkConfig({
     {
       key: "totalDeduction",
       displayLabel: "Нийт дүн",
-    }  
+    },
   ],
+  quoteStrings: '"',
 });
 
 function validateUser(user) {
@@ -95,7 +91,9 @@ const exportToExcel = (data) => {
   const convertedData = data.map((element) => ({
     ...element,
     timestamp: dayjs(element.timestamp).format("YYYY-MM-DD HH:mm:ss"),
-    id: element.id.toString(),
+    id: `="${element.id}"`, // 👈 Excel-д текст болно
+    senderId: `="${element.senderId}"`,
+    receiverId: `="${element.receiverId}"`,
   }));
   // First, convert your data to CSV string using your csvConfig
   const csv = generateCsv(csvConfig)(convertedData);
@@ -146,8 +144,8 @@ const Example = () => {
         header: "Шилжүүлсэн дүн",
       },
       {
-        accessorKey:"description",
-        header:"Гүйлгээний утга"
+        accessorKey: "description",
+        header: "Гүйлгээний утга",
       },
       {
         accessorKey: "fee",
@@ -309,7 +307,7 @@ const Example = () => {
     }
     try {
       const response = await axios.post(
-        'https://api-jrbocynobq-uc.a.run.app/transactions/add-multiple',
+        "https://api-jrbocynobq-uc.a.run.app/transactions/add-multiple",
         importData
       );
 
@@ -441,7 +439,7 @@ const Example = () => {
             });
           }
         });
-        
+
         setImportData(realData);
       } catch (error) {
         console.error("Error processing file:", error);
