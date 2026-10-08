@@ -171,7 +171,14 @@ const AppContent = () => {
                 </ProtectedRouteAdmin>
               }
             />
-            <Route path="/admin/a4" element={<A4Header />} />
+            <Route
+              path="/admin/a4"
+              element={
+                <ProtectedRouteAdmin redirectTo="/home">
+                  <A4Header />
+                </ProtectedRouteAdmin>
+              }
+            />
             {/*  A4 Admin routes */}
 
             {/* Error route */}

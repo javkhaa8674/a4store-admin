@@ -27,8 +27,17 @@ import {
   equalTo,
   orderByChild,
   update,
+  remove,
 } from "firebase/database";
-import { Box, lighten, TextField, Grid } from "@mui/material";
+import {
+  Box,
+  lighten,
+  TextField,
+  Grid,
+  ListItemIcon,
+  MenuItem,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
 import MUIStepper from "../../components/MUIStepper";
@@ -104,7 +113,7 @@ const ReactAdvancedMaterialTable = () => {
             sortingFn: "datetime",
             Cell: ({ cell }) =>
               dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
-            Header: ({ column }) => <em>{column.columnDef.header}</em>, //custom header markup
+            Header: ({ column }) => <em>{column.columnDef.header}</em>,
             muiFilterTextFieldProps: {
               sx: {
                 minWidth: "100px",
@@ -121,7 +130,7 @@ const ReactAdvancedMaterialTable = () => {
         ],
       },
     ],
-    []
+    [],
   );
 
   //call CREATE hook
@@ -137,7 +146,10 @@ const ReactAdvancedMaterialTable = () => {
   //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
     useUpdateRequest();
-  //call DELETE hook
+  // ★ call DELETE hook
+  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
+    useDeleteRequest();
+
   //CREATE action
   const handleCreateRequest = async ({ values, table }) => {
     await createUser(values);
@@ -148,6 +160,13 @@ const ReactAdvancedMaterialTable = () => {
   const handleSaveRequest = async ({ values, table }) => {
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
+  };
+
+  // ★ DELETE action
+  const openDeleteConfirmModal = (row) => {
+    if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
+      deleteUser(row.original.id);
+    }
   };
 
   const table = useMaterialReactTable({
@@ -202,7 +221,7 @@ const ReactAdvancedMaterialTable = () => {
             {Object.keys(row.original.Extra[0]).map(
               (key) =>
                 row.original.Extra[0][key] && (
-                  <Grid size={{xs:12, sm:3}} key={key}>
+                  <Grid size={{ xs: 12, sm: 3 }} key={key}>
                     <TextField
                       value={row.original.Extra[0][key]}
                       label={key}
@@ -211,12 +230,28 @@ const ReactAdvancedMaterialTable = () => {
                       }}
                     />
                   </Grid>
-                )
+                ),
             )}
           </Grid>
         </>
       );
     },
+    // ★ Хүсэлт устгах товч
+    renderRowActionMenuItems: ({ row, closeMenu }) => [
+      <MenuItem
+        key="delete"
+        onClick={() => {
+          openDeleteConfirmModal(row);
+          closeMenu();
+        }}
+        sx={{ m: 0 }}
+      >
+        <ListItemIcon>
+          <DeleteIcon />
+        </ListItemIcon>
+        Устгах
+      </MenuItem>,
+    ],
     renderTopToolbar: ({ table }) => {
       return (
         <Box
@@ -242,7 +277,7 @@ const ReactAdvancedMaterialTable = () => {
 
     state: {
       isLoading: isLoadingUsers,
-      isSaving: isCreatingUser || isUpdatingUser,
+      isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
     },
@@ -276,27 +311,10 @@ const ReactAdvancedMaterialTable = () => {
     return useQuery({
       queryKey: ["request"],
       queryFn: async () => {
-        //send api request here
         try {
-          let approver_status;
-          if (userInfo.role === "system") {
-            approver_status = "Approver3_Status";
-          } else if (userInfo.role === "finance") {
-            approver_status = "Approver2_Status";
-          } else if (userInfo.role === "manager") {
-            approver_status = "Approver1_Status";
-          } else if (userInfo.role === "cs") {
-            approver_status = "Requester_Status";
-          } else if (userInfo.role === "director") {
-            approver_status = "Approver4_status";
-          }
           const fetchedResults = [];
-          const que = query(
-            ref(db, "request"),
-            orderByChild(approver_status),
-            equalTo("Шийдвэрлэсэн")
-          );
-          const snapshot = await get(que);
+          // ★ Бүх хүсэлтийг филтергүйгээр унших
+          const snapshot = await get(ref(db, "request"));
           snapshot.forEach((childSnapshot) => {
             let rawData = childSnapshot.val();
             rawData["id"] = childSnapshot.key;
@@ -305,9 +323,8 @@ const ReactAdvancedMaterialTable = () => {
           return Promise.resolve(fetchedResults.reverse());
         } catch (error) {
           console.log(error);
+          return [];
         }
-        //await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-        //return Promise.resolve(data);
       },
       refetchOnWindowFocus: false,
     });
@@ -326,8 +343,30 @@ const ReactAdvancedMaterialTable = () => {
       onMutate: (newRequestInfo) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
           prevRequests?.map((prevRequest) =>
-            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest
-          )
+            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest,
+          ),
+        );
+      },
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
+    });
+  }
+
+  // ★ DELETE hook (delete user in api)
+  function useDeleteRequest() {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async (requestId) => {
+        try {
+          await remove(ref(db, `request/${requestId}`));
+          return Promise.resolve();
+        } catch (error) {
+          console.log(error);
+        }
+      },
+      //client side optimistic update
+      onMutate: (requestId) => {
+        queryClient.setQueryData(["request"], (prevRequests) =>
+          prevRequests?.filter((request) => request.id !== requestId),
         );
       },
       onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
@@ -349,5 +388,3 @@ const ConfirmedRequestTable = ({ data }) => (
 );
 
 export default ConfirmedRequestTable;
-
-

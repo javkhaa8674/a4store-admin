@@ -54,7 +54,7 @@ export default function ReturnedApproval({ open, setOpen, data }) {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   const handleClose = () => {
     setOpen(false);
@@ -75,7 +75,7 @@ export default function ReturnedApproval({ open, setOpen, data }) {
               onClick={handleClose}
               aria-label="close"
             >
-              <CloseIcon sx={{ color: "white" }} />
+              <CloseIcon sx={{ color: "inherit" }} />
             </IconButton>
             <Typography
               sx={{ ml: 2, flex: 1 }}

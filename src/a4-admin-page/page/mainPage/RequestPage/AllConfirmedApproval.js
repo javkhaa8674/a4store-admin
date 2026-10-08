@@ -54,7 +54,7 @@ export default function AllConfirmedApproval({ open, setOpen, data }) {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   const handleClose = () => {
     setOpen(false);
@@ -76,7 +76,7 @@ export default function AllConfirmedApproval({ open, setOpen, data }) {
               aria-label="close"
               sx={{ color: "white" }}
             >
-              <CloseIcon sx={{ color: "white" }} />
+              <CloseIcon sx={{ color: "black" }} />
             </IconButton>
             <Typography
               sx={{ ml: 2, flex: 1 }}

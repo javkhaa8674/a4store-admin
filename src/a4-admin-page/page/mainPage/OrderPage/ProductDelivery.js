@@ -17,7 +17,8 @@ import {
   Typography,
   useTheme,
   ThemeProvider,
-  createTheme,TextField
+  createTheme,
+  TextField,
 } from "@mui/material";
 import {
   QueryClient,
@@ -86,7 +87,6 @@ const csvConfig = mkConfig({
 });
 
 const Example = () => {
-
   const [searchTerm, setSearchTerm] = useState(""); // User input for search
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const columns = useMemo(
@@ -144,7 +144,7 @@ const Example = () => {
         header: "Тайлбар",
       },
     ],
-    []
+    [],
   );
 
   //call CREATE hook
@@ -183,7 +183,7 @@ const Example = () => {
           },
         ]);
       },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
     });
   }
 
@@ -202,7 +202,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "productdelivery"),
               orderByChild("ID"),
-              equalTo(searchTerm)
+              equalTo(searchTerm),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -256,11 +256,11 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["productdelivery"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
     });
   }
 
@@ -273,13 +273,36 @@ const Example = () => {
         await remove(userRef);
         return Promise.resolve();
       },
-      //client side optimistic update
-      onMutate: (userId) => {
-        queryClient.setQueryData(["productdelivery"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+      // ★ Client тал дээр optimistic update
+      onMutate: async (userId) => {
+        // ★ Бүх "productdelivery" query-г цуцлах
+        await queryClient.cancelQueries({ queryKey: ["productdelivery"] });
+
+        // ★ Өмнөх өгөгдлийг хадгалах (алдаа гарвал буцаах)
+        const previousData = queryClient.getQueriesData({
+          queryKey: ["productdelivery"],
+        });
+
+        // ★ Бүх "productdelivery" query-с устгасан хэрэглэгчийг хасах
+        queryClient.setQueriesData(
+          { queryKey: ["productdelivery"] },
+          (oldData) => oldData?.filter((user) => user.id !== userId),
         );
+
+        return { previousData };
       },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+      // ★ Алдаа гарвал өмнөх өгөгдлийг буцаах
+      onError: (err, userId, context) => {
+        if (context?.previousData) {
+          context.previousData.forEach(([queryKey, data]) => {
+            queryClient.setQueryData(queryKey, data);
+          });
+        }
+      },
+      // ★ Амжилттай эсвэл алдаа гарсны дараа Firebase-с дахин татах
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ["productdelivery"] });
+      },
     });
   }
 
@@ -312,7 +335,7 @@ const Example = () => {
           ...item,
           TimeStamps: dayjs(item.TimeStamps).format("YYYY-MM-DD HH:mm:ss"),
           Requester_TimeStamps: dayjs(item.Requester_TimeStamps).format(
-            "YYYY-MM-DD HH:mm:ss"
+            "YYYY-MM-DD HH:mm:ss",
           ),
         }; // Create a copy of the item
         columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
@@ -330,7 +353,7 @@ const Example = () => {
     data: fetchedUsers,
     createDisplayMode: "modal", //default ('row', and 'custom' are also available)
     editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
-    enableEditing:true,
+    enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
@@ -389,16 +412,16 @@ const Example = () => {
       </Box>
     ),
     renderTopToolbarCustomActions: ({ table }) => (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={handleExportData}
-          >
-            Татаж авах
-          </Button>
-        </Box>
-      ),
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={handleExportData}
+        >
+          Татаж авах
+        </Button>
+      </Box>
+    ),
     initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoadingUsers,
@@ -481,7 +504,7 @@ const ProductDelivery = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
 
   return (

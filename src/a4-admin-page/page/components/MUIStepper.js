@@ -1,4 +1,4 @@
-import React, {useMemo} from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { styled } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
@@ -177,6 +177,18 @@ export default function CustomizedSteppers({ row }) {
         </Tooltip>
       ),
     };
+    const version5 = {
+      1: (
+        <Tooltip title={row.original.Requester_ID}>
+          <Avatar alt="Remy Sharp" src={row.original.Requester_Avatar} />
+        </Tooltip>
+      ),
+      2: (
+        <Tooltip title={row.original.Approver3_ID}>
+          <Avatar alt="Remy Sharp1" src={row.original.Approver_Avatar} />
+        </Tooltip>
+      ),
+    };
 
     return (
       <ColorlibStepIconRoot
@@ -186,10 +198,12 @@ export default function CustomizedSteppers({ row }) {
         {row.original.Version === 1
           ? version1[String(props.icon)]
           : row.original.Version === 2
-          ? version2[String(props.icon)]
-          : row.original.Version === 3
-          ? version3[String(props.icon)]
-          : version4[String(props.icon)]}
+            ? version2[String(props.icon)]
+            : row.original.Version === 3
+              ? version3[String(props.icon)]
+              : row.original.Version === 4
+                ? version4[String(props.icon)]
+                : version5[String(props.icon)]}
       </ColorlibStepIconRoot>
     );
   }
@@ -254,7 +268,7 @@ export default function CustomizedSteppers({ row }) {
                     sx={{ marginTop: 1 }}
                   >
                     {dayjs(row.original.Requester_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss"
+                      "YYYY/MM/DD HH:mm:ss",
                     )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -300,7 +314,7 @@ export default function CustomizedSteppers({ row }) {
                   >
                     {row.original.Approver3_TimeStamps &&
                       dayjs(row.original.Approver3_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss"
+                        "YYYY/MM/DD HH:mm:ss",
                       )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -354,7 +368,7 @@ export default function CustomizedSteppers({ row }) {
                   >
                     {row.original.Requester_TimeStamps &&
                       dayjs(row.original.Requester_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss"
+                        "YYYY/MM/DD HH:mm:ss",
                       )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -399,7 +413,7 @@ export default function CustomizedSteppers({ row }) {
                     sx={{ marginTop: 1 }}
                   >
                     {dayjs(row.original.Approver2_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss"
+                      "YYYY/MM/DD HH:mm:ss",
                     )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -453,7 +467,7 @@ export default function CustomizedSteppers({ row }) {
                   >
                     {row.original.Requester_TimeStamps &&
                       dayjs(row.original.Requester_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss"
+                        "YYYY/MM/DD HH:mm:ss",
                       )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -498,7 +512,7 @@ export default function CustomizedSteppers({ row }) {
                     sx={{ marginTop: 1 }}
                   >
                     {dayjs(row.original.Approver1_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss"
+                      "YYYY/MM/DD HH:mm:ss",
                     )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -543,7 +557,7 @@ export default function CustomizedSteppers({ row }) {
                     sx={{ marginTop: 1 }}
                   >
                     {dayjs(row.original.Approver3_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss"
+                      "YYYY/MM/DD HH:mm:ss",
                     )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -597,7 +611,7 @@ export default function CustomizedSteppers({ row }) {
                   >
                     {row.original.Requester_TimeStamps &&
                       dayjs(row.original.Requester_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss"
+                        "YYYY/MM/DD HH:mm:ss",
                       )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -643,7 +657,7 @@ export default function CustomizedSteppers({ row }) {
                   >
                     {row.original.Approver1_TimeStamps &&
                       dayjs(row.original.Approver1_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss"
+                        "YYYY/MM/DD HH:mm:ss",
                       )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -689,7 +703,7 @@ export default function CustomizedSteppers({ row }) {
                   >
                     {row.original.Approver2_TimeStamps &&
                       dayjs(row.original.Approver2_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss"
+                        "YYYY/MM/DD HH:mm:ss",
                       )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -698,7 +712,7 @@ export default function CustomizedSteppers({ row }) {
                 </CardContent>
               </Card>
             </StepLabel>
-          </Step>  
+          </Step>
           <Step>
             <StepLabel StepIconComponent={ColorlibStepIcon}>
               <Card sx={{ minWidth: 100 }}>
@@ -735,11 +749,110 @@ export default function CustomizedSteppers({ row }) {
                   >
                     {row.original.Approver3_TimeStamps &&
                       dayjs(row.original.Approver3_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss"
+                        "YYYY/MM/DD HH:mm:ss",
                       )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {row.original.Approver3_Comment}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </StepLabel>
+          </Step>
+        </Stepper>
+      )}
+      {row.original.Version === 5 && (
+        <Stepper
+          alternativeLabel
+          activeStep={levelUp}
+          connector={<ColorlibConnector />}
+        >
+          <Step>
+            <StepLabel StepIconComponent={ColorlibStepIcon}>
+              <Card sx={{ minWidth: 100 }}>
+                <CardContent
+                  component="div"
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box
+                    component="span"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        row.original.Requester_Status === "Илгээсэн"
+                          ? theme.palette.success.main
+                          : theme.palette.warning.dark,
+                      borderRadius: "0.25rem",
+                      color: "#fff",
+                      maxWidth: "14ch",
+                      p: "0.25rem",
+                    })}
+                  >
+                    {row.original.Requester_Status}
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {row.original.Requester_Major}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ marginTop: 1 }}
+                  >
+                    {row.original.Requester_TimeStamps &&
+                      dayjs(row.original.Requester_TimeStamps).format(
+                        "YYYY/MM/DD HH:mm:ss",
+                      )}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {row.original.Requester_Comment}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </StepLabel>
+          </Step>
+          <Step>
+            <StepLabel StepIconComponent={ColorlibStepIcon}>
+              <Card sx={{ minWidth: 100 }}>
+                <CardContent
+                  component="div"
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box
+                    component="span"
+                    sx={(theme) => ({
+                      backgroundColor:
+                        row.original.Approver_Status === "Шийдвэрлэсэн"
+                          ? theme.palette.success.main
+                          : theme.palette.warning.dark,
+                      borderRadius: "0.25rem",
+                      color: "#fff",
+                      maxWidth: "14ch",
+                      p: "0.25rem",
+                    })}
+                  >
+                    {row.original.Approver_Status}
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {row.original.Approver_Major}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ marginTop: 1 }}
+                  >
+                    {dayjs(row.original.Approver_TimeStamps).format(
+                      "YYYY/MM/DD HH:mm:ss",
+                    )}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {row.original.Approver_Comment}
                   </Typography>
                 </CardContent>
               </Card>

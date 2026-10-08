@@ -54,7 +54,7 @@ export default function AllCancelledApproval({ open, setOpen, data }) {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   const handleClose = () => {
     setOpen(false);
@@ -76,7 +76,7 @@ export default function AllCancelledApproval({ open, setOpen, data }) {
               onClick={handleClose}
               aria-label="close"
             >
-              <CloseIcon sx={{ color: "white" }} />
+              <CloseIcon sx={{ color: "inherit" }} />
             </IconButton>
             <Typography
               sx={{ ml: 2, flex: 1 }}

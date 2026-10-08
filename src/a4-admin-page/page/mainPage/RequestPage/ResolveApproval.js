@@ -27,7 +27,7 @@ export default function ResolveApproval({ open, setOpen, data }) {
           background: {
             default:
               globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
+                ? "rgb(244, 245, 255)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
         },
@@ -54,7 +54,7 @@ export default function ResolveApproval({ open, setOpen, data }) {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   const handleClose = () => {
     setOpen(false);
@@ -76,7 +76,7 @@ export default function ResolveApproval({ open, setOpen, data }) {
               onClick={handleClose}
               aria-label="close"
             >
-              <CloseIcon sx={{ color: "white" }} />
+              <CloseIcon sx={{ color: "inherit" }} />
             </IconButton>
             <Typography
               sx={{ ml: 2, flex: 1 }}

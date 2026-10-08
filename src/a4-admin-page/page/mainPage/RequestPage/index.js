@@ -98,68 +98,17 @@ const Approval = () => {
           total.Declined_Request.push(el);
         }
 
-        if (userInfo.userRoles === "cs") {
-          if (el.Requester_Status === "Шийдвэрлэж байна") {
-            userTotal.Resolving_Request.push(el);
-          } else if (el.Requester_Status === "Хүлээгдэж байна") {
-            userTotal.Pending_Request.push(el);
-          } else if (el.Requester_Status === "Илгээсэн") {
-            userTotal.Sent_Request.push(el);
-          } else if (el.Requester_Status === "Шийдвэрлэсэн") {
-            userTotal.Closed_Request.push(el);
-          } else if (el.Requester_Status === "Цуцалсан") {
-            userTotal.Closed_Request.push(el);
-          }
-        } else if (userInfo.userRoles === "system") {
-          if (el.Level === 2) {
-            if (el.Approver1_Status === "Шийдвэрлэж байна") {
-              userTotal.Resolving_Request.push(el);
-            } else if (el.Approver1_Status === "Хүлээгдэж байна") {
-              userTotal.Pending_Request.push(el);
-            } else if (el.Approver1_Status === "Илгээсэн") {
-              userTotal.Sent_Request.push(el);
-            } else if (el.Approver1_Status === "Шийдвэрлэсэн") {
-              userTotal.Closed_Request.push(el);
-            } else if (el.RApprover1_Status === "Цуцалсан") {
-              userTotal.Closed_Request.push(el);
-            }
-          } else if (el.Level === 5) {
-            if (el.Approver4_Status === "Шийдвэрлэж байна") {
-              userTotal.Resolving_Request.push(el);
-            } else if (el.Approver4_Status === "Хүлээгдэж байна") {
-              userTotal.Pending_Request.push(el);
-            } else if (el.Approver4_Status === "Илгээсэн") {
-              userTotal.Sent_Request.push(el);
-            } else if (el.Approver4_Status === "Шийдвэрлэсэн") {
-              userTotal.Closed_Request.push(el);
-            } else if (el.RApprover4_Status === "Цуцалсан") {
-              userTotal.Closed_Request.push(el);
-            }
-          }
-        } else if (userInfo.userRoles === "finance") {
-          if (el.Approver2_Status === "Шийдвэрлэж байна") {
-            userTotal.Approver2_Request.push(el);
-          } else if (el.Approver2_Status === "Хүлээгдэж байна") {
-            userTotal.Pending_Request.push(el);
-          } else if (el.Approver2_Status === "Илгээсэн") {
-            userTotal.Sent_Request.push(el);
-          } else if (el.Approver2_Status === "Шийдвэрлэсэн") {
-            userTotal.Closed_Request.push(el);
-          } else if (el.RApprover2_Status === "Цуцалсан") {
-            userTotal.Closed_Request.push(el);
-          }
-        } else if (userInfo.userRoles === "director") {
-          if (el.Approver3_Status === "Шийдвэрлэж байна") {
-            userTotal.Resolving_Request.push(el);
-          } else if (el.Approver3_Status === "Хүлээгдэж байна") {
-            userTotal.Pending_Request.push(el);
-          } else if (el.Approver3_Status === "Илгээсэн") {
-            userTotal.Sent_Request.push(el);
-          } else if (el.Approver3_Status === "Шийдвэрлэсэн") {
-            userTotal.Closed_Request.push(el);
-          } else if (el.Approver3_Status === "Цуцалсан") {
-            userTotal.Closed_Request.push(el);
-          }
+        // ★ Шатлал болон userRoles шалгахгүйгээр бүх хүсэлтийг харуулах
+        if (el.Requester_Status === "Шийдвэрлэж байна") {
+          userTotal.Resolving_Request.push(el);
+        } else if (el.Requester_Status === "Хүлээгдэж байна") {
+          userTotal.Pending_Request.push(el);
+        } else if (el.Requester_Status === "Илгээсэн") {
+          userTotal.Sent_Request.push(el);
+        } else if (el.Requester_Status === "Шийдвэрлэсэн") {
+          userTotal.Closed_Request.push(el);
+        } else if (el.Requester_Status === "Цуцалсан") {
+          userTotal.Cancelled_Request.push(el); // ★ Closed биш Cancelled-д нэмэх
         }
       });
       setSumData(total);
@@ -180,8 +129,10 @@ const Approval = () => {
 
   return (
     <Box sx={{ marginLeft: 2 }}>
-      <Typography color="inherit" variant="h4">Хүсэлтийн бүртгэл</Typography>
-      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ marginTop: 15 }}>
+      <Typography color="inherit" variant="h4">
+        Хүсэлтийн бүртгэл
+      </Typography>
+      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ marginTop: 2 }}>
         <Grid item xs={12} sm={4} md={4}>
           <Box>
             <Typography variant="h5">Хариуцаж авсан хүсэлт</Typography>
@@ -192,7 +143,7 @@ const Approval = () => {
               fullWidth
               startIcon={<Add />}
               onClick={() => setOpenCreateApproval(!openCreateApproval)}
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
             >
               Хүсэлт үүсгэх
             </Button>
@@ -209,7 +160,7 @@ const Approval = () => {
                   <AddTaskIcon />
                 </Badge>
               }
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               onClick={() => setOpenResolveApproval(!openResolveApproval)}
             >
               Шийдвэрлэж буй хүсэлт
@@ -227,7 +178,7 @@ const Approval = () => {
                   <HourglassEmptyIcon />
                 </Badge>
               }
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               onClick={() => setOpenPendingApproval(!openPendingApproval)}
             >
               Хүлээгдэж буй хүсэлт
@@ -237,7 +188,7 @@ const Approval = () => {
             <Button
               variant="contained"
               fullWidth
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
                   badgeContent={userData.Reasigned_Request.length}
@@ -255,7 +206,7 @@ const Approval = () => {
             <Button
               variant="contained"
               fullWidth
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
                   badgeContent={userData.Cancelled_Request.length}
@@ -273,7 +224,7 @@ const Approval = () => {
             <Button
               variant="contained"
               fullWidth
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
                   badgeContent={userData.Cancelled_Request.length}
@@ -291,7 +242,7 @@ const Approval = () => {
             <Button
               variant="contained"
               fullWidth
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
                   badgeContent={userData.Closed_Request.length}
@@ -314,7 +265,7 @@ const Approval = () => {
             <Button
               variant="contained"
               fullWidth
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
                   badgeContent={sumData.Resolving_Request.length}
@@ -332,7 +283,7 @@ const Approval = () => {
             <Button
               variant="contained"
               fullWidth
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
                   badgeContent={sumData.Declined_Request.length}
@@ -352,7 +303,7 @@ const Approval = () => {
             <Button
               variant="contained"
               fullWidth
-              sx={{ justifyContent: "flex-start"}}
+              sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
                   badgeContent={sumData.Closed_Request.length}
@@ -380,7 +331,7 @@ const Approval = () => {
             {loading && (
               <CircularProgress
                 size={68}
-                sx={{                
+                sx={{
                   position: "absolute",
                   top: -6,
                   left: -6,

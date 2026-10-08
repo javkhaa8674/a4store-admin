@@ -54,7 +54,7 @@ export default function CancelApproval({ open, setOpen, data }) {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   const handleClose = () => {
     setOpen(false);
@@ -75,7 +75,7 @@ export default function CancelApproval({ open, setOpen, data }) {
               aria-label="close"
               color="inherit"
             >
-              <CloseIcon sx={{color:"white"}}/>
+              <CloseIcon sx={{ color: "inherit" }} />
             </IconButton>
             <Typography
               sx={{ ml: 2, flex: 1 }}
@@ -88,8 +88,9 @@ export default function CancelApproval({ open, setOpen, data }) {
           </Toolbar>
         </AppBar>
         <Box sx={{ height: "90vh" }}>
-        <ThemeProvider theme={tableTheme}>
-          <CancelRequestTable data={data} /></ThemeProvider>
+          <ThemeProvider theme={tableTheme}>
+            <CancelRequestTable data={data} />
+          </ThemeProvider>
         </Box>
       </Dialog>
     </React.Fragment>
