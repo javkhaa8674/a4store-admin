@@ -16,11 +16,11 @@ jobs:
 
       # 1. Сангуудыг суулгах алхам (Үүнийг нэмж байна)
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
       # 2. Төслийг build хийх алхам (CI=false нэмсэн)
       - name: Build project
-        run: CI=false npm run build
+        run: CI=false yarn build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

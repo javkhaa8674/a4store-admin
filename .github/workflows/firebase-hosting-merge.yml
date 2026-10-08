@@ -14,11 +14,11 @@ jobs:
 
       # 1. САНГУУДЫГ СУУЛГАХ АЛХАМ (Үүнийг шинээр нэмж байна)
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
       # 2. ТӨСЛИЙГ BUILD ХИЙХ АЛХАМ (CI=false нь warning-аас болж унахаас хамгаална)
       - name: Build project
-        run: CI=false npm run build
+        run: CI=false yarn build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
