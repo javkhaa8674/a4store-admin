@@ -13,7 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm run build
+
+      # 1. Сангуудыг суулгах алхам (Үүнийг нэмж байна)
+      - name: Install dependencies
+        run: npm install
+
+      # 2. Төслийг build хийх алхам (CI=false нэмсэн)
+      - name: Build project
+        run: CI=false npm run build
+
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
