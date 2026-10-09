@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { TextField, Button, CircularProgress, Alert, Box } from "@mui/material";
-import InputAdornment from "@mui/material/InputAdornment";
+
 const CancelReq = () => {
   const [searchId, setSearchId] = useState(""); // To store the entered ID
   const [refundCode, setRefundCode] = useState(""); // To store the entered ID
   const [result, setResult] = useState(null); // To store the API response
-  const [error, setError] = useState(null); // To store any error messages
   const [loadingSearch, setLoadingSearch] = useState(false); // For search loading state
   const [loadingSubmit, setLoadingSubmit] = useState(false); // For submit loading state
   const [successMessage, setSuccessMessage] = useState(""); // For success message
@@ -22,19 +21,19 @@ const CancelReq = () => {
   // Function to handle search button click
   const handleSearch = async () => {
     if (!searchId.trim()) {
-      setError("Please enter a valid ID");
+      setErrorMessage("Please enter a valid ID");
       return;
     }
 
     setLoadingSearch(true);
-    setError(null);
+    setErrorMessage(null);
     setResult(null);
     setErrorMessage(""); // Reset error message
 
     try {
       const response = await axios.post(
         `https://api-hw5amqni4q-uc.a.run.app/CancelContactRequest`,
-        { phone: searchId }
+        { phone: searchId },
       );
 
       if (response.data.data.type === "two") {
@@ -47,7 +46,7 @@ const CancelReq = () => {
       }
     } catch (err) {
       setErrorMessage(
-        err.response?.data?.message || "An error occurred while searching"
+        err.response?.data?.message || "An error occurred while searching",
       );
     } finally {
       setLoadingSearch(false);
@@ -62,7 +61,7 @@ const CancelReq = () => {
       if (tworesult) {
         await axios.post(
           `https://api-hw5amqni4q-uc.a.run.app/saveCancelContact`,
-          { tworesult, refundCode: refundCode }
+          { tworesult, refundCode: refundCode },
         );
       } else {
         const data = result.data;
@@ -81,14 +80,14 @@ const CancelReq = () => {
             Product: data.Product,
             accNumber: data.accNumber,
             accName: data.accName,
-          }
+          },
         );
       }
 
       setSuccessMessage("Хүсэлт амжилттай илгээгдлээ!"); // Success message
     } catch (err) {
       setErrorMessage(
-        err.response?.data?.message || "An error occurred while saving"
+        err.response?.data?.message || "An error occurred while saving",
       );
     } finally {
       setLoadingSubmit(false);
@@ -202,8 +201,8 @@ const CancelReq = () => {
                 result.data.type === "old"
                   ? "Хуучин систем"
                   : result.data.type === "new"
-                  ? "Шинэ систем"
-                  : result.data.type // fallback to default value if needed
+                    ? "Шинэ систем"
+                    : result.data.type // fallback to default value if needed
               }
               fullWidth
               readOnly
@@ -280,7 +279,6 @@ const CancelReq = () => {
                 "& .MuiFormHelperText-root": {
                   color: "#ff9800", // Warning color for helper text
                 },
-                
               }}
             />
 

@@ -4,8 +4,6 @@ import {
   CardContent,
   Typography,
   Box,
-  Avatar,
-  useTheme,
   Button,
   Stack,
 } from "@mui/material";
@@ -15,7 +13,7 @@ import { MdHistory } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore"; // Ensure you're importing firestore methods
 import { auth, firestore } from "refrence/storeConfig";
-import { FaShoppingCart, FaArrowRight } from "react-icons/fa";
+import { FaShoppingCart } from "react-icons/fa";
 import { MdOutlineSavings } from "react-icons/md";
 import { getUserData } from "../../../utils/functions";
 
@@ -51,11 +49,6 @@ const PointsWrapper = styled(Box)({
   marginTop: 10,
 });
 
-const AmountWrapper = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  marginTop: 16,
-});
 const ActionButton = styled(Button)(({ theme }) => ({
   borderRadius: 8,
   color: "#fff",
@@ -100,7 +93,6 @@ const SavingsButton = styled(Button)(({ theme }) => ({
 const RewardsCard = () => {
   const [balance, setBalance] = useState(null);
   const navigation = useNavigate();
-  const [loading , setLoading] = useState(false);
   const user = auth.currentUser;
 
   const userData = getUserData();
@@ -161,15 +153,6 @@ const RewardsCard = () => {
             >
               1 point = 1₮
             </Typography>
-            
-            {/* <AmountWrapper>
-              <Typography variant="body1" sx={{ opacity: 0.8 }}>
-                Багт орох эрх:
-              </Typography>
-              <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
-                {userData.package}
-              </Typography>
-            </AmountWrapper> */}
           </ContentWrapper>
         </StyledCard>
         <Box sx={{ maxWidth: "1170px", margin: "auto", mt: 3 }}>

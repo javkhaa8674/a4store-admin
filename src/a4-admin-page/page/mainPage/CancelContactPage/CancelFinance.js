@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-pascal-case */
 import React, { useMemo, useState, useEffect } from "react";
 
 // Material React Table Imports
@@ -10,24 +11,19 @@ import {
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import axios from "axios";
-import { AccountCircle, Send } from "@mui/icons-material";
-import { Center } from "@react-three/drei";
-// Material-UI Imports
+
 import {
   Box,
   Button,
-  ListItemIcon,
   MenuItem,
-  Typography,
   lighten,
   TextField,
   CircularProgress,
-  Alert,
-  Snackbar,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Alert,
 } from "@mui/material";
 
 // Icons
@@ -51,9 +47,7 @@ const Example = () => {
   useEffect(() => {
     // Fetch data from the backend
     axios
-      .post(
-        "https://api-hw5amqni4q-uc.a.run.app/CancelContactfinanceData"
-      )
+      .post("https://api-hw5amqni4q-uc.a.run.app/CancelContactfinanceData")
       .then((response) => {
         setData(response.data.data);
         console.log(response.data.data);
@@ -104,10 +98,10 @@ const Example = () => {
               return value === "new"
                 ? "Шинэ"
                 : value === "old"
-                ? "Хуучин"
-                : value === "two"
-                ? "Шинэ болон Хуучин"
-                : value;
+                  ? "Хуучин"
+                  : value === "two"
+                    ? "Шинэ болон Хуучин"
+                    : value;
             },
           },
           {
@@ -123,8 +117,8 @@ const Example = () => {
                     cell.getValue() < 500000
                       ? theme.palette.error.dark
                       : cell.getValue() >= 500000 && cell.getValue() < 1500000
-                      ? theme.palette.warning.dark
-                      : theme.palette.success.dark,
+                        ? theme.palette.warning.dark
+                        : theme.palette.success.dark,
                   borderRadius: "0.25rem",
                   color: "#fff",
                   maxWidth: "9ch",
@@ -159,10 +153,9 @@ const Example = () => {
         ],
       },
     ],
-    []
+    [],
   );
 
-  console.log("data", data);
   const handleSubmit = async () => {
     setLoadingSubmit(true);
     setErrorMessage(""); // Reset error message
@@ -171,19 +164,19 @@ const Example = () => {
       if (data.type === "two") {
         await axios.post(
           `https://api-hw5amqni4q-uc.a.run.app/saveCancelContact`,
-          { efundCode: 456 }
+          { efundCode: 456 },
         );
       } else {
         await axios.post(
-            `https://api-hw5amqni4q-uc.a.run.app/saveCancelContact`,
-            { efundCode: 456 }
-          );
+          `https://api-hw5amqni4q-uc.a.run.app/saveCancelContact`,
+          { efundCode: 456 },
+        );
       }
 
       setSuccessMessage("Хүсэлт амжилттай илгээгдлээ!"); // Success message
     } catch (err) {
       setErrorMessage(
-        err.response?.data?.message || "Алдаа гарлаа та дахин оролдно уу"
+        err.response?.data?.message || "Алдаа гарлаа та дахин оролдно уу",
       );
     } finally {
       setLoadingSubmit(false);
@@ -287,8 +280,8 @@ const Example = () => {
                       row.original.type === "old"
                         ? "Хуучин систем"
                         : row.original.type === "new"
-                        ? "Шинэ систем"
-                        : row.original.type,
+                          ? "Шинэ систем"
+                          : row.original.type,
                   },
                   { label: "Утас", value: row.original.MemberId || "" },
                   { label: "Овог нэр", value: row.original.Name || "" },
@@ -471,7 +464,43 @@ const Example = () => {
     },
   });
 
-  return <MaterialReactTable table={table} />;
+  return (
+    <>
+      <MaterialReactTable table={table} />
+
+      {/* ★ Амжилтын мэдээлэл */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={5000}
+        onClose={() => setSuccessMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          onClose={() => setSuccessMessage("")}
+          sx={{ width: "100%" }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* ★ Алдааны мэдээлэл */}
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={5000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity="error"
+          onClose={() => setErrorMessage("")}
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </>
+  );
 };
 
 // Date Picker Imports

@@ -29,14 +29,8 @@ import {
   remove,
   update,
 } from "firebase/database";
-import {
-  Box,
-  lighten,
-  TextField,
-  Grid,
-} from "@mui/material";
+import { Box, lighten, TextField, Grid } from "@mui/material";
 
-import { AuthStore } from "store/AuthStore";
 import dayjs from "dayjs";
 import { db } from "refrence/realConfig";
 import MUIStepper from "../../components/MUIStepper";
@@ -67,12 +61,7 @@ const ReactAdvancedMaterialTable = () => {
                   p: "0.25rem",
                 })}
               >
-                {cell.getValue()?.toLocaleString?.("mn-MN", {
-                  style: "currency",
-                  currency: "USD",
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
+                {cell.getValue()}
               </Box>
             ),
           },
@@ -82,6 +71,17 @@ const ReactAdvancedMaterialTable = () => {
             filterVariant: "autocomplete",
             header: "Хүсэлтийн төрөл",
             size: 100,
+            // ★ Validation
+            muiEditTextFieldProps: {
+              required: true,
+              error: !!validationErrors?.ApprovalType,
+              helperText: validationErrors?.ApprovalType,
+              onFocus: () =>
+                setValidationErrors({
+                  ...validationErrors,
+                  ApprovalType: undefined,
+                }),
+            },
           },
           {
             accessorKey: "ID",
@@ -89,6 +89,18 @@ const ReactAdvancedMaterialTable = () => {
             filterVariant: "autocomplete",
             header: "ID",
             size: 100,
+            // ★ Validation
+            muiEditTextFieldProps: {
+              required: true,
+              type: "number",
+              error: !!validationErrors?.ID,
+              helperText: validationErrors?.ID,
+              onFocus: () =>
+                setValidationErrors({
+                  ...validationErrors,
+                  ID: undefined,
+                }),
+            },
           },
           {
             accessorKey: "id",
@@ -96,6 +108,7 @@ const ReactAdvancedMaterialTable = () => {
             filterVariant: "autocomplete",
             header: "id",
             size: 100,
+            enableEditing: false, // ★ id-г засах боломжгүй
           },
           {
             accessorKey: "Name",
@@ -103,6 +116,17 @@ const ReactAdvancedMaterialTable = () => {
             filterVariant: "autocomplete",
             header: "Нэр",
             size: 100,
+            // ★ Validation
+            muiEditTextFieldProps: {
+              required: true,
+              error: !!validationErrors?.Name,
+              helperText: validationErrors?.Name,
+              onFocus: () =>
+                setValidationErrors({
+                  ...validationErrors,
+                  Name: undefined,
+                }),
+            },
           },
           {
             accessorFn: (row) => new Date(row.TimeStamps),
@@ -111,13 +135,15 @@ const ReactAdvancedMaterialTable = () => {
             filterVariant: "date",
             filterFn: "lessThan",
             sortingFn: "datetime",
-            Cell: ({ cell }) => dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
-            Header: ({ column }) => <em>{column.columnDef.header}</em>, //custom header markup
+            Cell: ({ cell }) =>
+              dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
+            Header: ({ column }) => <em>{column.columnDef.header}</em>,
             muiFilterTextFieldProps: {
               sx: {
                 minWidth: "100px",
               },
             },
+            enableEditing: false, // ★ огноог засах боломжгүй
           },
           {
             accessorKey: "Requester_ID",
@@ -125,11 +151,12 @@ const ReactAdvancedMaterialTable = () => {
             filterVariant: "autocomplete",
             header: "Үүсгэсэн ажилтан",
             size: 100,
+            enableEditing: false, // ★ автоматаар үүсгэгддэг
           },
         ],
       },
     ],
-    []
+    [validationErrors], // ★ validationErrors-ийг dependency болгох
   );
 
   //call CREATE hook
@@ -173,6 +200,12 @@ const ReactAdvancedMaterialTable = () => {
     table.setEditingRow(null); //exit editing mode
   };
 
+  //DELETE action
+  const openDeleteConfirmModal = (row) => {
+    if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
+      deleteUser(row.original.id);
+    }
+  };
 
   const table = useMaterialReactTable({
     columns,
@@ -237,12 +270,27 @@ const ReactAdvancedMaterialTable = () => {
                       }}
                     />
                   </Grid>
-                )
+                ),
             )}
           </Grid>
         </>
       );
     },
+    renderRowActionMenuItems: ({ row, closeMenu }) => [
+      <MenuItem
+        key="delete"
+        onClick={() => {
+          openDeleteConfirmModal(row);
+          closeMenu();
+        }}
+        sx={{ m: 0 }}
+      >
+        <ListItemIcon>
+          <DeleteIcon />
+        </ListItemIcon>
+        Устгах
+      </MenuItem>,
+    ],
     renderTopToolbar: ({ table }) => {
       return (
         <Box
@@ -254,11 +302,11 @@ const ReactAdvancedMaterialTable = () => {
             justifyContent: "space-between",
           })}
         >
-        <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
             {/* import MRT sub-components */}
             <MRT_GlobalFilterTextField table={table} />
             <MRT_ToggleFiltersButton table={table} />
-            <MRT_ShowHideColumnsButton table={table} />    
+            <MRT_ShowHideColumnsButton table={table} />
             <MRT_ToggleDensePaddingButton table={table} />
             <MRT_ToggleFullScreenButton table={table} />
           </Box>
@@ -320,7 +368,7 @@ const ReactAdvancedMaterialTable = () => {
           const que = query(
             ref(db, "request"),
             orderByChild(approver_status),
-            equalTo("Буцаасан")
+            equalTo("Буцаасан"),
           );
           const snapshot = await get(que);
           snapshot.forEach((childSnapshot) => {
@@ -352,8 +400,8 @@ const ReactAdvancedMaterialTable = () => {
       onMutate: (newRequestInfo) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
           prevRequests?.map((prevRequest) =>
-            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest
-          )
+            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
@@ -377,7 +425,7 @@ const ReactAdvancedMaterialTable = () => {
       //client side optimistic update
       onMutate: (requestId) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
-          prevRequests?.filter((request) => request.id !== requestId)
+          prevRequests?.filter((request) => request.id !== requestId),
         );
       },
       onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
@@ -406,7 +454,7 @@ const validateEmail = (email) =>
   email
     .toLowerCase()
     .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
     );
 const validateUser = (user) => {
   return {

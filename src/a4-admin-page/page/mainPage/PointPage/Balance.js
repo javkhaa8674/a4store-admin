@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -31,16 +31,7 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
-import {
-  ref,
-  get,
-  set,
-  update,
-  remove,
-  orderByChild,
-  equalTo,
-  query,
-} from "firebase/database";
+import { ref, remove } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import axios from "storeaxios";
 
@@ -102,10 +93,14 @@ const exportToExcel = (data) => {
 };
 
 const Example = () => {
+  // ★ useQueryClient hook ашиглах
+  const queryClient = useQueryClient();
+
   const [validationErrors, setValidationErrors] = useState({});
   const [searchTerm, setSearchTerm] = useState(""); // User input for search
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
+
   const columns = useMemo(
     () => [
       {
@@ -157,8 +152,9 @@ const Example = () => {
         header: "Нэр",
       },
     ],
-    []
+    [],
   );
+
   // CREATE hook (post new user to api)
   const useCreateUser = () => {
     const queryClient = useQueryClient();
@@ -169,7 +165,7 @@ const Example = () => {
         return Promise.resolve();
       },
       onMutate: (newUserInfo) => {
-        // queryClient.setQueryData(["userInfo"], (prevUsers) => [
+        // queryClient.setQueryData(["balance"], (prevUsers) => [
         //   ...(prevUsers || []),
         //   {
         //     ...newUserInfo,
@@ -177,8 +173,11 @@ const Example = () => {
         //   },
         // ]);
       },
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["balance"] }),
     });
   };
+
+  // READ hook (get users from api)
   function useGetUsers() {
     return useQuery({
       queryKey: ["balance", searchTerm, fetchAll],
@@ -196,7 +195,7 @@ const Example = () => {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
                 },
-              }
+              },
             );
             console.log(result.data);
             return result.data;
@@ -211,7 +210,7 @@ const Example = () => {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
                 },
-              }
+              },
             );
             return [result.data];
           } else {
@@ -227,6 +226,7 @@ const Example = () => {
       refetchOnWindowFocus: true,
     });
   }
+
   // UPDATE hook (put user in api)
   const useUpdateUser = () => {
     const queryClient = useQueryClient();
@@ -247,15 +247,16 @@ const Example = () => {
         return Promise.resolve();
       },
       onMutate: (newUserInfo) => {
-        // queryClient.setQueryData(["userInfo"], (prevUsers) =>
+        // queryClient.setQueryData(["balance"], (prevUsers) =>
         //   prevUsers?.map((prevUser) =>
         //     prevUser.id === newUserInfo.id ? newUserInfo : prevUser
         //   )
         // );
       },
-      onSettled: () => queryClient.invalidateQueries(["userInfo"]), // Refetch users after mutation
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["balance"] }),
     });
   };
+
   // DELETE hook (delete user in api)
   const useDeleteUser = () => {
     const queryClient = useQueryClient();
@@ -265,14 +266,34 @@ const Example = () => {
         await remove(userRef);
         return Promise.resolve();
       },
-      onMutate: (userId) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+      onMutate: async (userId) => {
+        // ★ Бүх "balance" query-г цуцлах
+        await queryClient.cancelQueries({ queryKey: ["balance"] });
+
+        // ★ Өмнөх өгөгдлийг хадгалах
+        const previousData = queryClient.getQueriesData({
+          queryKey: ["balance"],
+        });
+
+        // ★ Бүх "balance" query-с устгасан хэрэглэгчийг хасах
+        queryClient.setQueriesData({ queryKey: ["balance"] }, (oldData) =>
+          oldData?.filter((user) => user.id !== userId),
         );
+
+        return { previousData };
       },
-      onSettled: () => queryClient.invalidateQueries(["userInfo"]), // Refetch users after mutation
+      onError: (err, userId, context) => {
+        // ★ Алдаа гарвал өмнөх өгөгдлийг буцаах
+        if (context?.previousData) {
+          context.previousData.forEach(([queryKey, data]) => {
+            queryClient.setQueryData(queryKey, data);
+          });
+        }
+      },
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["balance"] }),
     });
   };
+
   const { mutateAsync: createUser, isPending: isCreatingUser } =
     useCreateUser();
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
@@ -327,7 +348,7 @@ const Example = () => {
   };
 
   const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("Та энэ хэрэглэгчийг устгахдаа итгэлтэй байна уу?")) {
       deleteUser(row.original.id);
     }
   };
@@ -338,9 +359,10 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
+
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
@@ -386,7 +408,7 @@ const Example = () => {
     ),
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit User</DialogTitle>
+        <DialogTitle variant="h3">Засах</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
@@ -400,12 +422,12 @@ const Example = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        <Tooltip title="Edit">
+        <Tooltip title="Засах">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Delete">
+        <Tooltip title="Устгах">
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
@@ -445,7 +467,8 @@ const Example = () => {
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setFetchAll(false);
-            queryClient.invalidateQueries(["promotion"]);
+            // ★ queryKey-г "balance" болгож зассан
+            queryClient.invalidateQueries({ queryKey: ["balance"] });
           }}
           variant="filled"
           size="small"
@@ -455,7 +478,8 @@ const Example = () => {
           onClick={() => {
             setFetchAll(true); // Fetch all data
             setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["promotion"]);
+            // ★ queryKey-г "balance" болгож зассан
+            queryClient.invalidateQueries({ queryKey: ["balance"] });
           }}
         >
           Бүгд
@@ -509,7 +533,7 @@ const Balance = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <QueryClientProvider client={queryClient}>

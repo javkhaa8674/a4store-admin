@@ -1,15 +1,11 @@
 import * as React from "react";
 import PropTypes from "prop-types";
-import IconButton from "@mui/material/IconButton";
+
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
-import {
-  createTheme,
-  ThemeProvider,
-  useColorScheme,
-} from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -76,7 +72,6 @@ const NAVIGATION = [
     segment: "totalProduct",
     title: "Бүтээгдэхүүн",
     icon: <InventoryIcon />,
-
   },
   {
     segment: "category",

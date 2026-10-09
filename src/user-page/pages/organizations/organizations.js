@@ -1,7 +1,23 @@
 import React, { useState } from "react";
-import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, CardActions, Button, Modal, TextField, IconButton, useTheme, useMediaQuery, Chip } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  CardActions,
+  Button,
+  Modal,
+  IconButton,
+  useTheme,
+  useMediaQuery,
+  TextField, // ★ НЭМЭХ
+  Chip,
+} from "@mui/material";
 import { styled } from "@mui/system";
-import { FaSearch, FaTimes, FaGlobe, FaEnvelope, FaBuilding } from "react-icons/fa";
+import { FaTimes, FaGlobe, FaEnvelope, FaBuilding } from "react-icons/fa";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: "100%",
@@ -10,8 +26,8 @@ const StyledCard = styled(Card)(({ theme }) => ({
   transition: "transform 0.2s, box-shadow 0.2s",
   "&:hover": {
     transform: "translateY(-4px)",
-    boxShadow: theme.shadows[4]
-  }
+    boxShadow: theme.shadows[4],
+  },
 }));
 
 const ModalContent = styled(Box)({
@@ -25,7 +41,7 @@ const ModalContent = styled(Box)({
   boxShadow: 24,
   p: 4,
   borderRadius: "8px",
-  backgroundColor: "#fff"
+  backgroundColor: "#fff",
 });
 
 const partnersData = [
@@ -33,12 +49,13 @@ const partnersData = [
     id: 1,
     name: "Tech Innovators Inc",
     logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623",
-    description: "Leading technology solutions provider specializing in AI and ML",
+    description:
+      "Leading technology solutions provider specializing in AI and ML",
     category: "Technology",
     location: "San Francisco, USA",
     email: "contact@techinnovators.com",
     website: "www.techinnovators.com",
-    year: 2018
+    year: 2018,
   },
   {
     id: 2,
@@ -49,7 +66,7 @@ const partnersData = [
     location: "Berlin, Germany",
     email: "info@greensolutions.co",
     website: "www.greensolutions.co",
-    year: 2019
+    year: 2019,
   },
   {
     id: 3,
@@ -60,8 +77,8 @@ const partnersData = [
     location: "London, UK",
     email: "partners@globalhealth.org",
     website: "www.globalhealth.org",
-    year: 2020
-  }
+    year: 2020,
+  },
 ];
 
 const PartnerOrganizations = () => {
@@ -71,11 +88,11 @@ const PartnerOrganizations = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
-  const filteredPartners = partnersData.filter(partner =>
-    partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    partner.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPartners = partnersData.filter(
+    (partner) =>
+      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner.category.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleCardClick = (partner) => {
@@ -85,7 +102,15 @@ const PartnerOrganizations = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
-
+      {/* ★ Хайлтын TextField нэмсэн */}
+      <TextField
+        fullWidth
+        label="Хайх"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        sx={{ mb: 4 }}
+      />
 
       <Grid container spacing={4}>
         {filteredPartners.map((partner) => (
@@ -102,11 +127,7 @@ const PartnerOrganizations = () => {
                 <Typography variant="h6" gutterBottom>
                   {partner.name}
                 </Typography>
-                <Chip
-                  label={partner.category}
-                  size="small"
-                  sx={{ mb: 2 }}
-                />
+                <Chip label={partner.category} size="small" sx={{ mb: 2 }} />
                 <Typography variant="body2" color="text.secondary" paragraph>
                   {partner.description}
                 </Typography>
@@ -150,13 +171,19 @@ const PartnerOrganizations = () => {
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
                     <FaBuilding style={{ marginRight: 8 }} />
                     {selectedPartner.location}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
                     <FaEnvelope style={{ marginRight: 8 }} />
                     {selectedPartner.email}
                   </Typography>

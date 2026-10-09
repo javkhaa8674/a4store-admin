@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import "./TreeView.css";
-import dayjs from "dayjs";
 
 const propTypes = {
   nodeData: PropTypes.object.isRequired,
@@ -26,8 +25,8 @@ const TreeView = ({ nodeData }) => {
             Number(nodeData.Level) === 30
               ? "#039be5"
               : Number(nodeData.Level) === 300
-              ? "#1de9b6"
-              : "#f3f3f3",
+                ? "#1de9b6"
+                : "#f3f3f3",
           fontSize: "10px",
         }}
       >
@@ -39,7 +38,7 @@ const TreeView = ({ nodeData }) => {
         </div>
         {nodeData.System && (
           <div
-            style={{ backgroundColor: "red", color: "white", borderRadius: 55 , }}
+            style={{ backgroundColor: "red", color: "white", borderRadius: 55 }}
           >
             Шилжсэн
           </div>

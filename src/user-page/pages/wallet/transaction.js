@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Stepper,
@@ -26,7 +26,7 @@ import {
   query,
   where,
   getDocs,
-} from "firebase/firestore"; // Ensure you're importing firestore methods
+} from "firebase/firestore";
 import { auth, firestore } from "refrence/storeConfig";
 import { MdOutlineDescription } from "react-icons/md";
 import a4axios from "a4axios";
@@ -90,6 +90,7 @@ const PointTransferStepper = () => {
   const [otpSent, setOtpSent] = useState(false);
   const navigation = useNavigate();
 
+  // ==================== useEffect: localStorage-с user авах ====================
   useEffect(() => {
     const storedUserData = localStorage.getItem("user");
 
@@ -97,6 +98,8 @@ const PointTransferStepper = () => {
       setUserData(JSON.parse(storedUserData));
     }
   }, []);
+
+  // ==================== useEffect: Timer ====================
   useEffect(() => {
     let interval;
     if (activeStep === 2 && timer > 0) {
@@ -104,13 +107,17 @@ const PointTransferStepper = () => {
     }
     return () => clearInterval(interval);
   }, [activeStep, timer]);
+
+  // ==================== useEffect: Balance ====================
   useEffect(() => {
+    if (!user?.uid) return;
+
     const balanceRef = doc(firestore, "users", user.uid, "point", "balance");
 
     // Subscribe to real-time updates with onSnapshot
     const unsubscribe = onSnapshot(balanceRef, (docSnap) => {
       if (docSnap.exists()) {
-        setBalance(docSnap.data().balance); // Update state with new balance
+        setBalance(docSnap.data().balance);
       } else {
         console.log("No such document!");
         setBalance(null);
@@ -119,7 +126,42 @@ const PointTransferStepper = () => {
     return () => {
       unsubscribe();
     };
-  }, [user.uid]);
+  }, [user?.uid]);
+
+  // ==================== sendOtp: useCallback-аар боосон ====================
+  const sendOtp = useCallback(async () => {
+    const phone = Number(userData?.phone);
+    if (!phone || isNaN(phone)) {
+      console.warn("Invalid phone number");
+      return;
+    }
+    const requestBody = {
+      phoneNumber: phone,
+      text: `Хэрвээ өөрөө биш бол баталгаажуулах кодоо нууцлан уу. Шилжүүлэг хийх дүн ${formData.TransactionPoint}P`,
+      type: "transaction",
+    };
+    try {
+      const response = await a4axios.post("/sendotp", requestBody);
+      if (response.status === 200) {
+        setToken(response.data.token);
+        console.log("OTP sent successfully:", response.data.token);
+      } else {
+        console.log("Error sending OTP");
+      }
+    } catch (error) {
+      console.error("Failed to send OTP:", error);
+    }
+  }, [userData?.phone, formData.TransactionPoint]);
+
+  // ==================== useEffect: OTP илгээх ====================
+  useEffect(() => {
+    if (activeStep === 2 && !otpSent) {
+      sendOtp();
+      setOtpSent(true);
+    }
+  }, [activeStep, otpSent, sendOtp]);
+
+  // ==================== validateStep ====================
   const validateStep = () => {
     const newErrors = {};
 
@@ -157,9 +199,9 @@ const PointTransferStepper = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // ==================== handleVerifyOtp ====================
   const handleVerifyOtp = async () => {
     try {
-      // Retrieve the Authorization token (replace with your actual method of retrieving the token)
       if (!token) {
         console.error("No authorization token found");
         return;
@@ -167,9 +209,8 @@ const PointTransferStepper = () => {
 
       setIsLoading(true);
 
-      // Prepare request body (if necessary)
       const requestBody = {
-        otpCode: otp, // Your OTP variable
+        otpCode: otp,
         data: {
           senderId: userData.pointId,
           receiverId: formData.receiverPointId,
@@ -179,7 +220,6 @@ const PointTransferStepper = () => {
         },
       };
 
-      // Make the POST request with the Authorization Bearer token
       const response = await a4axios.post("/verifyOtp", requestBody, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -198,11 +238,11 @@ const PointTransferStepper = () => {
       console.error("Error during OTP verification:", error);
       setActiveStep((prevStep) => prevStep + 1);
     } finally {
-      // Ensure loading state is reset
       setIsLoading(false);
     }
   };
 
+  // ==================== handleNext ====================
   const handleNext = () => {
     if (validateStep()) {
       if (activeStep === 2) {
@@ -213,21 +253,24 @@ const PointTransferStepper = () => {
     }
   };
 
+  // ==================== handleBack ====================
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
+  // ==================== handleResendOTP ====================
   const handleResendOTP = () => {
     setTimer(60);
     sendOtp();
   };
 
+  // ==================== handleChange ====================
   const handleChange = async (e) => {
     const { value } = e.target;
-    setFormData({ ...formData, ReciverPhone: value });
-    setFormData((prev) => ({ ...prev, ReciverPhone: value })); // Update input field immediately
+    setFormData((prev) => ({ ...prev, ReciverPhone: value }));
     // Reset error message when typing
     setErrors((prev) => ({ ...prev, ReciverPhone: "" }));
+
     if (value.length === 8) {
       const usersRef = collection(firestore, "users");
       const q = query(usersRef, where("phone", "==", value));
@@ -236,63 +279,33 @@ const PointTransferStepper = () => {
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-          const firstDoc = querySnapshot.docs[0].data(); // Get first user
+          const firstDoc = querySnapshot.docs[0].data();
           setFormData((prev) => ({
             ...prev,
             receiverName: `${firstDoc.lastName} ${firstDoc.firstName}`,
-            receiverPointId: firstDoc.pointId, // Combine last and first name
+            receiverPointId: firstDoc.pointId,
           }));
           console.log("User found:", firstDoc);
         } else {
-          setFormData({
+          setFormData((prev) => ({
+            ...prev,
             receiverName: "",
-            description: "",
             receiverPointId: "",
-            TransactionPoint: "",
-          });
+          }));
         }
       } catch (error) {
         console.error("Error fetching user:", error);
       }
     } else {
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
         receiverName: "",
-        description: "",
         receiverPointId: "",
-        TransactionPoint: "",
-      });
+      }));
     }
   };
 
-  useEffect(() => {
-    if (activeStep === 2 && !otpSent) {
-      sendOtp();
-      setOtpSent(true);
-    }
-  }, [activeStep]);
-  const sendOtp = async () => {
-    const phone = Number(userData.phone);
-    if (!phone || isNaN(phone)) {
-      console.warn("Invalid phone number");
-      return;
-    }
-    const requestBody = {
-      phoneNumber: phone,
-      text: `Хэрвээ өөрөө биш бол баталгаажуулах кодоо нууцлан уу. Шилжүүлэг хийх дүн ${formData.TransactionPoint}P`,
-      type: "transaction",
-    };
-    try {
-      const response = await a4axios.post("/sendotp", requestBody);
-      if (response.status === 200) {
-        setToken(response.data.token);
-        console.log("OTP sent successfully:", response.data.token);
-      } else {
-        console.log("Error sending OTP");
-      }
-    } catch (error) {
-      console.error("Failed to send OTP:", error);
-    }
-  };
+  // ==================== renderStepContent ====================
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
@@ -348,6 +361,7 @@ const PointTransferStepper = () => {
                     <FiUser />
                   </InputAdornment>
                 ),
+                readOnly: true,
               }}
               sx={{ mb: 2 }}
             />
@@ -417,9 +431,9 @@ const PointTransferStepper = () => {
       case 2:
         return (
           <Box sx={{ mt: 2 }}>
-             <Alert severity="info" sx={{ mb: 2 }}>
-             {userData.phone} дугаарт баталгаажуулах код илгээгдлээ. Кодыг 60 секундийн
-              дотор оруулна уу.
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {userData?.phone} дугаарт баталгаажуулах код илгээгдлээ. Кодыг 60
+              секундийн дотор оруулна уу.
             </Alert>
             <TextField
               fullWidth
@@ -498,8 +512,9 @@ const PointTransferStepper = () => {
         );
     }
   };
+
+  // ==================== handleBackWallet ====================
   const handleBackWallet = () => {
-    // Navigate to the wallet route
     navigation("/wallet");
   };
 

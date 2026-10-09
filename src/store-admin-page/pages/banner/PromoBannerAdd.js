@@ -9,17 +9,14 @@ import {
   Tooltip,
   Typography,
   Box,
-  FormControlLabel,
-  Checkbox,
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { doc, updateDoc,setDoc, arrayUnion } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { firestore, storage } from "../../../refrence/storeConfig"; // Ensure this is correctly set up
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { v4 as uuidv4 } from "uuid";
 const HeroBannerAdd = ({ open, onClose }) => {
@@ -98,9 +95,8 @@ const HeroBannerAdd = ({ open, onClose }) => {
         downloadURL = await handleImageUpload();
         if (!downloadURL) return; // Stop if upload fails
       }
-      if(!imageUrl  && !title && !description)
-      {
-        return  alert(`failed`);
+      if (!imageUrl && !title && !description) {
+        return alert(`failed`);
       }
       // Reference to the heroBanner document in the "banners" collection
       const heroBannerRef = doc(firestore, "banners/promoBanner");
@@ -108,10 +104,10 @@ const HeroBannerAdd = ({ open, onClose }) => {
       await updateDoc(heroBannerRef, {
         [`banners`]: arrayUnion({
           imageUrl: downloadURL, // Use the updated image URL
-          id: uuidv4()
+          id: uuidv4(),
         }),
       });
-    
+
       onClose(); // Close the dialog
       // Reset form fields
       setTitle("");
@@ -135,11 +131,12 @@ const HeroBannerAdd = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem" }}>
-      Promo Banner Нэмэх
+      <DialogTitle
+        sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem" }}
+      >
+        Promo Banner Нэмэх
       </DialogTitle>
       <DialogContent>
-
         {/* Form Fields */}
         <TextField
           label="Нэр"

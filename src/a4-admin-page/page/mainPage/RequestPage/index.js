@@ -6,20 +6,10 @@ import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Add from "@mui/icons-material/Add";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import SendIcon from "@mui/icons-material/Send";
 import DoDisturbAltIcon from "@mui/icons-material/DoDisturbAlt";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DoneIcon from "@mui/icons-material/Done";
-import {
-  get,
-  orderByChild,
-  equalTo,
-  ref,
-  query,
-  getDatabase,
-} from "firebase/database";
 import CreateApproval from "./CreateApproval";
 import { AuthStore, readPost } from "store/AuthStore";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -33,7 +23,6 @@ import ReturnedApproval from "./ReturnedApproval";
 import AllResolveApproval from "./AllResolveApproval";
 import AllConfirmedApproval from "./AllConfirmedApproval";
 import AllCancelledApproval from "./AllCancelledApproval";
-import FeedBack from "../FeedbackPage/Feedback";
 
 const Item = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(1),
@@ -52,7 +41,7 @@ const Approval = () => {
   const [openCancelledApproval, setOpenCancelledApproval] = useState(false);
   const [openCancelApproval, setOpenCancelApproval] = useState(false);
   const [openReturnedApproval, setOpenReturnedApproval] = useState(false);
-  const { loading, userInfo } = AuthStore.useState();
+  const { loading } = AuthStore.useState();
   const [sumData, setSumData] = useState({
     Resolving_Request: [],
     Closed_Request: [],

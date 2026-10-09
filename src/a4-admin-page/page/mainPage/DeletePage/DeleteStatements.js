@@ -11,14 +11,16 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
-  Tooltip,
   TextField,
   Typography,
   ThemeProvider,
   useTheme,
   createTheme,
+  IconButton, // ★ НЭМЭХ
+  Tooltip, // ★ НЭМЭХ
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit"; // ★ НЭМЭХ
+import DeleteIcon from "@mui/icons-material/Delete"; // ★ НЭМЭХ
 import {
   QueryClient,
   QueryClientProvider,
@@ -26,12 +28,20 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { RiFileExcel2Fill } from "react-icons/ri";
 import dayjs from "dayjs";
-import { ref, get, set, update, remove, push, orderByChild, equalTo, query } from "firebase/database";
+import {
+  ref,
+  get,
+  set,
+  update,
+  remove,
+  push,
+  orderByChild,
+  equalTo,
+  query,
+} from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import { read, utils } from "xlsx";
 
@@ -97,21 +107,22 @@ const Example = () => {
   const [searchTerm, setSearchTerm] = useState(""); // User input for search
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
+
   const columns = useMemo(
     () => [
-        {
-            accessorKey: "deletedAt",
-            header: "Устгасан огноо",
-            Cell: ({ cell }) =>
-                dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
-          },
+      {
+        accessorKey: "deletedAt",
+        header: "Устгасан огноо",
+        Cell: ({ cell }) =>
+          dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
+      },
       {
         accessorKey: "tranPostedDate",
         header: "Гүйлгээний огноо",
         Cell: ({ cell }) =>
           dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
       },
-      
+
       {
         accessorKey: "tranDescEdit",
         header: "Тайлбар",
@@ -151,7 +162,7 @@ const Example = () => {
         enableEditing: true,
       },
     ],
-    []
+    [],
   );
 
   const { mutateAsync: createUser, isPending: isCreatingUser } =
@@ -180,7 +191,7 @@ const Example = () => {
     });
   }
 
-   //READ hook (get users from api)
+  //READ hook (get users from api)
   function useGetUsers() {
     return useQuery({
       queryKey: ["delete/statements", searchTerm, fetchAll],
@@ -196,7 +207,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "delete/statements"),
               orderByChild("memberId"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -235,8 +246,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["delete/statements"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["delete/statements"]), // Refetch users after mutation
@@ -254,7 +265,7 @@ const Example = () => {
       },
       onMutate: (userId) => {
         queryClient.setQueryData(["delete/statements"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["delete/statements"]), // Refetch users after mutation
@@ -308,7 +319,7 @@ const Example = () => {
   };
 
   const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
       deleteUser(row.original.id);
     }
   };
@@ -319,7 +330,7 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
 
@@ -375,7 +386,7 @@ const Example = () => {
     data: fetchedUsers,
     createDisplayMode: "modal",
     editDisplayMode: "modal",
-    enableEditing:true,
+    enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isError
       ? { color: "error", children: "Error loading data" }
@@ -430,7 +441,7 @@ const Example = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        {/* <Tooltip title="Edit">
+        <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
           </IconButton>
@@ -439,37 +450,36 @@ const Example = () => {
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
-        </Tooltip> */}
+        </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
- (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => exportToExcel(fetchedUsers)}
+        >
+          Татаж авах
+        </Button>
+        <label htmlFor="file-upload">
           <Button
             variant="contained"
             startIcon={<RiFileExcel2Fill />}
-            onClick={() => exportToExcel(fetchedUsers)}
+            component="span"
           >
-            Татаж авах
+            Файл оруулах
           </Button>
-          <label htmlFor="file-upload">
-            <Button
-              variant="contained"
-              startIcon={<RiFileExcel2Fill />}
-              component="span"
-            >
-              Файл оруулах
-            </Button>
-          </label>
-          <input
-            type="file"
-            id="file-upload"
-            accept=".xlsx, .xls"
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-        </Box>
-      ),
+        </label>
+        <input
+          type="file"
+          id="file-upload"
+          accept=".xlsx, .xls"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+      </Box>
+    ),
     initialState: {
       columnVisibility: {
         id: false, // Hide the unixTime column by default
@@ -555,13 +565,13 @@ const DeleteStatements = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
 
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
-      Устгасан дансны хуулга
+        Устгасан дансны хуулга
       </Typography>
       <ThemeProvider theme={tableTheme}>
         <Example />

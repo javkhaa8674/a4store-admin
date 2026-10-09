@@ -96,7 +96,7 @@ const Organizations = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
 
   const fetchOrganizations = () => {
@@ -419,7 +419,7 @@ const Organizations = () => {
                   <img
                     key={index}
                     src={image}
-                    alt={`Image Preview ${index}`}
+                    alt={`Preview ${index}`}
                     style={{ width: "100px", height: "100px", margin: "4px" }}
                   />
                 ))}

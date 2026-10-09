@@ -32,16 +32,7 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
-import {
-  ref,
-  get,
-  set,
-  update,
-  remove,
-  orderByChild,
-  equalTo,
-  query,
-} from "firebase/database";
+import { ref, set, update, remove } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import axios from "storeaxios";
 
@@ -84,7 +75,7 @@ const csvConfig = mkConfig({
     },
     {
       key: "startDate",
-      displayLabel: "Эхлэх огноо",      
+      displayLabel: "Эхлэх огноо",
     },
     {
       key: "endDate",
@@ -202,7 +193,7 @@ const Example = () => {
         },
       },
     ],
-    []
+    [],
   );
   // CREATE hook (post new user to api)
   const useCreateUser = () => {
@@ -243,7 +234,7 @@ const Example = () => {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
                 },
-              }
+              },
             );
             console.log("result", result.data);
             return result.data;
@@ -259,7 +250,7 @@ const Example = () => {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
                 },
-              }
+              },
             );
             console.log("result", result.data);
             return result.data;
@@ -288,8 +279,8 @@ const Example = () => {
         // remove undefined values
         const sendData = Object.fromEntries(
           Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
+            ([_, value]) => value !== undefined,
+          ),
         );
         const userRef = ref(db, `userInfo/${sendData.id}`);
         await update(userRef, sendData);
@@ -298,8 +289,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["deposits"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["deposits"]), // Refetch users after mutation
@@ -316,7 +307,7 @@ const Example = () => {
       },
       onMutate: (userId) => {
         queryClient.setQueryData(["deposits"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["deposits"]), // Refetch users after mutation
@@ -387,7 +378,7 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
   const table = useMaterialReactTable({
@@ -558,7 +549,7 @@ const Deposits = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <QueryClientProvider client={queryClient}>

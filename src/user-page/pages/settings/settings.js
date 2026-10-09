@@ -5,7 +5,6 @@ import {
   Modal,
   TextField,
   Typography,
-  IconButton,
   Menu,
   MenuItem,
   Dialog,
@@ -24,7 +23,7 @@ import {
   FaGlobe,
   FaSignOutAlt,
 } from "react-icons/fa";
-import Contact from "../contact/contact"
+import Contact from "../contact/contact";
 const StyledButton = styled(Button)(({ theme }) => ({
   margin: "8px",
   padding: "10px 20px",
@@ -89,168 +88,170 @@ const ButtonSet = () => {
 
   return (
     <>
-    <Contact/>
-    <ContainerWrapper>
-      <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={{ xs: 1, sm: 2, md: 3 }}
-          alignItems="center"
-          justifyContent="center"
-          flexWrap="wrap"
-          sx={{
-            gap: { xs: "12px", sm: "16px" },
-            transition: "all 0.3s ease",
-          }}
-        >
-          <Tooltip title="View Contracts">
-            <StyledButton
-              variant="contained"
-                            color="inherit"
-              startIcon={<FaFileContract />}
-              aria-label="contracts"
-            >
-              Contracts
-            </StyledButton>
-          </Tooltip>
-
-          <Tooltip title="Contact Us">
-            <StyledButton
-              variant="outlined"
-                         color="inherit"
-              startIcon={<FaPhoneAlt />}
-              onClick={() => setContactModal(true)}
-              aria-label="contact"
-            >
-              Contact
-            </StyledButton>
-          </Tooltip>
-
-          <Tooltip title="Send Feedback">
-            <StyledButton
-              variant="contained"
-                            color="inherit"
-              startIcon={<FaComments />}
-              onClick={() => setFeedbackModal(true)}
-              aria-label="feedback"
-            >
-              Feedback
-            </StyledButton>
-          </Tooltip>
-
-          <Tooltip title="Select Language">
-            <StyledButton
-              variant="text"
-                   color="inherit"
-              startIcon={<FaGlobe />}
-              onClick={handleLanguageClick}
-              aria-label="language"
-            >
-              Language
-            </StyledButton>
-          </Tooltip>
-
-          <Tooltip title="Logout">
-            <StyledButton
-                          color="inherit"
-              variant="outlined"
-              startIcon={<FaSignOutAlt />}
-              onClick={() => setLogoutDialog(true)}
-              aria-label="logout"
-            >
-              Logout
-            </StyledButton>
-          </Tooltip>
-        </Stack>
-
-        <Modal
-          open={contactModal}
-          onClose={() => setContactModal(false)}
-          sx={{
-            backdropFilter: "blur(4px)",
-            backgroundColor: "rgba(0,0,0,0.2)",
-          }}
-        >
-          <ModalContent>
-            <Typography
-              variant="h5"
-              gutterBottom
-              sx={{ color: "#1976d2", fontWeight: 600 }}
-            >
-              Contact Information
-            </Typography>
-            <Box sx={{ mt: 3, mb: 3 }}>
-              <Typography
-                sx={{ mb: 2, display: "flex", alignItems: "center", gap: 2 }}
-              >
-                <FaPhoneAlt /> +1 (555) 123-4567
-              </Typography>
-              <Typography sx={{ mb: 2 }}>Email: support@example.com</Typography>
-              <Typography>
-                Address: 123 Business Street, City, Country
-              </Typography>
-            </Box>
-            <Box sx={{ mt: 3, textAlign: "right" }}>
-              <Button
-                onClick={() => setContactModal(false)}
+      <Contact />
+      <ContainerWrapper>
+        <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={{ xs: 1, sm: 2, md: 3 }}
+            alignItems="center"
+            justifyContent="center"
+            flexWrap="wrap"
+            sx={{
+              gap: { xs: "12px", sm: "16px" },
+              transition: "all 0.3s ease",
+            }}
+          >
+            <Tooltip title="View Contracts">
+              <StyledButton
                 variant="contained"
-                sx={{ borderRadius: "8px" }}
+                color="inherit"
+                startIcon={<FaFileContract />}
+                aria-label="contracts"
               >
-                Close
+                Contracts
+              </StyledButton>
+            </Tooltip>
+
+            <Tooltip title="Contact Us">
+              <StyledButton
+                variant="outlined"
+                color="inherit"
+                startIcon={<FaPhoneAlt />}
+                onClick={() => setContactModal(true)}
+                aria-label="contact"
+              >
+                Contact
+              </StyledButton>
+            </Tooltip>
+
+            <Tooltip title="Send Feedback">
+              <StyledButton
+                variant="contained"
+                color="inherit"
+                startIcon={<FaComments />}
+                onClick={() => setFeedbackModal(true)}
+                aria-label="feedback"
+              >
+                Feedback
+              </StyledButton>
+            </Tooltip>
+
+            <Tooltip title="Select Language">
+              <StyledButton
+                variant="text"
+                color="inherit"
+                startIcon={<FaGlobe />}
+                onClick={handleLanguageClick}
+                aria-label="language"
+              >
+                Language
+              </StyledButton>
+            </Tooltip>
+
+            <Tooltip title="Logout">
+              <StyledButton
+                color="inherit"
+                variant="outlined"
+                startIcon={<FaSignOutAlt />}
+                onClick={() => setLogoutDialog(true)}
+                aria-label="logout"
+              >
+                Logout
+              </StyledButton>
+            </Tooltip>
+          </Stack>
+
+          <Modal
+            open={contactModal}
+            onClose={() => setContactModal(false)}
+            sx={{
+              backdropFilter: "blur(4px)",
+              backgroundColor: "rgba(0,0,0,0.2)",
+            }}
+          >
+            <ModalContent>
+              <Typography
+                variant="h5"
+                gutterBottom
+                sx={{ color: "#1976d2", fontWeight: 600 }}
+              >
+                Contact Information
+              </Typography>
+              <Box sx={{ mt: 3, mb: 3 }}>
+                <Typography
+                  sx={{ mb: 2, display: "flex", alignItems: "center", gap: 2 }}
+                >
+                  <FaPhoneAlt /> +1 (555) 123-4567
+                </Typography>
+                <Typography sx={{ mb: 2 }}>
+                  Email: support@example.com
+                </Typography>
+                <Typography>
+                  Address: 123 Business Street, City, Country
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 3, textAlign: "right" }}>
+                <Button
+                  onClick={() => setContactModal(false)}
+                  variant="contained"
+                  sx={{ borderRadius: "8px" }}
+                >
+                  Close
+                </Button>
+              </Box>
+            </ModalContent>
+          </Modal>
+
+          <Modal open={feedbackModal} onClose={() => setFeedbackModal(false)}>
+            <ModalContent>
+              <Typography variant="h6" gutterBottom>
+                Submit Feedback
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Your feedback here..."
+                sx={{ mb: 2 }}
+              />
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                <Button onClick={() => setFeedbackModal(false)}>Cancel</Button>
+                <Button variant="contained" onClick={handleFeedbackSubmit}>
+                  Submit
+                </Button>
+              </Box>
+            </ModalContent>
+          </Modal>
+
+          <Menu
+            anchorEl={languageMenu}
+            open={Boolean(languageMenu)}
+            onClose={handleLanguageClose}
+          >
+            {languages.map((lang) => (
+              <MenuItem key={lang} onClick={handleLanguageClose}>
+                {lang}
+              </MenuItem>
+            ))}
+          </Menu>
+
+          <Dialog open={logoutDialog} onClose={() => setLogoutDialog(false)}>
+            <DialogTitle>Confirm Logout</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to logout?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setLogoutDialog(false)}>Cancel</Button>
+              <Button variant="contained" color="error" onClick={handleLogout}>
+                Logout
               </Button>
-            </Box>
-          </ModalContent>
-        </Modal>
-
-        <Modal open={feedbackModal} onClose={() => setFeedbackModal(false)}>
-          <ModalContent>
-            <Typography variant="h6" gutterBottom>
-              Submit Feedback
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Your feedback here..."
-              sx={{ mb: 2 }}
-            />
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-              <Button onClick={() => setFeedbackModal(false)}>Cancel</Button>
-              <Button variant="contained" onClick={handleFeedbackSubmit}>
-                Submit
-              </Button>
-            </Box>
-          </ModalContent>
-        </Modal>
-
-        <Menu
-          anchorEl={languageMenu}
-          open={Boolean(languageMenu)}
-          onClose={handleLanguageClose}
-        >
-          {languages.map((lang) => (
-            <MenuItem key={lang} onClick={handleLanguageClose}>
-              {lang}
-            </MenuItem>
-          ))}
-        </Menu>
-
-        <Dialog open={logoutDialog} onClose={() => setLogoutDialog(false)}>
-          <DialogTitle>Confirm Logout</DialogTitle>
-          <DialogContent>
-            <Typography>Are you sure you want to logout?</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setLogoutDialog(false)}>Cancel</Button>
-            <Button variant="contained" color="error" onClick={handleLogout}>
-              Logout
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </ContainerWrapper>
+            </DialogActions>
+          </Dialog>
+        </Box>
+      </ContainerWrapper>
     </>
   );
 };

@@ -1,15 +1,10 @@
 import React, { useState } from "react";
-import {
-  CircularProgress,
-  Button,
-} from "@mui/material";
+import { CircularProgress, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import HeroBannerAdd from "./HeroBannerAdd";
 import PromoBannerAdd from "./PromoBannerAdd";
 
 const BannerList = () => {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
   // State for managing dialog visibility
   const [isHeroBannerDialogOpen, setIsHeroBannerDialogOpen] = useState(false);
   const [isPromoBannerDialogOpen, setIsPromoBannerDialogOpen] = useState(false);
@@ -23,13 +18,6 @@ const BannerList = () => {
 
   return (
     <>
-      {/* Loading Spinner */}
-      {loading && (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          <CircularProgress />
-        </div>
-      )}
-
       {/* Buttons for Adding Banners */}
       <Button
         size="large"

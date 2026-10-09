@@ -28,7 +28,6 @@ import {
 } from "@tanstack/react-query";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { RiFileExcel2Fill } from "react-icons/ri";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
 import {
@@ -204,7 +203,7 @@ const Example = () => {
         Cell: ({ cell }) => (cell.getValue() ? "true" : "false"),
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
   // CREATE hook (post new user to api)
   const useCreateUser = () => {
@@ -241,7 +240,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "delete/userInfo"),
               orderByChild("MemberId"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -274,8 +273,8 @@ const Example = () => {
         // remove undefined values
         const sendData = Object.fromEntries(
           Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
+            ([_, value]) => value !== undefined,
+          ),
         );
         const userRef = ref(db, `delete/userInfo/${sendData.id}`);
         await update(userRef, sendData);
@@ -284,8 +283,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["delete/userInfo"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["delete/userInfo"]), // Refetch users after mutation
@@ -317,7 +316,7 @@ const Example = () => {
       },
       onMutate: (item) => {
         queryClient.setQueryData(["delete/userInfo"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== item)
+          prevUsers?.filter((user) => user.id !== item),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["delete/userInfo"]), // Refetch users after mutation
@@ -388,7 +387,7 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
   const table = useMaterialReactTable({
@@ -569,7 +568,7 @@ const DeleteUserInfo = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <QueryClientProvider client={queryClient}>

@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import BrowserUpdatedIcon from "@mui/icons-material/BrowserUpdated";
-import { ref, push ,set} from "firebase/database";
+import { ref, set } from "firebase/database";
 import { db } from "refrence/realConfig";
 
 const VisuallyHiddenInput = styled("input")({
@@ -78,33 +78,33 @@ const Import = () => {
       alert("File not chosen");
       return;
     }
-  
+
     if (!jsonData) {
       alert("File not converted. After you convert the file, please upload it");
       return;
     }
     setLoading(true);
-  
+
     try {
       let sendData = [];
       data.forEach((element) => {
         const { id, ...rest } = element; // Remove the 'id' field
         sendData.push({ key: id, value: rest }); // Store key separately
       });
-  
+
       console.log("sendData", sendData);
-  
+
       // Upload each item with a custom key (without 'id' in the data)
       for (const item of sendData) {
         if (!item.key) {
           console.error("Missing key for item:", item);
           continue; // Skip items without a key
         }
-  
+
         const dbRef = ref(db, `${path}/${item.key}`);
         await set(dbRef, item.value);
       }
-  
+
       alert("Successfully uploaded");
     } catch (error) {
       console.error(error);
@@ -112,8 +112,6 @@ const Import = () => {
       setLoading(false);
     }
   };
-  
-  
 
   return (
     <Box>

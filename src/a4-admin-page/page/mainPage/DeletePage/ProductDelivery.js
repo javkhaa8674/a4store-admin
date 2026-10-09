@@ -17,7 +17,8 @@ import {
   Typography,
   useTheme,
   ThemeProvider,
-  createTheme,TextField
+  createTheme,
+  TextField,
 } from "@mui/material";
 import {
   QueryClient,
@@ -47,6 +48,17 @@ const productName = [
   "Дөрвөн улирал амралт",
   "Хүн орхоодой (Үрлэн)",
   "Хүн орхоодой (Ваартай)",
+  "Exoriche нүүрний ком (3 set)",
+  "Дөрвөн улирал амралт",
+  "A багц",
+  "B багц",
+  "C багц",
+  "D багц",
+  "E багц",
+  "F багц",
+  "G багц",
+  "H багц",
+  "I багц",
 ];
 
 const csvConfig = mkConfig({
@@ -100,7 +112,7 @@ const Example = () => {
         accessorKey: "deletedAt",
         header: "Устгасан огноо",
         Cell: ({ cell }) =>
-            dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
+          dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
       },
       {
         accessorKey: "ID",
@@ -148,7 +160,7 @@ const Example = () => {
         header: "Тайлбар",
       },
     ],
-    []
+    [],
   );
 
   //call CREATE hook
@@ -206,7 +218,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "delete/productdelivery"),
               orderByChild("ID"),
-              equalTo(searchTerm)
+              equalTo(searchTerm),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -260,8 +272,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["delete/productdelivery"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -280,7 +292,7 @@ const Example = () => {
       //client side optimistic update
       onMutate: (userId) => {
         queryClient.setQueryData(["delete/productdelivery"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -316,7 +328,7 @@ const Example = () => {
           ...item,
           TimeStamps: dayjs(item.TimeStamps).format("YYYY-MM-DD HH:mm:ss"),
           Requester_TimeStamps: dayjs(item.Requester_TimeStamps).format(
-            "YYYY-MM-DD HH:mm:ss"
+            "YYYY-MM-DD HH:mm:ss",
           ),
         }; // Create a copy of the item
         columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
@@ -380,7 +392,7 @@ const Example = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        {/* <Tooltip title="Edit">
+        <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
           </IconButton>
@@ -389,21 +401,20 @@ const Example = () => {
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
-        </Tooltip> */}
+        </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-      (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={handleExportData}
-          >
-            Татаж авах
-          </Button>
-        </Box>
-      ),
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={handleExportData}
+        >
+          Татаж авах
+        </Button>
+      </Box>
+    ),
     initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoadingUsers,
@@ -486,14 +497,14 @@ const ProductDelivery = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
 
   return (
     //Put this with your other react-query providers near root of your app
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
-      Устгасан бүтээгдэхүүн олголт
+        Устгасан бүтээгдэхүүн олголт
       </Typography>
       <ThemeProvider theme={tableTheme}>
         <Example />

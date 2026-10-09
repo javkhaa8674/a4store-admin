@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect } from "react";
+/* eslint-disable react/jsx-pascal-case */
+import { useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -131,7 +132,7 @@ const Example = () => {
         },
       },
     ],
-    []
+    [],
   );
   const [importData, setImportData] = useState([]);
   //call CREATE hook
@@ -194,7 +195,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "ebarimtTransaction"),
               orderByChild("ID"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -234,8 +235,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () =>
@@ -256,7 +257,7 @@ const Example = () => {
       //client side optimistic update
       onMutate: (userId) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       onSettled: () =>
@@ -461,44 +462,43 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-  (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={handleExportData}
+        >
+          Татаж авах
+        </Button>
+        <label htmlFor="file-upload">
           <Button
             variant="contained"
+            component="span"
             startIcon={<RiFileExcel2Fill />}
-            onClick={handleExportData}
           >
-            Татаж авах
+            Оруулах
           </Button>
-          <label htmlFor="file-upload">
-            <Button
-              variant="contained"
-              component="span"
-              startIcon={<RiFileExcel2Fill />}
-            >
-              Оруулах
-            </Button>
-          </label>
-          <input
-            type="file"
-            id="file-upload"
-            accept=".xlsx, .xls"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              handleFileChange(e);
-              table.setCreatingRow(true);
-            }}
-          />
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={() => window.open(downloadUrl, "_blank")}
-          >
-            Загвар файл татах
-          </Button>
-        </Box>
-      ),
+        </label>
+        <input
+          type="file"
+          id="file-upload"
+          accept=".xlsx, .xls"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            handleFileChange(e);
+            table.setCreatingRow(true);
+          }}
+        />
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => window.open(downloadUrl, "_blank")}
+        >
+          Загвар файл татах
+        </Button>
+      </Box>
+    ),
     initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoadingUsers,
@@ -578,7 +578,7 @@ const EbarimtTransaction = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     //Put this with your other react-query providers near root of your app
@@ -594,9 +594,3 @@ const EbarimtTransaction = () => {
 };
 
 export default EbarimtTransaction;
-
-
-
-function validateUser(user) {
-  return "";
-}

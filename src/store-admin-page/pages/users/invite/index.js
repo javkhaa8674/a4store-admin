@@ -18,7 +18,6 @@ import {
   ThemeProvider,
   createTheme,
   Typography,
-  Stack,
 } from "@mui/material";
 import {
   QueryClient,
@@ -35,9 +34,9 @@ import dayjs from "dayjs";
 import { doc, deleteDoc } from "firebase/firestore";
 import { firestore } from "../../../../refrence/storeConfig";
 import { getDocs, collection } from "firebase/firestore";
-import TugrikFormatter from "components/TugrikFormatter";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+
 const csvConfig = mkConfig({
   filename: `Төлбөрийн-түүх-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
@@ -76,115 +75,138 @@ const exportToExcel = (data) => {
 };
 
 const Example = () => {
-  const [validationErrors, setValidationErrors] = useState({});
-  const [searchTerm, setSearchTerm] = useState(""); // User input for search
-  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
-  const { data: fetchedUsers = [], isError, isLoading } = useGetUsers(fetchAll);
-  const columns = useMemo(() => [
-    { accessorKey: "id", header: "id", size: 80 },
-    {
-      accessorKey: "phone",
-      filterVariant: "autocomplete",
-      header: "Утас",
-      size: 80,
-      enableClickToCopy: true,
-    },
-    {
-      accessorKey: "inviterPhone",
-      filterVariant: "autocomplete",
-      header: "Урьсан хүний утас",
-      size: 80,
-      enableClickToCopy: true,
-    },
+  // ★ useQueryClient hook ашиглах
+  const queryClient = useQueryClient();
 
-    {
-      accessorKey: "timestamp",
-      id: "timestamp",
-      header: "Огноо",
-      filterVariant: "date",
-      size: 250,
-      sortingFn: "datetime",
-      Cell: ({ cell }) => {
-        const value = cell.getValue();
-        return value
-          ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
-          : "Огноо байхгүй";
+  const [validationErrors, setValidationErrors] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
+  const { data: fetchedUsers = [], isError, isLoading } = useGetUsers(fetchAll);
+
+  // ★ useMemo-д хоосон dependency array нэмсэн
+  const columns = useMemo(
+    () => [
+      { accessorKey: "id", header: "id", size: 80 },
+      {
+        accessorKey: "phone",
+        filterVariant: "autocomplete",
+        header: "Утас",
+        size: 80,
+        enableClickToCopy: true,
       },
-      filterFn: (row, columnId, filterValue) => {
-        const rowValue = dayjs(row.getValue(columnId)).format("YYYY-MM-DD");
-        const filterDate = dayjs(filterValue, "MM/DD/YYYY").format(
-          "YYYY-MM-DD"
-        );
-        return rowValue === filterDate;
+      {
+        accessorKey: "inviterPhone",
+        filterVariant: "autocomplete",
+        header: "Урьсан хүний утас",
+        size: 80,
+        enableClickToCopy: true,
       },
-    },
-  ]);
-  const {
-    mutateAsync: deleteUser, //isPending: isDeletingUser// } =
-  } = useDeleteUser();
-  //READ hook (get users from api)
+      {
+        accessorKey: "timestamp",
+        id: "timestamp",
+        header: "Огноо",
+        filterVariant: "date",
+        size: 250,
+        sortingFn: "datetime",
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return value
+            ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
+            : "Огноо байхгүй";
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const rowValue = dayjs(row.getValue(columnId)).format("YYYY-MM-DD");
+          const filterDate = dayjs(filterValue, "MM/DD/YYYY").format(
+            "YYYY-MM-DD",
+          );
+          return rowValue === filterDate;
+        },
+      },
+    ],
+    [], // ★ Хоосон dependency array
+  );
+
+  const { mutateAsync: deleteUser } = useDeleteUser();
+
+  // READ hook (get users from api)
   function useGetUsers(fetchAll = true) {
     return useQuery({
-      queryKey: ["Members", fetchAll], // Unique key for caching
+      queryKey: ["Members", fetchAll],
       queryFn: async () => {
         try {
-          if (!fetchAll) return []; // Return empty array if fetchAll is false
+          if (!fetchAll) return [];
 
-          // Reference to the Firestore "statements" collection
           const usersRef = collection(firestore, "inviteFriend");
-
-          // Fetch all documents in the collection
           const querySnapshot = await getDocs(usersRef);
 
-          // Transform the fetched data
           const data = querySnapshot.docs.map((doc) => {
             const timestamp = doc.data().timestamp?.toDate() || null;
             const docData = doc.data();
             return {
               ...docData,
-              id: doc.id, // Include the document ID
+              id: doc.id,
               timestamp: timestamp ? timestamp.toISOString() : null,
             };
           });
 
-          // Sort the data by tranPostedDate, ensuring proper Date comparison
           data.sort((a, b) => {
             const dateA = a.timestamp ? new Date(a.timestamp) : null;
             const dateB = b.timestamp ? new Date(b.timestamp) : null;
-            return dateB - dateA; // Ascending order
+            return dateB - dateA;
           });
 
-          return data; // Return the transformed and sorted data
+          return data;
         } catch (error) {
-          console.error("Error fetching users:", error); // Log any errors
-          throw new Error("Failed to fetch users"); // Throw an error to propagate failure
+          console.error("Error fetching users:", error);
+          throw new Error("Failed to fetch users");
         }
       },
-      enabled: fetchAll, // Only run the query if fetchAll is true
-      refetchOnWindowFocus: true, // Refetch data when the window regains focus
+      enabled: fetchAll,
+      refetchOnWindowFocus: true,
     });
   }
+
+  // DELETE hook (delete user in api)
   function useDeleteUser() {
     const queryClient = useQueryClient();
 
     return useMutation({
       mutationFn: async (id) => {
-        const userRef = doc(firestore, "inviteFriend", id); // Firestore document reference
-        await deleteDoc(userRef); // Delete Firestore document
+        const userRef = doc(firestore, "inviteFriend", id);
+        await deleteDoc(userRef);
       },
-      onMutate: (id) => {
-        queryClient.setQueryData(["inviteFriend"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== id)
+      onMutate: async (id) => {
+        // ★ Бүх "Members" query-г цуцлах
+        await queryClient.cancelQueries({ queryKey: ["Members"] });
+
+        // ★ Өмнөх өгөгдлийг хадгалах
+        const previousData = queryClient.getQueriesData({
+          queryKey: ["Members"],
+        });
+
+        // ★ Бүх "Members" query-с устгасан хэрэглэгчийг хасах
+        queryClient.setQueriesData({ queryKey: ["Members"] }, (oldData) =>
+          oldData?.filter((user) => user.id !== id),
         );
+
+        return { previousData };
       },
-      onSettled: () => queryClient.invalidateQueries(["inviteFriend"]), // Fix query key
+      onError: (err, id, context) => {
+        // ★ Алдаа гарвал өмнөх өгөгдлийг буцаах
+        if (context?.previousData) {
+          context.previousData.forEach(([queryKey, data]) => {
+            queryClient.setQueryData(queryKey, data);
+          });
+        }
+      },
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["Members"] }),
     });
   }
 
   const openDeleteConfirmModal = async (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("Та энэ хэрэглэгчийг устгахдаа итгэлтэй байна уу?")) {
       try {
-        await deleteUser(row.original.id); // Await the delete operation
+        await deleteUser(row.original.id);
       } catch (error) {
         console.error("Failed to delete user:", error);
       }
@@ -197,7 +219,7 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
 
@@ -248,7 +270,6 @@ const Example = () => {
               pattern: "[0-9]*",
             }}
           />
-          {/* Add more fields here as needed */}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -257,7 +278,7 @@ const Example = () => {
     ),
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit User</DialogTitle>
+        <DialogTitle variant="h3">Засах</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
@@ -271,12 +292,12 @@ const Example = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        <Tooltip title="Edit">
-          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
+        <Tooltip title="Засах">
+          <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Delete">
+        <Tooltip title="Устгах">
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
@@ -289,7 +310,7 @@ const Example = () => {
           variant="contained"
           startIcon={<RiFileExcel2Fill />}
           onClick={() => exportToExcel(fetchedUsers)}
-          sx={{ fontSize: "0.8rem" }} // Correct way to set text size
+          sx={{ fontSize: "0.8rem" }}
           disabled={!fetchedUsers || fetchedUsers.length === 0}
         >
           Татаж авах
@@ -299,7 +320,7 @@ const Example = () => {
     initialState: {
       density: "compact",
       columnVisibility: {
-        id: false, // Hide the unixTime column by default
+        id: false,
       },
     },
 
@@ -318,16 +339,18 @@ const Example = () => {
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setFetchAll(false);
-            queryClient.invalidateQueries(["promotion"]);
+            // ★ queryKey-г "Members" болгож зассан
+            queryClient.invalidateQueries({ queryKey: ["Members"] });
           }}
           variant="filled"
           size="small"
         />
         <Button
           onClick={() => {
-            setFetchAll(true); // Fetch all data
-            setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["Members"]); // Refetch data
+            setFetchAll(true);
+            setSearchTerm("");
+            // ★ queryKey-г "Members" болгож зассан
+            queryClient.invalidateQueries({ queryKey: ["Members"] });
           }}
         >
           Бүгд
@@ -341,26 +364,26 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const MemberRegistration = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const globalTheme = useTheme();
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode: globalTheme.palette.mode,
+          primary: globalTheme.palette.secondary,
           info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
+            main: "rgb(255,122,0)",
           },
           background: {
             default:
               globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+                ? "rgb(254,255,244)"
+                : "#000",
           },
         },
         typography: {
           button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
+            textTransform: "none",
             fontSize: "1.2rem",
           },
         },
@@ -368,20 +391,20 @@ const MemberRegistration = () => {
           MuiTooltip: {
             styleOverrides: {
               tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
+                fontSize: "1.1rem",
               },
             },
           },
           MuiSwitch: {
             styleOverrides: {
               thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
+                color: "pink",
               },
             },
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>

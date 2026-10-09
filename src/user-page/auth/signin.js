@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -9,7 +9,6 @@ import {
   InputAdornment,
   TextField,
   Typography,
-  useTheme,
   styled,
   CircularProgress,
   Switch,
@@ -22,13 +21,16 @@ import {
   MdVisibilityOff,
 } from "react-icons/md";
 import { motion } from "framer-motion";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { auth, firestore } from "../../refrence/storeConfig";
 import { doc, getDoc } from "firebase/firestore";
-import { signInWithEmailAndPassword,signInWithCustomToken } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithCustomToken,
+} from "firebase/auth";
 import AlertComponent from "components/alert";
 import axios from "../../storeaxios";
-import { logout } from "./Logout";
+
 const StyledCard = styled(Card)(({ theme }) => ({
   background: "rgba(255, 255, 255, 0.9)",
   borderRadius: 16,
@@ -47,7 +49,7 @@ const Background = styled(Box)({
 });
 
 const LoginPage = () => {
-  const navigation = useNavigate();  
+  const navigation = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [useEmail, setUseEmail] = useState(false);
@@ -60,15 +62,13 @@ const LoginPage = () => {
   const [alertState, setAlertState] = useState({
     open: false,
     message: "",
-    severity: "", // Can be 'success' or 'error'
+    severity: "",
   });
 
-//   const token = queryParams.get("token"); // Extract the token 
-  // Listen to authentication state changes
   const token = new URLSearchParams(window.location.search).get("token");
-  const user = auth.currentUser;
 
-  const handleSignIns = async () => {
+  // ★ handleSignIns-г useCallback-аар боосон
+  const handleSignIns = useCallback(async () => {
     console.log("Token from query params:", token);
     setLoading(true);
     try {
@@ -79,13 +79,13 @@ const LoginPage = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );            
-  
+        },
+      );
+
       if (response.data.customToken) {
         const userCredential = await signInWithCustomToken(
           auth,
-          response.data.customToken
+          response.data.customToken,
         );
         console.log("User Credential:", userCredential);
         navigation("/wallet");
@@ -95,14 +95,14 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, navigation]);
 
+  // ★ useEffect dependency array-д handleSignIns нэмсэн
   useEffect(() => {
     if (token) {
       handleSignIns();
     }
-  }, [token]);
-
+  }, [token, handleSignIns]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -149,7 +149,7 @@ const LoginPage = () => {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       const uid = userCredential.user.uid;
 
@@ -158,13 +158,12 @@ const LoginPage = () => {
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
-        // Fix: Check if the document exists
         setErrors("Та бүртгэлгүй байна.");
         setLoading(false);
         return;
       }
 
-      const userData = userSnap.data(); // Fix: Get the user data correctly
+      const userData = userSnap.data();
       delete userData.password;
       console.log("userData", userData);
       const docRef = doc(firestore, "users", uid, "point", "balance");
@@ -173,7 +172,7 @@ const LoginPage = () => {
           const docSnap = await getDoc(docRef);
 
           if (docSnap.exists()) {
-            const pointBalance = docSnap.data().balance; // Assuming the balance field exists
+            const pointBalance = docSnap.data().balance;
             return pointBalance;
           } else {
             console.log("No such document!");
@@ -186,27 +185,25 @@ const LoginPage = () => {
       const pointBalance = await fetchPointBalance();
       localStorage.setItem(
         "user",
-        JSON.stringify({ ...userData, id: uid, point: pointBalance })
+        JSON.stringify({ ...userData, id: uid, point: pointBalance }),
       );
       navigation("/wallet");
-      // Example: Check user role
     } catch (error) {
       const errorCode = error.code;
-      let errorMessage = ""; // Define errorMessage
+      let errorMessage = "";
 
       if (errorCode === "auth/user-not-found") {
         errorMessage = "Бүртгэлгүй хэрэглэгч байна.";
       } else if (errorCode === "auth/wrong-password") {
         errorMessage = "Нууц үг алдаатай байна.";
       } else if (errorCode === "permission-denied") {
-        // Firestore rule error
         errorMessage = "Нэвтэрч чадсангүй. Дахин оролдоно уу.";
       } else {
         errorMessage = "Нэвтэрч чадсангүй. Дахин оролдоно уу.";
       }
       setAlertState({
         open: true,
-        message: errorMessage, // Use errorMessage variable here
+        message: errorMessage,
         severity: "warning",
       });
       setErrors(errorMessage);
@@ -227,12 +224,14 @@ const LoginPage = () => {
       }
     }
   };
+
   const handleCloseAlert = () => {
     setAlertState((prevState) => ({
       ...prevState,
       open: false,
     }));
   };
+
   return (
     <>
       <Background>
@@ -245,8 +244,10 @@ const LoginPage = () => {
             <StyledCard>
               <CardContent>
                 <Box display="flex" flexDirection="column" alignItems="center">
+                  {/* ★ alt attribute нэмсэн */}
                   <img
                     src="https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/789456.png?alt=media&token=f8572a7a-cf71-4de3-908d-66da285897a3"
+                    alt="A4You лого"
                     style={{
                       width: 150,
                       height: 100,

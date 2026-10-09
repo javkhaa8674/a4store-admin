@@ -26,26 +26,25 @@ import {
 import { storage } from "../../../refrence/storeConfig";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-
 const EditProductDialog = ({ product, onClose, onSave }) => {
   const [productName, setProductName] = useState(product.title);
   const [productDescription, setProductDescription] = useState(
-    product.ingredients
+    product.ingredients,
   );
   const [productPrice, setProductPrice] = useState(product.price);
-  const [discountedPrice, setDiscountedPrice] = useState(
-    product.discountedPrice
-  );
+  const discountedPrice = product.discountedPrice;
+
   const [moreDetails, setMoreDetails] = useState(product.moreDetails);
   const [instructions, setInstructions] = useState(product.instructions);
   const [images, setImages] = useState(product.imgs.thumbnails || []);
   const [deletedImages, setDeletedImages] = useState([]);
-  const [uploadedImages, setUploadedImages] = useState([]);
+  // ★ uploadedImages устгасан
   const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState(product.category || ""); // Ангилалын төлөв
+  const [category, setCategory] = useState(product.category || "");
   const [status, setStatus] = useState(product.status);
   const [discount, setDiscount] = useState(product.discount);
   const [comingSoon, setComingSoon] = useState(product.comingSoon);
+
   useEffect(() => {
     const fetchCategories = async () => {
       const categoriesCollection = collection(firestore, "categories");
@@ -71,7 +70,7 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
       }
     }
     setImages((prevImages) => [...prevImages, ...newImageUrls]);
-    setUploadedImages((prevUploaded) => [...prevUploaded, ...newImageUrls]);
+    // ★ setUploadedImages устгасан
   };
 
   const handleImageDelete = async (imageUrl) => {
@@ -111,8 +110,9 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         updatedProductData.moreDetails = moreDetails;
       if (product.instructions !== instructions)
         updatedProductData.instructions = instructions;
-      if(product.comingSoon!== comingSoon)
-        updatedProductData = comingSoon
+      // ★ Зассан: updatedProductData = comingSoon биш, updatedProductData.comingSoon = comingSoon
+      if (product.comingSoon !== comingSoon)
+        updatedProductData.comingSoon = comingSoon;
       if (product.category !== category) updatedProductData.category = category;
       if (
         product.imgs.thumbnails.length !== images.length ||
@@ -135,7 +135,7 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         if (imageExists) {
           await deleteObject(imageRef);
           console.log(
-            `Firebase Storage-аас зураг амжилттай устгагдлаа: ${imageUrl}`
+            `Firebase Storage-аас зураг амжилттай устгагдлаа: ${imageUrl}`,
           );
         } else {
           console.log(`Зураг олдсонгүй, устгахаас болих: ${imageUrl}`);
@@ -150,13 +150,13 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         moreDetails,
         instructions,
         imgs: { thumbnails: images },
-        category, // Ангиллыг шинэчилсэн мэдээлэлд оруулна
+        category,
       });
       onClose();
     } catch (error) {
       console.error(
         "Бүтээгдэхүүний мэдээллийг шинэчлэхэд алдаа гарлаа:",
-        error
+        error,
       );
     }
   };
@@ -195,11 +195,12 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
           label="Хямдарсан хувь"
           name="comingSoon"
           value={comingSoon}
-          onChange={(e)=> setComingSoon(e.target.vaue)}
+          // ★ Зассан: e.target.vaue биш, e.target.value
+          onChange={(e) => setComingSoon(e.target.value)}
           fullWidth
         >
-          <MenuItem value={false}> Бэлэн байгаа</MenuItem>
-          <MenuItem value={true}> Тун удахгүй</MenuItem>
+          <MenuItem value={false}>Бэлэн байгаа</MenuItem>
+          <MenuItem value={true}>Тун удахгүй</MenuItem>
         </TextField>
         <TextField
           label="агуулахын үлдэгдэл"

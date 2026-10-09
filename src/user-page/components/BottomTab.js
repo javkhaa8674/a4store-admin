@@ -1,9 +1,16 @@
 import React, { useState } from "react";
-import { Paper, BottomNavigation, BottomNavigationAction, Badge, useTheme, useMediaQuery } from "@mui/material";
+import {
+  Paper,
+  BottomNavigation,
+  BottomNavigationAction,
+  Badge,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { styled } from "@mui/system";
-import { FaBell, FaUser,FaWallet,FaCog } from "react-icons/fa";
+import { FaUser, FaWallet } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { GrOrganization } from "react-icons/gr";
+
 const StyledBottomNav = styled(Paper)(({ theme }) => ({
   position: "fixed",
   bottom: 0,
@@ -37,23 +44,24 @@ const StyledBottomNav = styled(Paper)(({ theme }) => ({
   },
 }));
 
-const NotificationBadge = styled(Badge)(({ theme }) => ({
-  "& .MuiBadge-badge": {
-    backgroundColor: theme.palette.error.main,
-    color: theme.palette.error.contrastText,
-  },
-}));
-
 const BottomNavigationBar = () => {
   const [value, setValue] = useState(0);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const navigationItems = [
-    { label: "Хэтэвч", icon: <FaWallet />, ariaLabel: "Open search", navigate: "/wallet" },
-    { label: "Миний", icon: <FaUser />, ariaLabel: "Go to profile", navigate: "/myaccount" },
-    // { label: "Байгууллага", icon: <GrOrganization />, ariaLabel: "Go to profile", navigate: "/organizations" },
-    // { label: "Тохиргоо", icon: <FaCog />, ariaLabel: "Open settings", navigate: "/settings" },
+    {
+      label: "Хэтэвч",
+      icon: <FaWallet />,
+      ariaLabel: "Open search",
+      navigate: "/wallet",
+    },
+    {
+      label: "Миний",
+      icon: <FaUser />,
+      ariaLabel: "Go to profile",
+      navigate: "/myaccount",
+    },
   ];
   const navigate = useNavigate();
 

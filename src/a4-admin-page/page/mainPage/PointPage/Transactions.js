@@ -37,9 +37,9 @@ import { db, auth } from "refrence/realConfig";
 import { read, utils } from "xlsx";
 import axiosA4 from "storeaxios";
 import axios from "axios";
+
 const csvConfig = mkConfig({
   filename: `Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
-
   columnHeaders: [
     {
       key: "id",
@@ -95,19 +95,20 @@ const exportToExcel = (data) => {
     senderId: `="${element.senderId}"`,
     receiverId: `="${element.receiverId}"`,
   }));
-  // First, convert your data to CSV string using your csvConfig
   const csv = generateCsv(csvConfig)(convertedData);
-
-  // Then, trigger download
   download(csvConfig)(csv);
 };
 
 const Example = () => {
+  // ★ useQueryClient hook ашиглах
+  const queryClient = useQueryClient();
+
   const [validationErrors, setValidationErrors] = useState({});
-  const [searchTerm, setSearchTerm] = useState(""); // User input for search
-  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
   const [importData, setImportData] = useState([]);
+
   const columns = useMemo(
     () => [
       {
@@ -172,26 +173,28 @@ const Example = () => {
         header: "Нийт дүн",
       },
     ],
-    []
+    [],
   );
-  // CREATE hook (post new user to api)
+
+  // ★ CREATE hook (API руу илгээх)
   const useCreateUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
-        const newUserRef = ref(db, "userInfo");
-        await set(newUserRef.push(), user);
-        return Promise.resolve();
+      mutationFn: async (transactions) => {
+        // ★ importData (array) -г API руу илгээх
+        const response = await axios.post(
+          "https://api-jrbocynobq-uc.a.run.app/transactions/add-multiple",
+          transactions,
+        );
+
+        if (response.status !== 200) {
+          throw new Error("Алдаа гарлаа. Та дахин оролдоно уу.");
+        }
+
+        return response.data;
       },
-      onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) => [
-          ...(prevUsers || []),
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
-        ]);
-      },
+      onSettled: () =>
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
     });
   };
 
@@ -215,7 +218,7 @@ const Example = () => {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
                 },
-              }
+              },
             );
             console.log("result", result.data);
             return result.data.transactions;
@@ -231,7 +234,7 @@ const Example = () => {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
                 },
-              }
+              },
             );
             console.log("result", result.data);
             return result.data.transactions;
@@ -244,39 +247,42 @@ const Example = () => {
           throw new Error("Failed to fetch users");
         }
       },
-      enabled: fetchAll || Boolean(searchTerm), // Fetch only when searchTerm or fetchAll is set
+      enabled: fetchAll || Boolean(searchTerm),
       refetchOnWindowFocus: true,
     });
   }
+
   // UPDATE hook (put user in api)
   const useUpdateUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
         const updatedData = {
-          ...user, // Spread the original row data
+          ...user,
           MemberId: Number(user.MemberId),
         };
         // remove undefined values
         const sendData = Object.fromEntries(
           Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
+            ([_, value]) => value !== undefined,
+          ),
         );
         const userRef = ref(db, `userInfo/${sendData.id}`);
         await update(userRef, sendData);
         return Promise.resolve();
       },
       onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) =>
+        queryClient.setQueryData(["transactions"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
-      onSettled: () => queryClient.invalidateQueries(["userInfo"]), // Refetch users after mutation
+      onSettled: () =>
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
     });
   };
+
   // DELETE hook (delete user in api)
   const useDeleteUser = () => {
     const queryClient = useQueryClient();
@@ -286,41 +292,57 @@ const Example = () => {
         await remove(userRef);
         return Promise.resolve();
       },
-      onMutate: (userId) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+      onMutate: async (userId) => {
+        // ★ Бүх "transactions" query-г цуцлах
+        await queryClient.cancelQueries({ queryKey: ["transactions"] });
+
+        // ★ Өмнөх өгөгдлийг хадгалах
+        const previousData = queryClient.getQueriesData({
+          queryKey: ["transactions"],
+        });
+
+        // ★ Бүх "transactions" query-с устгасан хэрэглэгчийг хасах
+        queryClient.setQueriesData({ queryKey: ["transactions"] }, (oldData) =>
+          oldData?.filter((user) => user.id !== userId),
         );
+
+        return { previousData };
       },
-      onSettled: () => queryClient.invalidateQueries(["userInfo"]), // Refetch users after mutation
+      onError: (err, userId, context) => {
+        // ★ Алдаа гарвал өмнөх өгөгдлийг буцаах
+        if (context?.previousData) {
+          context.previousData.forEach(([queryKey, data]) => {
+            queryClient.setQueryData(queryKey, data);
+          });
+        }
+      },
+      onSettled: () =>
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
     });
   };
+
   const { mutateAsync: createUser, isPending: isCreatingUser } =
     useCreateUser();
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
     useUpdateUser();
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
+
+  // ★ handleCreateTransactions - createUser ашиглах
   const handleCreateTransactions = async ({ values, table }) => {
-    if (!importData) {
+    if (!importData || importData.length === 0) {
       alert("Файл оруулаагүй байна.");
       return;
     }
+
     try {
-      const response = await axios.post(
-        "https://api-jrbocynobq-uc.a.run.app/transactions/add-multiple",
-        importData
-      );
-
-      if (response.status === 200) {
-        alert("Амжилттай");
-      } else {
-        alert("Алдаа гарлаа. Та дахин оролдоно уу.");
-      }
-
+      // ★ createUser-г дуудах (importData-г дамжуулах)
+      await createUser(importData);
+      alert("Амжилттай");
       table.setCreatingRow(null);
     } catch (error) {
       console.error("Error creating transactions:", error);
-      alert("Сүлжээний алдаа гарлаа. Та дахин оролдоно уу.");
+      alert(error?.message || "Сүлжээний алдаа гарлаа. Та дахин оролдоно уу.");
     }
   };
 
@@ -348,7 +370,7 @@ const Example = () => {
   };
 
   const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("Та энэ хэрэглэгчийг устгахдаа итгэлтэй байна уу?")) {
       deleteUser(row.original.id);
     }
   };
@@ -359,26 +381,29 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
+
   const fileUrl =
     "https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/%D0%97%D0%B0%D0%B3%D0%B2%D0%B0%D1%80_%D0%A4%D0%B0%D0%B9%D0%BB%20(4).xlsx?alt=media&token=130c1663-7be3-4541-975d-ad0903950532";
 
   const handleDownloadExel = () => {
     const link = document.createElement("a");
     link.href = fileUrl;
-    link.setAttribute("download", "Загвар_Файл.xlsx"); // Optional: renames the file
+    link.setAttribute("download", "Загвар_Файл.xlsx");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       processExcelFile(file, event);
     }
   };
+
   const processExcelFile = async (file) => {
     const reader = new FileReader();
 
@@ -392,9 +417,8 @@ const Example = () => {
         });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        // Эхний мөрийг headers болгож, үлдсэн мөрүүдийг өгөгдөл болгоно
         const data = utils.sheet_to_json(sheet, {
-          defval: "", // Хоосон нүдэнд default утга
+          defval: "",
         });
         let realData = [];
         data.forEach((element) => {
@@ -447,7 +471,9 @@ const Example = () => {
     };
     reader.readAsArrayBuffer(file);
   };
+
   const inputRef = useRef(null);
+
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
@@ -501,8 +527,8 @@ const Example = () => {
             enableColumnOrdering
             initialState={{ showGlobalFilter: true }}
             dialogProps={{
-              maxWidth: "sm", // Adjust the max width if needed
-              fullWidth: true, // Make the dialog full width
+              maxWidth: "sm",
+              fullWidth: true,
             }}
           />
         </DialogContent>
@@ -513,7 +539,7 @@ const Example = () => {
     ),
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit User</DialogTitle>
+        <DialogTitle variant="h3">Засах</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
@@ -527,12 +553,12 @@ const Example = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        <Tooltip title="Edit">
+        <Tooltip title="Засах">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Delete">
+        <Tooltip title="Устгах">
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
@@ -596,7 +622,8 @@ const Example = () => {
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setFetchAll(false);
-            queryClient.invalidateQueries(["promotion"]);
+            // ★ queryKey-г "transactions" болгож зассан
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
           }}
           variant="filled"
           size="small"
@@ -604,9 +631,10 @@ const Example = () => {
         <Button
           variant="outlined"
           onClick={() => {
-            setFetchAll(true); // Fetch all data
-            setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["promotion"]);
+            setFetchAll(true);
+            setSearchTerm("");
+            // ★ queryKey-г "transactions" болгож зассан
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
           }}
         >
           Бүгд
@@ -620,26 +648,26 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Transactions = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const globalTheme = useTheme();
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode: globalTheme.palette.mode,
+          primary: globalTheme.palette.secondary,
           info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
+            main: "rgb(255,122,0)",
           },
           background: {
             default:
               globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+                ? "rgb(254,255,244)"
+                : "#000",
           },
         },
         typography: {
           button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
+            textTransform: "none",
             fontSize: "1.2rem",
           },
         },
@@ -647,20 +675,20 @@ const Transactions = () => {
           MuiTooltip: {
             styleOverrides: {
               tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
+                fontSize: "1.1rem",
               },
             },
           },
           MuiSwitch: {
             styleOverrides: {
               thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
+                color: "pink",
               },
             },
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <QueryClientProvider client={queryClient}>

@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useEffect } from "react";
+/* eslint-disable react/jsx-pascal-case */
+import React, { useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -32,15 +33,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
 import { ref, get, set, update, remove, push } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
-import * as XLSX from "xlsx";
 import { read, utils } from "xlsx";
 import "dayjs/locale/mn";
 
-
-const status = [
-  "Active",
-  "Inactive"
-]
+const status = ["Active", "Inactive"];
 
 const csvConfig = mkConfig({
   filename: `Санал хүсэлт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
@@ -85,8 +81,6 @@ const csvConfig = mkConfig({
     },
   ],
 });
-
-
 
 function validateUser(user) {
   return {};
@@ -136,7 +130,7 @@ function useUpdateUser() {
   return useMutation({
     mutationFn: async (user) => {
       const updatedData = {
-        ...user, // Spread the original row data       
+        ...user, // Spread the original row data
       };
       console.log("updatedData", updatedData);
       const userRef = ref(db, `VipFeedback/${updatedData.id}`);
@@ -146,8 +140,8 @@ function useUpdateUser() {
     onMutate: (newUserInfo) => {
       queryClient.setQueryData(["feedBack"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-        )
+          prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+        ),
       );
     },
     onSettled: () => queryClient.invalidateQueries(["feedBack"]), // Refetch users after mutation
@@ -165,7 +159,7 @@ function useDeleteUser() {
     },
     onMutate: (userId) => {
       queryClient.setQueryData(["feedBack"], (prevUsers) =>
-        prevUsers?.filter((user) => user.id !== userId)
+        prevUsers?.filter((user) => user.id !== userId),
       );
     },
     onSettled: () => queryClient.invalidateQueries(["feedBack"]), // Refetch users after mutation
@@ -197,8 +191,8 @@ const Example = () => {
     () => [
       {
         accessorKey: "Status",
-        header:"Төлөв",
-        editVariant: 'select',
+        header: "Төлөв",
+        editVariant: "select",
         editSelectOptions: status,
         muiEditTextFieldProps: {
           select: true,
@@ -249,13 +243,13 @@ const Example = () => {
         header: "Урамшууллын дүн",
         enableEditing: true,
         Cell: ({ cell }) => {
-            const formattedCurrency = new Intl.NumberFormat("mn-MN", {
-              style: "currency",
-              currency: "MNT",
-              minimumFractionDigits: 2,
-            }).format(cell.getValue());
-            return formattedCurrency;
-          },
+          const formattedCurrency = new Intl.NumberFormat("mn-MN", {
+            style: "currency",
+            currency: "MNT",
+            minimumFractionDigits: 2,
+          }).format(cell.getValue());
+          return formattedCurrency;
+        },
       },
       {
         accessorKey: "FeedBack",
@@ -268,7 +262,7 @@ const Example = () => {
         enableEditing: true,
       },
     ],
-    []
+    [],
   );
 
   const { mutateAsync: createUser, isPending: isCreatingUser } =
@@ -337,15 +331,8 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      processExcelFile(file);
-    }
   };
 
   const processExcelFile = async (file) => {
@@ -529,7 +516,7 @@ const VipFeedBack = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <QueryClientProvider client={queryClient}>

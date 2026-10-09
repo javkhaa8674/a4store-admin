@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useEffect } from "react";
+/* eslint-disable react/jsx-pascal-case */
+import React, { useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -32,7 +33,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
 import { ref, get, set, update, remove, push } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
-import * as XLSX from "xlsx";
 import { read, utils } from "xlsx";
 
 const csvConfig = mkConfig({
@@ -59,7 +59,7 @@ const csvConfig = mkConfig({
     {
       key: "feedback",
       displayLabel: "Тайлбар",
-    },   
+    },
   ],
 });
 
@@ -123,8 +123,8 @@ function useUpdateUser() {
     onMutate: (newUserInfo) => {
       queryClient.setQueryData(["feedBack"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-        )
+          prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+        ),
       );
     },
     onSettled: () => queryClient.invalidateQueries(["feedBack"]), // Refetch users after mutation
@@ -142,7 +142,7 @@ function useDeleteUser() {
     },
     onMutate: (userId) => {
       queryClient.setQueryData(["feedBack"], (prevUsers) =>
-        prevUsers?.filter((user) => user.id !== userId)
+        prevUsers?.filter((user) => user.id !== userId),
       );
     },
     onSettled: () => queryClient.invalidateQueries(["feedBack"]), // Refetch users after mutation
@@ -206,7 +206,7 @@ const Example = () => {
         enableEditing: true,
       },
     ],
-    []
+    [],
   );
 
   const { mutateAsync: createUser, isPending: isCreatingUser } =
@@ -275,15 +275,8 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      processExcelFile(file);
-    }
   };
 
   const processExcelFile = async (file) => {
@@ -467,7 +460,7 @@ const FeedBack = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <QueryClientProvider client={queryClient}>

@@ -5,37 +5,37 @@ import { TextField, Button, CircularProgress, Alert, Box } from "@mui/material";
 const BlackTransactionReq = () => {
   const [searchId, setSearchId] = useState(""); // To store the entered ID
   const [result, setResult] = useState(null); // To store the API response
-  const [error, setError] = useState(null); // To store any error messages
   const [loadingSearch, setLoadingSearch] = useState(false); // For search loading state
   const [loadingSubmit, setLoadingSubmit] = useState(false); // For submit loading state
   const [successMessage, setSuccessMessage] = useState(""); // For success message
   const [errorMessage, setErrorMessage] = useState(""); // For error message
+
   useEffect(() => {
     if (searchId.length < 8) {
       setResult(null);
     }
   }, [searchId]);
+
   // Function to handle search button click
   const handleSearch = async () => {
     if (!searchId.trim()) {
-      setError("Please enter a valid ID");
+      setErrorMessage("Please enter a valid ID");
       return;
     }
 
     setLoadingSearch(true);
-    setError(null);
     setResult(null);
     setErrorMessage(""); // Reset error message
 
     try {
       const response = await axios.get(
-        `http://127.0.0.1:5001/a4mongolia/us-central1/api/vip?memberId=${searchId}`
+        `http://127.0.0.1:5001/a4mongolia/us-central1/api/vip?memberId=${searchId}`,
       );
       setResult(response.data); // Set the response data
       console.log(response.data); // Log the response
     } catch (err) {
       setErrorMessage(
-        err.response?.data?.message || "An error occurred while searching"
+        err.response?.data?.message || "An error occurred while searching",
       );
     } finally {
       setLoadingSearch(false);
@@ -55,14 +55,14 @@ const BlackTransactionReq = () => {
           timeStamp: new Date().toLocaleString("mn-MN"),
           totalEbarimtCount: result.data.totalEbarimtCount,
           totalPromotionDebit: result.data.totalPromotionDebit,
-        }
+        },
       );
       setSuccessMessage("Хүсэлт амжилттай илгээгдлээ!"); // Success message
       setResult(response.data); // Set the response data
       console.log(response.data); // Log the response
     } catch (err) {
       setErrorMessage(
-        err.response?.data?.message || "An error occurred while saving"
+        err.response?.data?.message || "An error occurred while saving",
       );
     } finally {
       setLoadingSubmit(false);
@@ -161,7 +161,6 @@ const BlackTransactionReq = () => {
 
       {result && (
         <div style={{ marginTop: "40px" }}>
-
           <div
             style={{
               background: "#fff",

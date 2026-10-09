@@ -5,8 +5,6 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import dayjs from "dayjs";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import { areaElementClasses } from "@mui/x-charts/LineChart";
@@ -18,27 +16,12 @@ const getLast30Days = () => {
   const today = dayjs();
   const days = [];
   for (let i = 29; i >= 0; i--) {
-    const date = today.subtract(i, 'day');
-    const dayString = date.format('MMM D'); // Use the Mongolian month and day format
+    const date = today.subtract(i, "day");
+    const dayString = date.format("MMM D"); // Use the Mongolian month and day format
     days.push(dayString);
   }
   return days;
 };
-
-function getDaysInMonth(month, year) {
-  const date = new Date(year, month, 0);
-  const monthName = date.toLocaleDateString("mn-MN", {
-    month: "short",
-  });
-  const daysInMonth = date.getDate();
-  const days = [];
-  let i = 1;
-  while (days.length < daysInMonth) {
-    days.push(`${monthName} ${i}`);
-    i += 1;
-  }
-  return days;
-}
 
 function AreaGradient({ color, id }) {
   return (
@@ -83,9 +66,7 @@ function StatCard({ title, value, interval, trend, data }) {
     neutral: "default",
   };
 
-  const color = labelColors[trend];
   const chartColor = trendColors[trend];
-  const trendValues = { up: "+25%", down: "-25%", neutral: "+5%" };
   const dataValid = Array.isArray(data) && data.length > 0;
   return (
     <Card variant="outlined" sx={{ height: "100%", flexGrow: 1 }}>

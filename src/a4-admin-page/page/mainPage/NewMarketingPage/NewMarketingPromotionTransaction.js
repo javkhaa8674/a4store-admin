@@ -195,7 +195,7 @@ const Example = () => {
         header: "Багц",
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
   const [importData, setImportData] = useState([]);
   //call CREATE hook
@@ -215,20 +215,20 @@ const Example = () => {
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
 
-  //CREATE hook (post new user to api)
   function useCreateUser() {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
         for (const value of user) {
           const newPostKey = push(child(ref(db), "posts")).key;
-          await set(ref(db, "newMarketing/promotionTransaction" + newPostKey), value);
+          // ★ Зөв зам (slash нэмэх)
+          await set(
+            ref(db, `newMarketing/promotionTransaction/${newPostKey}`),
+            value,
+          );
         }
-        //send api update request here
-
         return Promise.resolve();
       },
-      //client side optimistic update
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers = []) => [
           ...prevUsers,
@@ -239,7 +239,7 @@ const Example = () => {
         ]);
       },
       onSettled: () =>
-        queryClient.invalidateQueries({ queryKey: ["promotion"] }), //refetch users after mutation, disabled for demo
+        queryClient.invalidateQueries({ queryKey: ["promotion"] }),
     });
   }
 
@@ -259,7 +259,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "newMarketing/promotionTransaction"),
               orderByChild("ID"),
-              equalTo(searchTerm)
+              equalTo(searchTerm),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -291,7 +291,10 @@ const Example = () => {
           ...user, // Spread the original row data
           ID: Number(user.ID),
         };
-        const userRef = ref(db, `newMarketing/promotionTransaction/${updatedData.id}`);
+        const userRef = ref(
+          db,
+          `newMarketing/promotionTransaction/${updatedData.id}`,
+        );
         await update(userRef, updatedData);
         return Promise.resolve();
       },
@@ -299,8 +302,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () =>
@@ -321,7 +324,7 @@ const Example = () => {
       //client side optimistic update
       onMutate: (userId) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       onSettled: () =>
@@ -332,24 +335,14 @@ const Example = () => {
   //CREATE action
   const handleCreateUser = async ({ values, table }) => {
     try {
-      // Example: Assuming importData is an array of objects
-      // Get a reference to the promotionTransaction node
-      const promotionRef = ref(db, "newMarketing/promotionTransaction");
-  
-      // Iterate over importData and push each object to Firebase
-      importData.forEach(async (data) => {
-        const newUserRef = await push(promotionRef, data);
-        console.log("New user created with key:", newUserRef.key);
-      });
-  
-      // Exit creating row mode
+      // ★ createUser-г дуудах (importData-г дамжуулах)
+      await createUser(importData);
       table.setCreatingRow(null);
     } catch (error) {
       console.error("Error creating user:", error);
       alert("Failed to create user: " + error.message);
     }
   };
-  
 
   //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
@@ -362,6 +355,7 @@ const Example = () => {
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
   };
+
   // Export CSV data
   const handleExportData = () => {
     const columnsToRemove = ["id"];
@@ -417,7 +411,6 @@ const Example = () => {
           "Set",
           "Type",
           "ID",
-       
         ];
         data[0] = customHeader;
 
@@ -431,7 +424,7 @@ const Example = () => {
         if (updatedData.length > 0) {
           updatedData.splice(0, 1); // Remove the first element
         }
-        console.log("test",updatedData);
+        console.log("test", updatedData);
         // if (formattedData.length > 0) {
         //   await saveData2(formattedData); // Ensure saveData2 is defined and used
         //   console.log("Data saved successfully");
@@ -506,12 +499,12 @@ const Example = () => {
                 accessorKey: "ToAccNumber",
                 header: "Харьцсан данс",
               },
-          
+
               {
                 accessorKey: "Set",
                 header: "Багц",
               },
-        
+
               {
                 accessorKey: "Type",
                 header: "Төрөл",
@@ -520,8 +513,6 @@ const Example = () => {
                 accessorKey: "ID",
                 header: "Утас",
               },
-           
-
             ]}
             data={importData}
             enableSorting
@@ -566,46 +557,45 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-(
-        <Box sx={{ display: "flex", gap: "1rem" }}>
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={handleExportData}
+        >
+          Татаж авах
+        </Button>
+        <>
+          <label htmlFor="file-upload">
+            <Button
+              variant="contained"
+              component="span"
+              startIcon={<RiFileExcel2Fill />}
+            >
+              Оруулах
+            </Button>
+          </label>
+          <input
+            type="file"
+            id="file-upload"
+            accept=".xlsx, .xls"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              handleFileChange(e);
+              table.setCreatingRow(true);
+            }}
+          />
           <Button
             variant="contained"
             startIcon={<RiFileExcel2Fill />}
-            onClick={handleExportData}
+            onClick={() => window.open(downloadUrl, "_blank")}
           >
-            Татаж авах
+            Загвар файл татах
           </Button>
-          <>
-            <label htmlFor="file-upload">
-              <Button
-                variant="contained"
-                component="span"
-                startIcon={<RiFileExcel2Fill />}
-              >
-                Оруулах
-              </Button>
-            </label>
-            <input
-              type="file"
-              id="file-upload"
-              accept=".xlsx, .xls"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                handleFileChange(e);
-                table.setCreatingRow(true);
-              }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<RiFileExcel2Fill />}
-              onClick={() => window.open(downloadUrl, "_blank")}
-            >
-              Загвар файл татах
-            </Button>
-          </>
-        </Box>
-      ),
+        </>
+      </Box>
+    ),
     initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoadingUsers,
@@ -686,7 +676,7 @@ const NewMarketingPromotionTransaction = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
 
   return (

@@ -20,15 +20,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import {
-  get,
-  query,
-  ref,
-  equalTo,
-  orderByChild,
-  update,
-  remove,
-} from "firebase/database";
+import { get, ref, update, remove } from "firebase/database";
 import {
   Box,
   lighten,
@@ -43,8 +35,6 @@ import dayjs from "dayjs";
 import MUIStepper from "../../components/MUIStepper";
 
 const ReactAdvancedMaterialTable = () => {
-  const userInfo = JSON.parse(localStorage.getItem("user"));
-
   const columns = useMemo(
     () => [
       {

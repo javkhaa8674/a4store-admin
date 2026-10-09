@@ -3,7 +3,6 @@ import {
   Button,
   Grid,
   Paper,
-  TextField,
   CircularProgress,
   useTheme,
   ThemeProvider,
@@ -11,23 +10,21 @@ import {
 } from "@mui/material";
 import { db } from "refrence/realConfig";
 import { ref, onValue } from "firebase/database";
-import * as XLSX from "xlsx";
 import { MaterialReactTable } from "material-react-table";
 import { RiFileExcel2Fill } from "react-icons/ri";
 import { read, utils } from "xlsx";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import dayjs from "dayjs";
+
 const PromotionCalculation = () => {
-  const [userInfoData, setUserInfoData] = useState([]); // User info data
-  const [membersData, setMembersData] = useState([]); // Members data
   const [realData, setRealData] = useState([]); // RealData to export
-  const [zahiralamount, setZahiralamount] = useState(500000);
-  const [btamount, setBtamount] = useState(5000);
-  const [batamount, setBatamount] = useState(20000); // State for bat count
-  const [manageramount, setManageramount] = useState(50000); // State for manager count
-  const [emanageramount, setEmanageramount] = useState(150000); // State for emanager count
+  const zahiralamount = 500000;
+  const btamount = 5000;
+  const batamount = 20000;
+  const manageramount = 50000;
+  const emanageramount = 150000;
+
   const [importData, setImportData] = useState(null); // Import data from excel
-  const [blackData, setBlackData] = useState([]); // Black data
 
   const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
 
@@ -70,10 +67,11 @@ const PromotionCalculation = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   const [loading, setLoading] = useState(false);
-  const downloadUrl ="https://firebasestorage.googleapis.com/v0/b/a4mongolia.appspot.com/o/%D0%97%D0%B0%D0%B3%D0%B2%D0%B0%D1%80%20%D1%84%D0%B0%D0%B9%D0%BB.xlsx?alt=media&token=06cc77a3-286e-4bc2-802c-e9686e1db624";
+  const downloadUrl =
+    "https://firebasestorage.googleapis.com/v0/b/a4mongolia.appspot.com/o/%D0%97%D0%B0%D0%B3%D0%B2%D0%B0%D1%80%20%D1%84%D0%B0%D0%B9%D0%BB.xlsx?alt=media&token=06cc77a3-286e-4bc2-802c-e9686e1db624";
   const fetchData = async () => {
     setLoading(true); // Start loading
     try {
@@ -248,7 +246,7 @@ const PromotionCalculation = () => {
       sortedData.forEach((item) => {
         if (
           !uniqueData.some(
-            (existingItem) => existingItem.MemberId === item.MemberId
+            (existingItem) => existingItem.MemberId === item.MemberId,
           )
         ) {
           uniqueData.push(item);
@@ -433,7 +431,7 @@ const PromotionCalculation = () => {
       { accessorKey: "zahiralCount", header: "БЗ" },
       { accessorKey: "totalAmounts", header: "Нийт урамшуулал" },
     ],
-    []
+    [],
   );
 
   // Handle Excel export
@@ -589,18 +587,17 @@ const PromotionCalculation = () => {
                 handleFileChange(e);
               }}
             />
-
           </Grid>
           <Grid item xs={2}>
-          <Button
+            <Button
               variant="contained"
               startIcon={<RiFileExcel2Fill />}
               onClick={() => window.open(downloadUrl, "_blank")}
             >
               Загвар файл татах
             </Button>
-            </Grid>
-            <Grid item xs={1}>
+          </Grid>
+          <Grid item xs={1}>
             <Button
               variant="contained"
               onClick={fetchData} // Fetch data and process counts

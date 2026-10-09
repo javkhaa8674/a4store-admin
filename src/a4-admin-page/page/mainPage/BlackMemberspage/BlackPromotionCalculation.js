@@ -11,12 +11,11 @@ import {
 } from "@mui/material";
 import { db } from "refrence/realConfig";
 import { ref, onValue } from "firebase/database";
-import * as XLSX from "xlsx";
 import { MaterialReactTable } from "material-react-table";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import dayjs from "dayjs";
+
 const BlackPromotionCalculation = () => {
-  const [userInfoData, setUserInfoData] = useState([]);
   const [btAmount, setBtAmount] = useState(0);
   const [batAmount, setBatAmount] = useState(0);
   const [managerAmount, setManagerAmount] = useState(0);
@@ -32,7 +31,7 @@ const BlackPromotionCalculation = () => {
           primary: globalTheme.palette.secondary,
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
 
   const fetchData = async () => {
@@ -50,9 +49,6 @@ const BlackPromotionCalculation = () => {
 
           // Process counts after data is fully loaded
           processCounts(fetchedUserInfo);
-
-          // Update state after processing
-          setUserInfoData(fetchedUserInfo);
         } else {
           console.error("No data found");
         }
@@ -113,25 +109,28 @@ const BlackPromotionCalculation = () => {
       }
     });
     const uniqueSorted = (data) => {
-        // Sort by `list` and keep only the first occurrence of each `MemberId`
-        const sortedData = data.sort((a, b) => a.list - b.list);
-        const uniqueData = [];
-      
-        // Add only unique `MemberId` values to the result
-        sortedData.forEach(item => {
-          if (!uniqueData.some(existingItem => existingItem.MemberId === item.MemberId)) {
-            uniqueData.push(item);
-          }
-        });
-      
-        return uniqueData;
-      };
-      
-      // Call the function with testData
-      const results = uniqueSorted(testData);
+      // Sort by `list` and keep only the first occurrence of each `MemberId`
+      const sortedData = data.sort((a, b) => a.list - b.list);
+      const uniqueData = [];
+
+      // Add only unique `MemberId` values to the result
+      sortedData.forEach((item) => {
+        if (
+          !uniqueData.some(
+            (existingItem) => existingItem.MemberId === item.MemberId,
+          )
+        ) {
+          uniqueData.push(item);
+        }
+      });
+
+      return uniqueData;
+    };
+
+    // Call the function with testData
+    const results = uniqueSorted(testData);
     setExportData(results);
   };
-
 
   const handleExport = () => {
     handleExportExcel(exportData);
@@ -205,7 +204,7 @@ const BlackPromotionCalculation = () => {
       { accessorKey: "accName", header: "Банк нэр" },
       { accessorKey: "accNumber", header: "Дансны дугаар" },
     ],
-    []
+    [],
   );
 
   return (
@@ -263,4 +262,3 @@ const BlackPromotionCalculation = () => {
 };
 
 export default BlackPromotionCalculation;
-

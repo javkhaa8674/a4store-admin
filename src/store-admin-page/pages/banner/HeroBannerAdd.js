@@ -12,7 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { doc, updateDoc,setDoc, arrayUnion } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { firestore, storage } from "../../../refrence/storeConfig"; // Ensure this is correctly set up
 import AddIcon from "@mui/icons-material/Add";
@@ -114,7 +114,7 @@ const HeroBannerAdd = ({ open, onClose }) => {
       }
 
       // Validate required fields
-      if ((!desktopImageUrl && !mobileImageUrl)) {
+      if (!desktopImageUrl && !mobileImageUrl) {
         alert("Please provide a URL and at least one image.");
         return;
       }
@@ -125,7 +125,7 @@ const HeroBannerAdd = ({ open, onClose }) => {
       // Update the document by appending to the sideBanners array
       await updateDoc(heroBannerRef, {
         mainBanners: arrayUnion({
-          url:url||"",
+          url: url || "",
           desktopImageUrl: desktopImageUrl || "", // Use empty string if not provided
           mobileImageUrl: mobileImageUrl || "", // Use empty string if not provided
           id: uuidv4(),
@@ -160,7 +160,9 @@ const HeroBannerAdd = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem" }}>
+      <DialogTitle
+        sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem" }}
+      >
         Hero Banner Нэмэх
       </DialogTitle>
       <DialogContent>

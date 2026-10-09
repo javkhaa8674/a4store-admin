@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddBlog from "./addblog"; // Ensure this component is properly implemented
+import AddBlog from "./addblog";
 import {
   Box,
   Container,
@@ -12,21 +12,18 @@ import {
   CardContent,
   CardMedia,
   Button,
-  Modal,
   Chip,
   CircularProgress,
-  TextField,
   IconButton,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { collection, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { firestore } from "../../../refrence/storeConfig";
-import EditBlog from "./editBlog"; // Ensure this component is properly implemented
+import EditBlog from "./editBlog";
+
 const Blog = () => {
   const [openAddBlogDialog, setOpenAddBlogDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBlog, setSelectedBlog] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const [blogsData, setBlogsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editBlogData, setEditBlogData] = useState(null);
@@ -41,7 +38,7 @@ const Blog = () => {
 
             // Convert Firestore Timestamp to a date string (if it exists)
             if (data.timestamp && data.timestamp.toDate) {
-              data.timestamp = data.timestamp.toDate().toLocaleString(); // Convert to a readable date string
+              data.timestamp = data.timestamp.toDate().toLocaleString();
             }
 
             return {
@@ -61,7 +58,6 @@ const Blog = () => {
     fetchBlogs();
   }, []);
 
-  console.log(blogsData);
   const handleAddBlog = () => {
     setOpenAddBlogDialog(true);
   };
@@ -73,17 +69,12 @@ const Blog = () => {
   const handleSaveBlog = (newBlogData) => {
     // Add logic to save new blog data (e.g., upload to Firestore or Firebase Storage)
     console.log("New blog data:", newBlogData);
-    setOpenAddBlogDialog(false); // Close dialog after save
-  };
-
-  const handleCardClick = (blog) => {
-    setSelectedBlog(blog);
-    setModalOpen(true);
+    setOpenAddBlogDialog(false);
   };
 
   const handleDeleteBlog = async (blogId) => {
     const confirmDelete = window.confirm(
-      "Та энэ блогийг устгахдаа итгэлтэй байна уу?"
+      "Та энэ блогийг устгахдаа итгэлтэй байна уу?",
     );
     if (!confirmDelete) return;
 
@@ -105,7 +96,7 @@ const Blog = () => {
   };
 
   const filteredBlogs = blogsData.filter((blog) =>
-    blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+    blog.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const StyledCard = styled(Card)(({ theme }) => ({
@@ -118,20 +109,6 @@ const Blog = () => {
       boxShadow: theme.shadows[4],
     },
   }));
-
-  const ModalContent = styled(Box)({
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "80%",
-    maxWidth: "600px",
-    bgcolor: "background.paper",
-    boxShadow: 24,
-    p: 4,
-    borderRadius: "8px",
-    backgroundColor: "#fff",
-  });
 
   if (loading) {
     return (
@@ -156,7 +133,7 @@ const Blog = () => {
         <Grid container spacing={4}>
           {filteredBlogs.map((blog) => (
             <Grid item key={blog.id} xs={12} sm={6} md={4}>
-              <StyledCard onClick={() => handleCardClick(blog)}>
+              <StyledCard>
                 <CardMedia
                   component="img"
                   sx={{

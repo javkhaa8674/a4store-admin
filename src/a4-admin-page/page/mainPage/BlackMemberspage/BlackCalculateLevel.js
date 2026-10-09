@@ -62,7 +62,7 @@ const BlackCalculateLevel = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
 
   const handleDateChange = (event) => {
@@ -98,7 +98,8 @@ const BlackCalculateLevel = () => {
 
     data.forEach((element) => {
       const elementTimestamp = dayjs(element.timeStamp).valueOf();
-      if (selectedDateTimestamp) {
+      // ★ Сонгосон өдөр эсвэл түүнээс хойшхи өгөгдлийг шүүх
+      if (elementTimestamp >= selectedDateTimestamp) {
         newData.push(element);
       }
     });
@@ -314,7 +315,7 @@ const BlackCalculateLevel = () => {
       { accessorKey: "RankName", header: "Зэрэглэл" },
       { accessorKey: "QuantityName", header: "Нэр" },
     ],
-    []
+    [],
   );
 
   const handleExport = () => {
@@ -330,7 +331,7 @@ const BlackCalculateLevel = () => {
 
   const handleDataBase = async () => {
     const confirm = window.confirm(
-      "Та бүх гишүүдийн зэрэглэлийг дэвшүүлэхдээ итгэлтэй байна уу? Энэ үйлдлийг хийснээр системд дэхь бүх гишүүдийн зэрэглэл автоматаар шинэчлэгдэх болно."
+      "Та бүх гишүүдийн зэрэглэлийг дэвшүүлэхдээ итгэлтэй байна уу? Энэ үйлдлийг хийснээр системд дэхь бүх гишүүдийн зэрэглэл автоматаар шинэчлэгдэх болно.",
     );
 
     if (confirm) {
@@ -342,7 +343,7 @@ const BlackCalculateLevel = () => {
           delete element.id;
           sendData[id] = element;
         });
-        const falseFilteredData = data.filter(item => !item.System);
+        const falseFilteredData = data.filter((item) => !item.System);
         let sendVipUserInfoData = {};
         falseFilteredData.forEach((element) => {
           let ids = element.id;

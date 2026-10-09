@@ -26,6 +26,7 @@ import { MdExpandMore, MdWork } from "react-icons/md";
 import { TbCurrencyTugrik } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import a4axios from "a4axios";
+
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
@@ -64,7 +65,7 @@ const UserProfile = () => {
   // Get the data for the current page
   const paginatedData = profileData?.userInfo?.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
 
   const handlePageChange = (event, value) => {
@@ -88,7 +89,7 @@ const UserProfile = () => {
       try {
         const response = await a4axios.post(
           "/userInfo",
-          { phoneNumber } // Sending phoneNumber in request body
+          { phoneNumber }, // Sending phoneNumber in request body
         );
         console.log("response", response.data);
         setProfileData(response.data);
@@ -102,11 +103,6 @@ const UserProfile = () => {
 
     fetchUserInfo();
   }, []);
-  const navigate = useNavigate(); // Initialize useNavigate
-
-  const handleEditProfile = () => {
-    setIsEditModalOpen(true);
-  };
 
   const handleModalClose = () => {
     setIsEditModalOpen(false);

@@ -10,7 +10,7 @@ import {
   Pagination,
   Grid,
   Card,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import {
   ArrowUpward,
@@ -32,7 +32,7 @@ const PaymentHistory = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [paymentData, setPaymentData] = useState([]);
-    const navigation = useNavigate();
+  const navigation = useNavigate();
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -52,7 +52,7 @@ const PaymentHistory = () => {
       try {
         const response = await a4axios.post(
           "/transactionHistory",
-          { pointId } // Sending phoneNumber in request body
+          { pointId }, // Sending phoneNumber in request body
         );
         console.log("response", response.data);
         setPaymentData(response.data);
@@ -68,7 +68,7 @@ const PaymentHistory = () => {
   }, []);
   const handleBackWallet = () => {
     // Navigate to the wallet route
-    navigation('/wallet');
+    navigation("/wallet");
   };
   const handleFilterChange = (days) => {
     setDateFilter(days === "all" ? "1970-01-01" : getDateFilter(days));
@@ -84,7 +84,7 @@ const PaymentHistory = () => {
   };
 
   const filteredData = paymentData.filter((payment) =>
-    dayjs(payment.date).isAfter(dateFilter)
+    dayjs(payment.date).isAfter(dateFilter),
   );
 
   const groupedPayments = filteredData.reduce((acc, payment) => {
@@ -95,13 +95,13 @@ const PaymentHistory = () => {
 
   // Flatten grouped payments into a single array for pagination
   const flattenedPayments = Object.keys(groupedPayments).flatMap(
-    (date) => groupedPayments[date]
+    (date) => groupedPayments[date],
   );
 
   // Paginate the flattened payments
   const paginatedPayments = flattenedPayments.slice(
     (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    page * itemsPerPage,
   );
 
   // Re-group paginated payments by date
@@ -405,51 +405,3 @@ const PaymentHistory = () => {
 };
 
 export default PaymentHistory;
-
-const paymentData = [
-  {
-    id: 1,
-    date: "2025-03-1",
-    amount: 10900,
-    method: "****4280",
-    time: "10:19",
-    fullMethod: "Visa Card ****4280",
-    types: "orlogo",
-  },
-  {
-    id: 2,
-    date: "2025-03-1",
-    amount: 10900,
-    method: "****4280",
-    time: "10:19",
-    fullMethod: "Visa Card ****4280",
-    types: "orlogo",
-  },
-  {
-    id: 1,
-    date: "2025-03-1",
-    amount: 1500,
-    method: "****4280",
-    time: "19:19",
-    fullMethod: "Visa Card ****4280",
-    types: "zarlaga",
-  },
-  {
-    id: 2,
-    date: "2025-03-1",
-    amount: 1500,
-    method: "****4280",
-    time: "19:19",
-    fullMethod: "Visa Card ****4280",
-    types: "zarlaga",
-  },
-  {
-    id: 3,
-    date: "2025-03-1",
-    amount: 1500,
-    method: "****4280",
-    time: "19:19",
-    fullMethod: "Visa Card ****4280",
-    types: "zarlaga",
-  },
-];

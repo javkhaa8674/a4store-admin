@@ -4,19 +4,13 @@ import {
   Avatar,
   Box,
   Container,
-  IconButton,
   Menu,
   MenuItem,
   Toolbar,
   Typography,
   styled,
 } from "@mui/material";
-import {
-  IoSettingsOutline,
-  IoNotificationsOutline,
-  IoLogOutOutline,
-  IoPerson,
-} from "react-icons/io5";
+import { IoLogOutOutline } from "react-icons/io5";
 import { logout } from "../auth/Logout"; // Import the reusable logout function
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -39,17 +33,7 @@ const UserSection = styled(Box)({
   alignItems: "center",
   gap: "20px",
 });
-const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  width: 40,
-  height: 40,
-  marginRight: "10px",
-}));
 
-const StyledTypography = styled(Typography)(({ theme }) => ({
-  color: "white",
-  fontWeight: 500,
-  textTransform: "capitalize",
-}));
 const UserHeader = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
@@ -109,7 +93,7 @@ const UserHeader = () => {
                   sx={{
                     width: 40,
                     height: 40,
-                    marginRight: "10px",                                 
+                    marginRight: "10px",
                   }}
                 >
                   {!userData?.avatarUrl &&

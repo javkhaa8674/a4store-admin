@@ -91,7 +91,7 @@ const Example = () => {
         accessorKey: "deletedAt",
         header: "Устгасан огноо",
         Cell: ({ cell }) =>
-            dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
+          dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
       },
       {
         accessorKey: "Name",
@@ -156,7 +156,7 @@ const Example = () => {
         header: "Тайлбар",
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
 
   //call CREATE hook
@@ -214,7 +214,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "delete/ebarimt"),
               orderByChild("ID"),
-              equalTo(searchTerm)
+              equalTo(searchTerm),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -250,8 +250,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["delete/ebarimt"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -270,7 +270,7 @@ const Example = () => {
       //client side optimistic update
       onMutate: (userId) => {
         queryClient.setQueryData(["delete/ebarimt"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -305,7 +305,7 @@ const Example = () => {
           ...item,
           TimeStamps: dayjs(item.TimeStamps).format("YYYY-MM-DD HH:mm:ss"),
           Requester_TimeStamps: dayjs(item.Requester_TimeStamps).format(
-            "YYYY-MM-DD HH:mm:ss"
+            "YYYY-MM-DD HH:mm:ss",
           ),
         }; // Create a copy of the item
         columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
@@ -370,7 +370,7 @@ const Example = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        {/* <Tooltip title="Edit">
+        <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
           </IconButton>
@@ -379,21 +379,20 @@ const Example = () => {
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
-        </Tooltip> */}
+        </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
- (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={handleExportData}
-          >
-            Татаж авах
-          </Button>
-        </Box>
-      ),
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={handleExportData}
+        >
+          Татаж авах
+        </Button>
+      </Box>
+    ),
     initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoadingUsers,
@@ -476,13 +475,13 @@ const EbarimtDelivery = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     //Put this with your other react-query providers near root of your app
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
-      Устгасан Е Баримт
+        Устгасан Е Баримт
       </Typography>
       <ThemeProvider theme={tableTheme}>
         <Example />
@@ -506,18 +505,3 @@ const validatePhone = (phone) => {
   const re = /^(\d{4})[- ]?(\d{4})$/;
   return re.test(phone);
 };
-
-function validateUser(user) {
-  return {
-    name: !validateRequired(user.name) ? "Нэр хоосон байж болохгүй" : "",
-    phone: !validatePhone(user.phone)
-      ? "Та утасны дугаараа зөв оруулна уу"
-      : "",
-    state: !validateRequired(user.state)
-      ? "Бүтээгдэхүүний нэр хоосон байж болохгүй"
-      : "",
-    count: !validateRequired(user.count)
-      ? "Тоо хэмжээ хоосон байж болохгүй"
-      : "",
-  };
-}

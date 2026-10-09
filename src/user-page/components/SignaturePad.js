@@ -1,18 +1,11 @@
 // SignaturePad.js
 import React, { useRef, useState } from "react";
-import {
-  Button,
-  Box,
-  Typography,
-  LinearProgress,
-  useTheme,
-} from "@mui/material";
+import { Button, Box, LinearProgress, useTheme } from "@mui/material";
 import SignatureCanvas from "react-signature-canvas";
 
 const SignaturePad = ({ signature, setSignature }) => {
   const theme = useTheme();
   const sigCanvas = useRef(null);
-  const [loading, setLoading] = useState(false);
 
   // Clear the canvas
   const clearSignature = () => sigCanvas.current.clear();
@@ -27,10 +20,7 @@ const SignaturePad = ({ signature, setSignature }) => {
     setSignature(signatureDataURL);
   };
 
-
-  return loading ? (
-    <LinearProgress />
-  ) : (
+  return (
     <Box
       sx={{
         width: "100%",
@@ -45,7 +35,7 @@ const SignaturePad = ({ signature, setSignature }) => {
       {!signature ? (
         <>
           <Box
-            sx={{              
+            sx={{
               backgroundColor: theme.palette.grey[100],
             }}
           >

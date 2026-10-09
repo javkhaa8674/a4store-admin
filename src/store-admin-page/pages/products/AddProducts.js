@@ -37,12 +37,10 @@ const AddProductDialog = ({ open, onClose }) => {
     discountedPrice: "",
     previews: [],
     thumbnails: [],
-    discount:"",
-    status:"",
-    comingSoon:false
+    discount: "",
+    status: "",
+    comingSoon: false,
   });
-  const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
@@ -107,7 +105,7 @@ const AddProductDialog = ({ open, onClose }) => {
         for (let file of files) {
           const fileRef = ref(
             storage,
-            `products/${product.category}/${file.name}`
+            `products/${product.category}/${file.name}`,
           );
           await uploadBytesResumable(fileRef, file);
           const downloadURL = await getDownloadURL(fileRef);
@@ -119,7 +117,7 @@ const AddProductDialog = ({ open, onClose }) => {
       const previewUrls = await uploadImages(product.previews, "previews");
       const thumbnailUrls = await uploadImages(
         product.thumbnails,
-        "thumbnails"
+        "thumbnails",
       );
 
       const productData = {
@@ -229,18 +227,17 @@ const AddProductDialog = ({ open, onClose }) => {
           </Grid>
 
           <Grid item xs={12}>
-    
-          <TextField
-            select
-            label="Хямдарсан хувь"
-            name="comingSoon"
-            value={product.comingSoon}
-            onChange={handleChange}
-            fullWidth
-          >
-            <MenuItem value={false}> Бэлэн байгаа</MenuItem>
-            <MenuItem value={true}> Тун удахгүй</MenuItem>
-          </TextField>
+            <TextField
+              select
+              label="Хямдарсан хувь"
+              name="comingSoon"
+              value={product.comingSoon}
+              onChange={handleChange}
+              fullWidth
+            >
+              <MenuItem value={false}> Бэлэн байгаа</MenuItem>
+              <MenuItem value={true}> Тун удахгүй</MenuItem>
+            </TextField>
           </Grid>
           <Grid item xs={12}>
             <TextField

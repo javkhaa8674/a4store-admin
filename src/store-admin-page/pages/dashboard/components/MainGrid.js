@@ -6,12 +6,10 @@ import Typography from "@mui/material/Typography";
 import ChartUserByCountry from "./ChartUserByCountry";
 import CustomizedTreeView from "./CustomizedTreeView";
 import CustomizedDataGrid from "./CustomizedDataGrid";
-import HighlightedCard from "./HighlightedCard";
+
 import PageViewsBarChart from "./PageViewsBarChart";
 import SessionsChart from "./SessionsChart";
 import StatCard from "./StatCard";
-import { ref, get, query, limitToLast } from "firebase/database";
-
 
 const rawData = [
   {
@@ -60,7 +58,6 @@ const rawData = [
 
 const MainGrid = () => {
   const [data, setData] = useState(rawData);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getData();
@@ -98,8 +95,6 @@ const MainGrid = () => {
     } catch (error) {
       console.log(error);
       alert(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
