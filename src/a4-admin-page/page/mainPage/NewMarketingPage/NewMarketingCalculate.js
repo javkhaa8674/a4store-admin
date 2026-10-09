@@ -18,7 +18,6 @@ import {
   MenuItem,
   Tooltip,
   IconButton,
-  Grid2,
 } from "@mui/material";
 import { db } from "refrence/realConfig";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -54,7 +53,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
     return () => {
       resetAllState();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const resetAllState = () => {
@@ -62,8 +61,8 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
       currentType === "Single"
         ? Single
         : currentType === "Double"
-        ? Double
-        : Triple;
+          ? Double
+          : Triple;
     resetSet.forEach((element) => {
       element.currentLevel = false;
       element.invite1personLevel = false;
@@ -124,7 +123,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
-            receivedMoney.promoSaleStatus
+            receivedMoney.promoSaleStatus,
           )}₮`,
       },
       {
@@ -151,7 +150,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
-            receivedMoney.promoEffortStatus
+            receivedMoney.promoEffortStatus,
           )}₮`,
       },
       {
@@ -177,7 +176,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
-            receivedMoney.promoSuccessStatus
+            receivedMoney.promoSuccessStatus,
           )}₮`,
       },
       {
@@ -191,7 +190,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
             receivedMoney.promoSaleStatus +
               receivedMoney.promoEffortStatus +
-              receivedMoney.promoSuccessStatus
+              receivedMoney.promoSuccessStatus,
           )}₮`,
       },
       {
@@ -225,7 +224,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
-            receivedMoney.invite1personStatus
+            receivedMoney.invite1personStatus,
           )}₮`,
       },
       {
@@ -259,7 +258,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
-            receivedMoney.invite2personStatus
+            receivedMoney.invite2personStatus,
           )}₮`,
       },
       {
@@ -293,7 +292,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
-            receivedMoney.invite3personStatus
+            receivedMoney.invite3personStatus,
           )}₮`,
       },
       {
@@ -327,7 +326,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
-            receivedMoney.invite4personStatus
+            receivedMoney.invite4personStatus,
           )}₮`,
       },
       {
@@ -342,7 +341,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
             receivedMoney.invite1personStatus +
               receivedMoney.invite2personStatus +
               receivedMoney.invite3personStatus +
-              receivedMoney.invite4personStatus
+              receivedMoney.invite4personStatus,
           )}₮`,
       },
       {
@@ -360,12 +359,12 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
               receivedMoney.invite1personStatus +
               receivedMoney.invite2personStatus +
               receivedMoney.invite3personStatus +
-              receivedMoney.invite4personStatus
+              receivedMoney.invite4personStatus,
           )}₮`,
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [receivedMoney]
+    [receivedMoney],
   );
 
   const handleSelectedType = async (e) => {
@@ -375,7 +374,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
       const memberRef = query(
         ref(db, "newMarketing/UserInfo"),
         orderByChild("type"),
-        equalTo(value)
+        equalTo(value),
       );
       const memberResult = await get(memberRef);
 
@@ -384,18 +383,18 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
           ([id, data]) => ({
             id,
             ...data,
-          })
+          }),
         );
 
         if (memberData.length > 0) {
           setMemberList(
             memberData
               .filter((obj) => obj.type === value)
-              .sort((a, b) => a.phoneNumber - b.phoneNumber)
+              .sort((a, b) => a.phoneNumber - b.phoneNumber),
           );
           setCurrentType(value);
           setTableData(
-            value === "Single" ? Single : value === "Double" ? Double : Triple
+            value === "Single" ? Single : value === "Double" ? Double : Triple,
           );
         } else {
           alert("no data found");
@@ -418,12 +417,12 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
       const spoRef = query(
         ref(db, "newMarketing/UserInfo"),
         orderByChild("SponsorId"),
-        equalTo(value.phoneNumber) // Энэ хүний доор хүн байгаа эсэхийг шалгана
+        equalTo(value.phoneNumber), // Энэ хүний доор хүн байгаа эсэхийг шалгана
       );
       const promotionRef = query(
         ref(db, "newMarketing/promotionTransaction"),
         orderByChild("ID"),
-        equalTo(value.phoneNumber) //  Мөнгө авсан эсэхийг шалгана.
+        equalTo(value.phoneNumber), //  Мөнгө авсан эсэхийг шалгана.
       );
       const spoResult = await get(spoRef);
       const promotionResult = await get(promotionRef);
@@ -453,7 +452,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
           ([id, data]) => ({
             id,
             ...data,
-          })
+          }),
         );
         promotionData.filter((obj) => obj.Set === currentType);
         promotionData.forEach((element) => {
