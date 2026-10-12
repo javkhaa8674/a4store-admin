@@ -11,7 +11,6 @@ import {
   Button,
   Modal,
   IconButton,
-  useTheme,
   TextField, // ★ НЭМЭХ
   Chip,
 } from "@mui/material";
@@ -84,8 +83,6 @@ const PartnerOrganizations = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-
-  const theme = useTheme();
 
   const filteredPartners = partnersData.filter(
     (partner) =>

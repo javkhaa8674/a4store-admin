@@ -33,7 +33,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
 import { ref, get, set, update, remove, push } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
-import { read, utils } from "xlsx";
 
 const csvConfig = mkConfig({
   filename: `Санал хүсэлт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
@@ -215,7 +214,6 @@ const Example = () => {
     useUpdateUser();
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
-  const { mutateAsync: saveData2 } = useSaveData2();
 
   const handleCreateUser = async ({ values, table }) => {
     if (!values) {
@@ -431,35 +429,5 @@ const FeedBack = () => {
     </QueryClientProvider>
   );
 };
-
-function useSaveData2() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (data) => {
-      const usersRef = ref(db, "statements");
-      try {
-        const snapshot = await get(usersRef);
-        const existingData = snapshot.exists()
-          ? Object.values(snapshot.val())
-          : [];
-
-        const existingDates = new Set(existingData.map((item) => item.date));
-
-        const promises = data
-          .filter((item) => !existingDates.has(item.date))
-          .map((item) => {
-            const newItemRef = push(usersRef);
-            return set(newItemRef, item);
-          });
-
-        await Promise.all(promises);
-      } catch (error) {
-        console.error("Error saving data:", error);
-        throw new Error("Failed to save data");
-      }
-    },
-    onSettled: () => queryClient.invalidateQueries(["statements"]),
-  });
-}
 
 export default FeedBack;
