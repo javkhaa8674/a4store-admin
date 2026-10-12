@@ -1,6 +1,6 @@
 // SignaturePad.js
-import React, { useRef, useState } from "react";
-import { Button, Box, LinearProgress, useTheme } from "@mui/material";
+import React, { useRef } from "react";
+import { Button, Box, useTheme } from "@mui/material";
 import SignatureCanvas from "react-signature-canvas";
 
 const SignaturePad = ({ signature, setSignature }) => {

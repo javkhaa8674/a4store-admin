@@ -32,7 +32,7 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
-import { ref, set, update, remove } from "firebase/database";
+import { ref, update, remove } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import { read, utils } from "xlsx";
 import axiosA4 from "storeaxios";

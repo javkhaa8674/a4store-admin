@@ -23,7 +23,7 @@ import EditBlog from "./editBlog";
 
 const Blog = () => {
   const [openAddBlogDialog, setOpenAddBlogDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchTerm = "";
   const [blogsData, setBlogsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editBlogData, setEditBlogData] = useState(null);

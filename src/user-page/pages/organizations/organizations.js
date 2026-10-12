@@ -12,7 +12,6 @@ import {
   Modal,
   IconButton,
   useTheme,
-  useMediaQuery,
   TextField, // ★ НЭМЭХ
   Chip,
 } from "@mui/material";
@@ -87,7 +86,6 @@ const PartnerOrganizations = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const filteredPartners = partnersData.filter(
     (partner) =>

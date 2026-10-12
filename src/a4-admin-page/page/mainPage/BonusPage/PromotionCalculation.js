@@ -264,11 +264,7 @@ const PromotionCalculation = () => {
     if (!userInfoData.length || !membersData.length) {
       return; // Exit early if data isn't fully loaded
     }
-    let btCount = Number(btamount) || 0;
-    let batCount = Number(batamount) || 0; // Ensure it's a number
-    let managerCount = Number(manageramount) || 0; // Ensure it's a number
-    let emanagerCount = Number(emanageramount) || 0; // Ensure it's a number
-    let zahiralCount = Number(zahiralamount) || 0;
+
     const newExportData = userInfoData.map((element1) => {
       let userBtCount = 0;
       let userBatCount = 0;
@@ -290,11 +286,6 @@ const PromotionCalculation = () => {
           }
         }
       });
-      btCount += userBtCount;
-      batCount += userBatCount;
-      managerCount += userManagerCount;
-      emanagerCount += userEmanagerCount;
-      zahiralCount += userZahiralCount;
       return {
         ...element1,
         BatCount: userBatCount,
@@ -306,7 +297,7 @@ const PromotionCalculation = () => {
     });
     const blackDataProcessed = processCountsBlack(blackData);
 
-    processFinalRealData(newExportData, membersData, blackDataProcessed); // Pass data here to ensure it's processed after it's available
+    processFinalRealData(newExportData, membersData, blackDataProcessed);
   };
 
   const processFinalRealData = (newExportData, membersData, blackData) => {

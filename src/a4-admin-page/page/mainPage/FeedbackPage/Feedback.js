@@ -279,46 +279,6 @@ const Example = () => {
     );
   };
 
-  const processExcelFile = async (file) => {
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const workbook = read(event.target.result, {
-          type: "array",
-          cellDates: true,
-          cellNF: false,
-          cellText: false,
-        });
-
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const data = utils.sheet_to_json(sheet, {
-          dateNF: "yyyy-mm-dd",
-          defval: "",
-        });
-
-        const formattedData = data.map((item) => ({
-          ...item,
-          date:
-            item.date instanceof Date
-              ? dayjs(item.date).toISOString()
-              : item.date,
-        }));
-
-        if (formattedData.length > 0) {
-          await saveData2(formattedData); // Ensure saveData2 is defined and used
-          console.log("Data saved successfully");
-        } else {
-          console.log("No data to save");
-        }
-      } catch (error) {
-        console.error("Error processing file:", error);
-      }
-    };
-
-    reader.readAsArrayBuffer(file);
-  };
-
   const table = useMaterialReactTable({
     columns,
     data: mydata,

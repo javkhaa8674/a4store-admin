@@ -60,12 +60,6 @@ function StatCard({ title, value, interval, trend, data }) {
         : theme.palette.grey[700],
   };
 
-  const labelColors = {
-    up: "success",
-    down: "error",
-    neutral: "default",
-  };
-
   const chartColor = trendColors[trend];
   const dataValid = Array.isArray(data) && data.length > 0;
   return (

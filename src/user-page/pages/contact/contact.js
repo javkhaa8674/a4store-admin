@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   useTheme,
-  useMediaQuery,
   Paper,
 } from "@mui/material";
 import { styled } from "@mui/system";

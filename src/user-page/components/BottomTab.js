@@ -3,7 +3,6 @@ import {
   Paper,
   BottomNavigation,
   BottomNavigationAction,
-  Badge,
   useTheme,
   useMediaQuery,
 } from "@mui/material";

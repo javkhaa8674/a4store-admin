@@ -24,7 +24,6 @@ import { styled } from "@mui/system";
 import { FaSitemap } from "react-icons/fa";
 import { MdExpandMore, MdWork } from "react-icons/md";
 import { TbCurrencyTugrik } from "react-icons/tb";
-import { useNavigate } from "react-router-dom";
 import a4axios from "a4axios";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
