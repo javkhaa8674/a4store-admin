@@ -2,6 +2,12 @@ import * as React from "react";
 import PropTypes from "prop-types";
 
 import Avatar from "@mui/material/Avatar";
+import { useColorScheme } from "@mui/material/styles";
+import { IconButton } from "@mui/material";
+import {
+  LightMode as LightModeIcon,
+  DarkMode as DarkModeIcon,
+} from "@mui/icons-material";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
@@ -207,29 +213,30 @@ function ToolbarActionsSearch() {
       </Avatar>
       {renderMenu}
       {/* ThemeSwitcher Component */}
+      <ThemeSwitcher />
     </Stack>
   );
 }
 
-// Theme switcher component
-// function ThemeSwitcher() {
-//   const { mode, setMode } = useColorScheme();
+//Theme switcher component
+function ThemeSwitcher() {
+  const { mode, setMode } = useColorScheme();
 
-//   const toggleMode = () => {
-//     setMode(mode === "light" ? "dark" : "light");
-//   };
+  const toggleMode = () => {
+    setMode(mode === "light" ? "dark" : "light");
+  };
 
-//   React.useEffect(() => {
-//     const root = document.documentElement;
-//     root.setAttribute("data-toolpad-color-scheme", mode);
-//   }, [mode]);
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute("data-toolpad-color-scheme", mode);
+  }, [mode]);
 
-//   return (
-//     <IconButton onClick={toggleMode} color="inherit">
-//       {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
-//     </IconButton>
-//   );
-// }
+  return (
+    <IconButton onClick={toggleMode} color="inherit">
+      {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+    </IconButton>
+  );
+}
 
 // Sidebar footer component
 function SidebarFooter({ mini }) {

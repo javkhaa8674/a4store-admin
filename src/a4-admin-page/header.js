@@ -3,6 +3,12 @@ import PropTypes from "prop-types";
 
 // MUI Components
 import { Stack, Chip, Typography, Menu, MenuItem } from "@mui/material";
+import { useColorScheme } from "@mui/material/styles";
+import { IconButton } from "@mui/material";
+import {
+  LightMode as LightModeIcon,
+  DarkMode as DarkModeIcon,
+} from "@mui/icons-material";
 import { signOut } from "firebase/auth";
 import { auth } from "refrence/storeConfig"; // Use the pre-configured Firebase auth instance
 // MUI Icons
@@ -277,23 +283,25 @@ function ToolbarActionsSearch() {
           `${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
       </Avatar>
       {renderMenu}
+      {/* ThemeSwitcher Component */}
+      <ThemeSwitcher />
     </Stack>
   );
 }
 
-// function ThemeSwitcher() {
-//   const { mode, setMode } = useColorScheme();
+function ThemeSwitcher() {
+  const { mode, setMode } = useColorScheme();
 
-//   const toggleMode = () => {
-//     setMode(mode === "light" ? "dark" : "light");
-//   };
+  const toggleMode = () => {
+    setMode(mode === "light" ? "dark" : "light");
+  };
 
-//   return (
-//     <IconButton onClick={toggleMode} color="inherit">
-//       {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
-//     </IconButton>
-//   );
-// }
+  return (
+    <IconButton onClick={toggleMode} color="inherit">
+      {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+    </IconButton>
+  );
+}
 
 function SidebarFooter({ mini }) {
   return (

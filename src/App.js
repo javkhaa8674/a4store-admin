@@ -26,6 +26,7 @@ import A4Header from "./a4-admin-page/header";
 import OrgChart from "./user-page/pages/OrgChart/OrgChart";
 import TransactionHistory from "./user-page/pages/wallet/transactionHisory";
 import Loading from "./user-page/components/Loading";
+import Admin from "./Admin";
 import "./index.css";
 
 const AppContent = () => {
@@ -160,6 +161,14 @@ const AppContent = () => {
                   <BottomTab />
                   <OrgChart />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRouteAdmin redirectTo="/home">
+                  <Admin />
+                </ProtectedRouteAdmin>
               }
             />
             {/*  STORE Admin routes */}
