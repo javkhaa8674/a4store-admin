@@ -42,94 +42,299 @@ import {
   query,
 } from "firebase/database";
 import { db } from "refrence/realConfig";
+
+// ---------- Black мөрүүдэд автоматаар оноох утгууд ----------
+const BLACK_DEFAULT_PRODUCT = "Скийнбүүстер";
+const BLACK_DEFAULT_AMOUNT = 1500000;
+
+// ---------- CSV config (бүх баганатай) ----------
 const csvConfig = mkConfig({
   filename: `Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "MemberId",
-      displayLabel: "Утас",
-    },
-    {
-      key: "QuantityName",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "timeStamp",
-      displayLabel: "Огноо",
-    },
-    {
-      key: "Level",
-      displayLabel: "Шат",
-    },
-    {
-      key: "RankName",
-      displayLabel: "Цол",
-    },
-    {
-      key: "InviterPercent",
-      displayLabel: "Уригчид олгох хувь",
-    },
-    {
-      key: "SponsorId",
-      displayLabel: "Спонсор Id",
-    },
-    {
-      key: "SponsorName",
-      displayLabel: "Спонсорын нэр",
-    },
-    {
-      key: "InviterId",
-      displayLabel: "Уригчийн Id",
-    },
-    {
-      key: "InviterName",
-      displayLabel: "Уригчийн нэр",
-    },
-    {
-      key: "isBlackMember",
-      displayLabel: "BlackVIP",
-    },
+    { key: "phase", displayLabel: "Phase" },
+    { key: "MemberId", displayLabel: "Утас" },
+    { key: "QuantityName", displayLabel: "Нэр" },
+    { key: "timeStamp", displayLabel: "Огноо" },
+    { key: "ProductName", displayLabel: "Бүтээгдэхүүн сонголт" },
+    { key: "Level", displayLabel: "Шат" },
+    { key: "RankName", displayLabel: "Цол" },
+    { key: "InviterPercent", displayLabel: "Уригчид олгох хувь" },
+    { key: "SponsorId", displayLabel: "Спонсор Id" },
+    { key: "SponsorName", displayLabel: "Спонсорын нэр" },
+    { key: "amount", displayLabel: "Мөнгөн дүн" },
+    { key: "InviterId", displayLabel: "Уригчийн Id" },
+    { key: "InviterName", displayLabel: "Уригчийн нэр" },
+    { key: "accNumber", displayLabel: "Дансны дугаар" },
+    { key: "accName", displayLabel: "Банкны нэр" },
+    { key: "System", displayLabel: "Шилжсэн" },
+    { key: "isBlackMember", displayLabel: "BlackVIP" },
   ],
 });
 
-function validateUser(user) {
+function validateUser() {
   return {};
 }
 
-// Export CSV data
+// ---------- helpers ----------
 const exportToExcel = (data) => {
-  const columnsToRemove = ["id"];
-  // Function to exclude specific columns from the data
-  const excludeColumns = (data, columnsToRemove) => {
-    return data.map((item) => {
-      const newItem = { ...item }; // Create a copy of the item
-      columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
-      return newItem;
-    });
-  };
-  const removedId = excludeColumns(data, columnsToRemove);
-
-  const csv = generateCsv(csvConfig)(removedId);
+  const cleaned = data.map((item) => {
+    const newItem = { ...item };
+    delete newItem.id;
+    delete newItem._source;
+    return newItem;
+  });
+  const csv = generateCsv(csvConfig)(cleaned);
   download(csvConfig)(csv);
 };
 
+const renderValidationErrors = (errors) =>
+  Object.entries(errors).map(([key, message]) =>
+    message ? (
+      <Typography color="error" key={key}>
+        {message}
+      </Typography>
+    ) : null,
+  );
+
+// ============================================================
+//  Combined table (phase = reset | black)
+// ============================================================
 const Example = () => {
+  const queryClient = useQueryClient();
   const [validationErrors, setValidationErrors] = useState({});
-  const [searchTerm, setSearchTerm] = useState(""); // User input for search
-  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
+
+  // --- Fetch: хоёр эх сурвалжаас зэрэг татаж нэгтгэнэ ---
+  const useGetUsers = () =>
+    useQuery({
+      queryKey: ["combinedUsers", searchTerm, fetchAll],
+      queryFn: async () => {
+        try {
+          const fetchFrom = async (path, phase, sourceKey) => {
+            let promoQuery;
+            if (fetchAll) {
+              promoQuery = ref(db, path);
+            } else if (searchTerm.length === 8) {
+              promoQuery = query(
+                ref(db, path),
+                orderByChild("MemberId"),
+                equalTo(Number(searchTerm)),
+              );
+            } else {
+              return [];
+            }
+            const snapshot = await get(promoQuery);
+            if (!snapshot.exists()) return [];
+            return Object.entries(snapshot.val()).map(([id, user]) => {
+              // 🔹 Black эх сурвалжийн мөрүүдэд автомат утга оноох
+              const isBlack = phase === "black";
+              return {
+                id,
+                ...user,
+                // auto-fill: ProductName, amount (зөвхөн black)
+                ...(isBlack
+                  ? {
+                      ProductName: user.ProductName ?? BLACK_DEFAULT_PRODUCT,
+                      amount: user.amount ?? BLACK_DEFAULT_AMOUNT,
+                    }
+                  : {}),
+                phase,
+                _source: sourceKey,
+              };
+            });
+          };
+
+          if (!fetchAll && searchTerm.length !== 8) return [];
+
+          const [resetUsers, blackUsers] = await Promise.all([
+            fetchFrom("userInfo", "reset", "purchase"),
+            fetchFrom("BlackMembers/VipUserInfo", "black", "black"),
+          ]);
+
+          return [...resetUsers, ...blackUsers].reverse();
+        } catch (error) {
+          console.error("Error fetching users:", error);
+          throw new Error("Failed to fetch users");
+        }
+      },
+      enabled: fetchAll || Boolean(searchTerm),
+      refetchOnWindowFocus: true,
+    });
+
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
+
+  // --- CREATE ---
+  const useCreateUser = () => {
+    return useMutation({
+      mutationFn: async (user) => {
+        const isBlack = user.phase === "black" || user._source === "black";
+        const path = isBlack ? "BlackMembers/VipUserInfo" : "userInfo";
+        const { _source, ...rest } = user;
+
+        // 🔹 Black бол phase, автомат утгуудыг баталгаажуулна
+        const data = isBlack
+          ? {
+              ...rest,
+              phase: "black",
+              ProductName: rest.ProductName || BLACK_DEFAULT_PRODUCT,
+              amount:
+                rest.amount !== undefined && rest.amount !== ""
+                  ? rest.amount
+                  : BLACK_DEFAULT_AMOUNT,
+            }
+          : { ...rest, phase: "reset" };
+
+        await set(ref(db, path).push(), data);
+        return Promise.resolve();
+      },
+      onMutate: (newUserInfo) => {
+        queryClient.setQueryData(
+          ["combinedUsers", searchTerm, fetchAll],
+          (prevUsers) => [
+            ...(prevUsers || []),
+            {
+              ...newUserInfo,
+              id: (Math.random() + 1).toString(36).substring(7),
+            },
+          ],
+        );
+      },
+    });
+  };
+
+  // --- UPDATE ---
+  const useUpdateUser = () => {
+    return useMutation({
+      mutationFn: async (user) => {
+        const isBlack = user._source === "black" || user.phase === "black";
+        const path = isBlack
+          ? `BlackMembers/VipUserInfo/${user.id}`
+          : `userInfo/${user.id}`;
+
+        const updatedData = {
+          ...user,
+          MemberId: Number(user.MemberId),
+          ...(isBlack
+            ? {
+                ProductName: user.ProductName || BLACK_DEFAULT_PRODUCT,
+                amount:
+                  user.amount !== undefined && user.amount !== ""
+                    ? user.amount
+                    : BLACK_DEFAULT_AMOUNT,
+              }
+            : {}),
+        };
+
+        const { _source, ...sendData } = Object.fromEntries(
+          Object.entries(updatedData).filter(
+            ([, value]) => value !== undefined,
+          ),
+        );
+        await update(ref(db, path), sendData);
+        return Promise.resolve();
+      },
+      onMutate: (newUserInfo) => {
+        queryClient.setQueryData(
+          ["combinedUsers", searchTerm, fetchAll],
+          (prevUsers) =>
+            prevUsers?.map((prevUser) =>
+              prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+            ),
+        );
+      },
+      onSettled: () => queryClient.invalidateQueries(["combinedUsers"]),
+    });
+  };
+
+  // --- DELETE ---
+  const useDeleteUser = () => {
+    return useMutation({
+      mutationFn: async (user) => {
+        const path =
+          user._source === "black"
+            ? `BlackMembers/VipUserInfo/${user.id}`
+            : `userInfo/${user.id}`;
+        await remove(ref(db, path));
+        return Promise.resolve();
+      },
+      onMutate: (user) => {
+        queryClient.setQueryData(
+          ["combinedUsers", searchTerm, fetchAll],
+          (prevUsers) => prevUsers?.filter((u) => u.id !== user.id),
+        );
+      },
+      onSettled: () => queryClient.invalidateQueries(["combinedUsers"]),
+    });
+  };
+
+  const { mutateAsync: createUser, isPending: isCreatingUser } =
+    useCreateUser();
+  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
+    useUpdateUser();
+  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
+    useDeleteUser();
+
+  const handleCreateUser = async ({ values, table }) => {
+    if (!values) return;
+    const newValidationErrors = validateUser(values);
+    if (Object.values(newValidationErrors).some((e) => e)) {
+      setValidationErrors(newValidationErrors);
+      return;
+    }
+    setValidationErrors({});
+    try {
+      await createUser(values);
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
+    table.setCreatingRow(null);
+  };
+
+  const handleSaveUser = async ({ values, table }) => {
+    if (!values) return;
+    const newValidationErrors = validateUser(values);
+    if (Object.values(newValidationErrors).some((e) => e)) {
+      setValidationErrors(newValidationErrors);
+      return;
+    }
+    setValidationErrors({});
+    try {
+      await updateUser(values);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+    table.setEditingRow(null);
+  };
+
+  const openDeleteConfirmModal = (row) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      deleteUser(row.original);
+    }
+  };
+
+  // --- Columns (бүх багана; ижил талбарууд нэгтгэгдэнэ) ---
   const columns = useMemo(
     () => [
+      { accessorKey: "id", header: "id" },
+
+      // 🔹 phase (ялгах багана)
       {
-        accessorKey: "id",
-        header: "id",
+        accessorKey: "phase",
+        header: "Phase",
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          return v === "black" ? "black" : v === "reset" ? "reset" : "—";
+        },
       },
+
+      // ===== Buy хуудасны баганууд =====
       {
         accessorKey: "MemberId",
         header: "ID",
-        
+        muiEditTextFieldProps: { type: "number" },
       },
       {
         accessorKey: "QuantityName",
@@ -139,245 +344,92 @@ const Example = () => {
           error: !!validationErrors?.name,
           helperText: validationErrors?.name,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              name: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, name: undefined }),
         },
       },
-      {
-        accessorKey: "timeStamp",
-        header: "Бүртгүүлсэн огноо",
-        size: 80,
-      },
+      { accessorKey: "timeStamp", header: "Бүртгүүлсэн огноо", size: 80 },
       {
         accessorKey: "ProductName",
         header: "Бүтээгдэхүүн сонголт",
         size: 80,
+        // 🔹 black мөрүүдэд default утга харуулна
+        Cell: ({ cell, row }) => {
+          const v = cell.getValue();
+          if (row.original.phase === "black" && !v) {
+            return BLACK_DEFAULT_PRODUCT;
+          }
+          return v ?? "—";
+        },
       },
-      {
-        accessorKey: "Level",
-        header: "Шат",
-      },
+      { accessorKey: "Level", header: "Шат" },
       {
         accessorKey: "InviterPercent",
         header: "Уригчид олгох хувь",
         Cell: ({ cell }) => cell.getValue() ?? "N/A",
       },
-      {
-        accessorKey: "RankName",
-        header: "Зэрэглэлийн нэр",
-        size: 80,
-      },
+      { accessorKey: "RankName", header: "Зэрэглэлийн нэр", size: 80 },
       {
         accessorKey: "SponsorId",
         header: "Спонсор ID",
-        muiEditTextFieldProps: {
-          type: "number",
-        },
+        muiEditTextFieldProps: { type: "number" },
       },
-      {
-        accessorKey: "SponsorName",
-        header: "Спонсор нэр",
-      },
+      { accessorKey: "SponsorName", header: "Спонсор нэр" },
       {
         accessorKey: "amount",
         header: "Мөнгөн дүн",
+        // 🔹 black мөрүүдэд default утга харуулна
+        Cell: ({ cell, row }) => {
+          const v = cell.getValue();
+          if (
+            row.original.phase === "black" &&
+            (v === undefined || v === null || v === "")
+          ) {
+            return BLACK_DEFAULT_AMOUNT.toLocaleString();
+          }
+          return v !== undefined && v !== null
+            ? Number(v).toLocaleString()
+            : "—";
+        },
       },
       {
         accessorKey: "InviterId",
         header: "Урьсан хүн ID",
-        muiEditTextFieldProps: {
-          type: "number",
-        },
+        muiEditTextFieldProps: { type: "number" },
       },
-      {
-        accessorKey: "InviterName",
-        header: "Урьсан хүн нэр",
-      },
+      { accessorKey: "InviterName", header: "Урьсан хүн нэр" },
       {
         accessorKey: "isBlackMember",
-        header: "BlackMemberShip эсэх",
-        Cell: ({ cell }) => (cell.getValue() ? "true" : "false"),
+        header: "Black to Reset",
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          if (v === undefined || v === null) return "false";
+          return v ? "true" : "false";
+        },
+      },
+
+      // ===== BlackOrignalUserInfo хуудасны нэмэлт баганууд =====
+      { accessorKey: "accName", header: "Банкны нэр" },
+      {
+        accessorKey: "accNumber",
+        header: "Дансны дугаар",
+        muiEditTextFieldProps: { type: "number" },
+      },
+      {
+        accessorKey: "System",
+        header: "Төрөл",
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          if (v === undefined || v === null) return "—";
+          return v ? "Шилжсэн" : "Шилжээгүй";
+        },
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
-  // CREATE hook (post new user to api)
-  const useCreateUser = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: async (user) => {
-        const newUserRef = ref(db, "userInfo");
-        await set(newUserRef.push(), user);
-        return Promise.resolve();
-      },
-      onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) => [
-          ...(prevUsers || []),
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
-        ]);
-      },
-    });
-  };
-  function useGetUsers() {
-    return useQuery({
-      queryKey: ["userInfo", searchTerm, fetchAll],
-      queryFn: async () => {
-        try {
-          let promoQuery;
-          if (fetchAll) {
-            // Fetch all data if fetchAll is true
-            promoQuery = ref(db, "userInfo");
-          } else if (searchTerm.length === 8) {
-            console.log(searchTerm);
-            // Only query if searchTerm is defined
-            promoQuery = query(
-              ref(db, "userInfo"),
-              orderByChild("MemberId"),
-              equalTo(Number(searchTerm))
-            );
-          } else {
-            // If fetchAll is false and searchTerm is not defined, return an empty array
-            return [];
-          }
-          const snapshot = await get(promoQuery);
 
-          if (!snapshot.exists()) return [];
-          return Object.entries(snapshot.val())
-            .map(([id, user]) => ({ id, ...user }))
-            .reverse();
-        } catch (error) {
-          console.error("Error fetching users:", error);
-          throw new Error("Failed to fetch users");
-        }
-      },
-      enabled: fetchAll || Boolean(searchTerm), // Fetch only when searchTerm or fetchAll is set
-      refetchOnWindowFocus: true,
-    });
-  }
-  // UPDATE hook (put user in api)
-  const useUpdateUser = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: async (user) => {
-        const updatedData = {
-          ...user, // Spread the original row data
-          MemberId: Number(user.MemberId),
-        };
-        // remove undefined values
-        const sendData = Object.fromEntries(
-          Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
-        );
-        const userRef = ref(db, `userInfo/${sendData.id}`);
-        await update(userRef, sendData);
-        return Promise.resolve();
-      },
-      onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) =>
-          prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
-        );
-      },
-      onSettled: () => queryClient.invalidateQueries(["userInfo"]), // Refetch users after mutation
-    });
-  };
-  // DELETE hook (delete user in api)
-  const useDeleteUser = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: async (userId) => {
-        const userRef = ref(db, `userInfo/${userId}`);
-        await remove(userRef);
-        return Promise.resolve();
-      },
-      onMutate: (userId) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
-        );
-      },
-      onSettled: () => queryClient.invalidateQueries(["userInfo"]), // Refetch users after mutation
-    });
-  };
-  const { mutateAsync: createUser, isPending: isCreatingUser } =
-    useCreateUser();
-  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
-  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteUser();
-
-
-
-  const handleCreateUser = async ({ values, table }) => {
-    if (!values) {
-      console.error("User values are undefined");
-      return;
-    }
-
-    const newValidationErrors = validateUser(values);
-
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
-
-    try {
-      await createUser(values);
-    } catch (error) {
-      console.error("Error creating user:", error);
-    }
-
-    table.setCreatingRow(null);
-  };
-
-  const handleSaveUser = async ({ values, table }) => {
-    if (!values) {
-      console.error("User values are undefined");
-      return;
-    }
-
-    const newValidationErrors = validateUser(values);
-
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
-
-    try {
-      await updateUser(values);
-    } catch (error) {
-      console.error("Error updating user:", error);
-    }
-
-    table.setEditingRow(null);
-  };
-
-  const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(row.original.id);
-    }
-  };
-
-  const renderValidationErrors = (errors) => {
-    return Object.entries(errors).map(([key, message]) =>
-      message ? (
-        <Typography color="error" key={key}>
-          {message}
-        </Typography>
-      ) : null
-    );
-  };
   const table = useMaterialReactTable({
     columns,
-    data:fetchedUsers ,
+    data: fetchedUsers,
     createDisplayMode: "modal",
     editDisplayMode: "modal",
     enableEditing: true,
@@ -411,7 +463,6 @@ const Example = () => {
               pattern: "[0-9]*",
             }}
           />
-          {/* Add more fields here as needed */}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -446,32 +497,31 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-   (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={() => exportToExcel(fetchedUsers)}
-          >
-            Татаж авах
-          </Button>
-        </Box>
-      ),
+    renderTopToolbarCustomActions: () => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => exportToExcel(fetchedUsers)}
+        >
+          Татаж авах
+        </Button>
+      </Box>
+    ),
     initialState: {
       columnVisibility: {
         id: false,
-        ApplicantContactInformation: false,
-        RankName: false,
-        ResidentRegistrationNumber: false,
-        CenterName: false,
-        Address: false,
-        InviterId: false,
-        InviterName: false,
+        Level: false,
+        InviterPercent: false,
         SponsorId: false,
         SponsorName: false,
-        BankName: false,
-        AccountNumber: false,
+        InviterId: false,
+        InviterName: false,
+        accName: false,
+        accNumber: false,
+        CenterName: false,
+        System: false,
+        // phase, ProductName, isBlackMember харагдана
       },
     },
     state: {
@@ -490,7 +540,6 @@ const Example = () => {
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setFetchAll(false);
-            queryClient.invalidateQueries(["promotion"]);
           }}
           variant="filled"
           size="small"
@@ -498,9 +547,8 @@ const Example = () => {
         <Button
           variant="outlined"
           onClick={() => {
-            setFetchAll(true); // Fetch all data
-            setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["promotion"]);
+            setFetchAll(true);
+            setSearchTerm("");
           }}
         >
           Бүгд
@@ -513,49 +561,37 @@ const Example = () => {
 
 const queryClient = new QueryClient();
 
-const Buy = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+const CombinedUserInfo = () => {
+  const globalTheme = useTheme();
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
+          mode: globalTheme.palette.mode,
+          primary: globalTheme.palette.secondary,
+          info: { main: "rgb(255,122,0)" },
           background: {
             default:
               globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+                ? "rgb(254,255,244)"
+                : "#000",
           },
         },
         typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
+          button: { textTransform: "none", fontSize: "1.2rem" },
         },
         components: {
           MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
+            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
           },
           MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
+            styleOverrides: { thumb: { color: "pink" } },
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
+
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
@@ -568,4 +604,4 @@ const Buy = () => {
   );
 };
 
-export default Buy;
+export default CombinedUserInfo;

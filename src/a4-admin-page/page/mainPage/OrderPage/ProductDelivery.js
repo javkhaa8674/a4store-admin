@@ -3,7 +3,6 @@ import React, { useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
-  // createRow,
   useMaterialReactTable,
 } from "material-react-table";
 import {
@@ -19,6 +18,7 @@ import {
   ThemeProvider,
   createTheme,
   TextField,
+  CssBaseline,
 } from "@mui/material";
 import {
   QueryClient,
@@ -32,6 +32,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {
   ref,
   get,
+  push,
   update,
   remove,
   orderByChild,
@@ -43,354 +44,581 @@ import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
 import { RiFileExcel2Fill } from "react-icons/ri";
 
-const productName = [
-  "Скин бүүстер",
-  "Дөрвөн улирал амралт",
-  "Хүн орхоодой (Үрлэн)",
-  "Хүн орхоодой (Ваартай)",
-];
+// ---------- Firebase замууд ----------
+const RESET_PATH = "productdelivery";
+const BLACK_PATH = "BlackMembers/ProductDelivery";
 
+// ---------- CSV config (нэгтгэсэн) ----------
 const csvConfig = mkConfig({
   filename: `Бүтээгдэхүүн-Олголт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "ID",
-      displayLabel: "Утас",
-    },
-    {
-      key: "Name",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "ProductName",
-      displayLabel: "Бүтээгдэхүүний нэр",
-    },
-    {
-      key: "Count",
-      displayLabel: "Тоо хэмжээ",
-    },
-    {
-      key: "TimeStamps",
-      displayLabel: "Шийдвэрлэсэн огноо",
-    },
-    {
-      key: "Requester_TimeStamps",
-      displayLabel: "Хүсэлт гаргасан огноо",
-    },
-    {
-      key: "Description",
-      displayLabel: "Тайлбар",
-    },
+    { key: "phase", displayLabel: "Phase" },
+    { key: "MemberId", displayLabel: "Утас" },
+    { key: "QuantityName", displayLabel: "Нэр" },
+    { key: "ProductName", displayLabel: "Бүтээгдэхүүний нэр" },
+    { key: "ProductReceivedCode", displayLabel: "Тоо хэмжээ" },
+    { key: "ReceivedDate", displayLabel: "Огноо" },
+    { key: "Description", displayLabel: "Тайлбар" },
+    { key: "272Code", displayLabel: "272 Code" },
+    { key: "OldCode", displayLabel: "Old Code" },
+    { key: "totalCode", displayLabel: "Total Code" },
+    { key: "Check", displayLabel: "Check" },
+    { key: "HospitalTimeStamp", displayLabel: "Hospital TimeStamp" },
+    { key: "Requester_TimeStamps", displayLabel: "Хүсэлт гаргасан огноо" },
   ],
 });
 
 const Example = () => {
-  const [searchTerm, setSearchTerm] = useState(""); // User input for search
-  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: false,
-        size: 80,
-      },
-      {
-        accessorKey: "ID",
-        header: "Утас",
-        size: 80,
-        enableClickToCopy: true,
-      },
-      {
-        accessorKey: "Name",
-        header: "Нэр",
-      },
-      {
-        accessorKey: "ProductName",
-        header: "Бүтээгдэхүүний нэр",
-        editVariant: "select",
-        editSelectOptions: productName,
-      },
-      {
-        accessorKey: "Count",
-        header: "Тоо хэмжээ",
-        size: 80,
-        muiEditTextFieldProps: {
-          type: "number",
-        },
-      },
-      {
-        accessorKey: "TimeStamps",
-        header: "Шийдвэрлэсэн огноо",
-        size: 80,
-        Cell: ({ cell }) => {
-          const unixTimestamp = cell.getValue();
-          return dayjs(unixTimestamp).format("YYYY-MM-DD HH:mm:ss"); // Format using dayjs
-        },
-      },
-      {
-        accessorKey: "Requester_TimeStamps",
-        header: "Хүсэлт гаргасан огноо",
-        size: 80,
-        Cell: ({ cell }) => {
-          const unixTimestamp = cell.getValue();
-          return dayjs(unixTimestamp).format("YYYY-MM-DD HH:mm:ss"); // Format using dayjs
-        },
-      },
-      {
-        accessorKey: "Description",
-        header: "Тайлбар",
-      },
-    ],
-    [],
-  );
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
 
-  //call CREATE hook
-  const { mutateAsync: createUser, isPending: isCreatingUser } =
-    useCreateUser();
-  //call READ hook
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
+  // ---------- Fetch: хоёр замаас зэрэг татаж нэгтгэнэ ----------
+  function useGetUsers() {
+    return useQuery({
+      queryKey: ["combinedProductDelivery", searchTerm, fetchAll],
+      queryFn: async () => {
+        try {
+          const fetchFrom = async (path, phase, sourceKey) => {
+            let promoQuery;
+            if (fetchAll) {
+              promoQuery = ref(db, path);
+            } else if (searchTerm.length === 8) {
+              // black: MemberId, reset: ID
+              const childKey = phase === "black" ? "MemberId" : "ID";
+              promoQuery = query(
+                ref(db, path),
+                orderByChild(childKey),
+                equalTo(phase === "black" ? Number(searchTerm) : searchTerm),
+              );
+            } else {
+              return [];
+            }
+            const snapshot = await get(promoQuery);
+            if (!snapshot.exists()) return [];
+            return Object.entries(snapshot.val()).map(([id, user]) => {
+              if (phase === "black") {
+                // 🔹 Black-ийн талбаруудыг нэгтгэсэн нэр рүү map хийнэ
+                return {
+                  id,
+                  phase: "black",
+                  _source: sourceKey,
+                  MemberId: user.MemberId,
+                  QuantityName: user.QuantityName,
+                  ProductName: user.ProductName,
+                  ProductReceivedCode: user.ProductReceivedCode,
+                  ReceivedDate: user.ReceivedDate,
+                  Description: user.Description,
+                  "272Code": user["272Code"],
+                  OldCode: user.OldCode,
+                  totalCode: user.totalCode,
+                  Check: user.Check,
+                  HospitalTimeStamp: user.HospitalTimeStamp,
+                  Requester_TimeStamps: undefined,
+                };
+              } else {
+                // 🔹 reset-ийн талбаруудыг нэгтгэсэн нэр рүү map хийнэ
+                return {
+                  id,
+                  phase: "reset",
+                  _source: sourceKey,
+                  MemberId: user.ID,
+                  QuantityName: user.Name,
+                  ProductName: user.ProductName,
+                  ProductReceivedCode: user.Count,
+                  ReceivedDate: user.TimeStamps,
+                  Description: user.Description,
+                  "272Code": undefined,
+                  OldCode: undefined,
+                  totalCode: undefined,
+                  Check: undefined,
+                  HospitalTimeStamp: undefined,
+                  Requester_TimeStamps: user.Requester_TimeStamps,
+                };
+              }
+            });
+          };
+
+          if (!fetchAll && searchTerm.length !== 8) return [];
+
+          const [resetUsers, blackUsers] = await Promise.all([
+            fetchFrom(RESET_PATH, "reset", "reset"),
+            fetchFrom(BLACK_PATH, "black", "black"),
+          ]);
+
+          return [...resetUsers, ...blackUsers].reverse();
+        } catch (error) {
+          console.error("Error fetching users:", error);
+          throw new Error("Failed to fetch users");
+        }
+      },
+      enabled: fetchAll || Boolean(searchTerm),
+      refetchOnWindowFocus: true,
+    });
+  }
+
   const {
     data: fetchedUsers = [],
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
   } = useGetUsers();
-  //call UPDATE hook
-  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
-  //call DELETE hook
-  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteUser();
 
-  //CREATE hook (post new user to api)
+  // 🔹 id-аар давхардлыг арилгах
+  const dedupedUsers = useMemo(() => {
+    const map = new Map();
+    for (const u of fetchedUsers) {
+      map.set(u.id, u);
+    }
+    return Array.from(map.values());
+  }, [fetchedUsers]);
+
+  // ---------- Columns (нэгтгэсэн) ----------
+  const columns = useMemo(
+    () => [
+      { accessorKey: "id", header: "id", enableEditing: false, size: 80 },
+
+      // 🔹 phase (ялгах багана)
+      {
+        accessorKey: "phase",
+        header: "Phase",
+        size: 90,
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          if (v === "black") return "black";
+          if (v === "reset") return "reset";
+          return "—";
+        },
+      },
+
+      // ===== Ижил утгатай нэгтгэсэн баганууд =====
+      {
+        accessorKey: "MemberId",
+        header: "Утас",
+        size: 100,
+        enableClickToCopy: true,
+      },
+      { accessorKey: "QuantityName", header: "Нэр" },
+      {
+        accessorKey: "ProductName",
+        header: "Бүтээгдэхүүний нэр",
+        muiEditTextFieldProps: { type: "text" },
+      },
+      {
+        accessorKey: "ProductReceivedCode",
+        header: "Тоо хэмжээ",
+        size: 120,
+        muiEditTextFieldProps: { type: "number" },
+      },
+      {
+        accessorKey: "ReceivedDate",
+        header: "Огноо",
+        size: 150,
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          if (!v) return "—";
+          const d = dayjs(v);
+          return d.isValid() ? d.format("YYYY-MM-DD HH:mm:ss") : "—";
+        },
+      },
+      { accessorKey: "Description", header: "Тайлбар" },
+
+      // ===== Зөвхөн Black-д байдаг баганууд =====
+      {
+        accessorKey: "272Code",
+        header: "Эхний 272 хүн эсэх",
+        size: 100,
+        muiEditTextFieldProps: { type: "number" },
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          if (v === undefined || v === null || v === "") return "—";
+          return Number(v) === 1 ? "Тийм" : "Үгүй";
+        },
+      },
+      {
+        accessorKey: "OldCode",
+        header: "Old Code",
+        size: 90,
+        muiEditTextFieldProps: { type: "number" },
+      },
+      {
+        accessorKey: "totalCode",
+        header: "Нийт кодны тоо",
+        size: 100,
+        muiEditTextFieldProps: { type: "number" },
+      },
+      {
+        accessorKey: "Check",
+        header: "Шалгасан эсэх",
+        size: 100,
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          if (v === undefined || v === null || v === "") return "—";
+          return v === true || v === 1 || v === "true" ? "Тийм" : "Үгүй";
+        },
+      },
+      {
+        accessorKey: "HospitalTimeStamp",
+        header: "Hospital TimeStamp",
+        size: 120,
+        muiEditTextFieldProps: { type: "text" },
+      },
+
+      // ===== Зөвхөн reset-д байдаг багана =====
+      {
+        accessorKey: "Requester_TimeStamps",
+        header: "Хүсэлт гаргасан огноо",
+        size: 150,
+        Cell: ({ cell }) => {
+          const v = cell.getValue();
+          if (!v) return "—";
+          const d = dayjs(v);
+          return d.isValid() ? d.format("YYYY-MM-DD HH:mm:ss") : "—";
+        },
+      },
+    ],
+    [],
+  );
+
+  // ---------- CREATE ----------
   function useCreateUser() {
-    const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
-        //send api update request here
-        await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-        return Promise.resolve();
-      },
-      //client side optimistic update
-      onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["productdelivery"], (prevUsers) => [
-          ...prevUsers,
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
-        ]);
-      },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
-    });
-  }
+      mutationFn: async (values) => {
+        const isBlack = values.phase === "black" || values._source === "black";
+        const path = isBlack ? BLACK_PATH : RESET_PATH;
+        const { _source, phase, ...rest } = values;
 
-  //READ hook (get users from api)
-  function useGetUsers() {
-    return useQuery({
-      queryKey: ["productdelivery", searchTerm, fetchAll],
-      queryFn: async () => {
-        try {
-          let promoQuery;
-          if (fetchAll) {
-            // Fetch all data if fetchAll is true
-            promoQuery = ref(db, "productdelivery");
-          } else if (searchTerm.length === 8) {
-            // Only query if searchTerm is defined
-            promoQuery = query(
-              ref(db, "productdelivery"),
-              orderByChild("ID"),
-              equalTo(searchTerm),
-            );
-          } else {
-            // If fetchAll is false and searchTerm is not defined, return an empty array
-            return [];
-          }
-          const snapshot = await get(promoQuery);
-
-          if (!snapshot.exists()) return [];
-          return Object.entries(snapshot.val())
-            .map(([id, user]) => ({ id, ...user }))
-            .reverse();
-        } catch (error) {
-          console.error("Error fetching users:", error);
-          throw new Error("Failed to fetch users");
+        let data;
+        if (isBlack) {
+          data = {
+            "272Code": Number(rest["272Code"]) || 0,
+            Check:
+              rest.Check === true || rest.Check === "true" || rest.Check === 1,
+            Description: rest.Description ?? "",
+            HospitalTimeStamp: Number(rest.HospitalTimeStamp) || 0,
+            MemberId: Number(rest.MemberId),
+            OldCode: Number(rest.OldCode) || 0,
+            ProductName: rest.ProductName ?? "",
+            ProductReceivedCode: Number(rest.ProductReceivedCode) || 0,
+            QuantityName: rest.QuantityName ?? "",
+            ReceivedDate: rest.ReceivedDate
+              ? dayjs(rest.ReceivedDate).isValid()
+                ? dayjs(rest.ReceivedDate).toISOString()
+                : new Date().toISOString()
+              : new Date().toISOString(),
+            totalCode: Number(rest.totalCode) || 0,
+          };
+        } else {
+          data = {
+            ID: String(rest.MemberId ?? ""),
+            Name: rest.QuantityName ?? "",
+            ProductName: rest.ProductName ?? "",
+            Count: Number(rest.ProductReceivedCode) || 0,
+            TimeStamps: rest.ReceivedDate
+              ? dayjs(rest.ReceivedDate).isValid()
+                ? dayjs(rest.ReceivedDate).toISOString()
+                : new Date().toISOString()
+              : new Date().toISOString(),
+            Requester_TimeStamps: rest.Requester_TimeStamps
+              ? dayjs(rest.Requester_TimeStamps).isValid()
+                ? dayjs(rest.Requester_TimeStamps).toISOString()
+                : new Date().toISOString()
+              : new Date().toISOString(),
+            Description: rest.Description ?? "",
+          };
         }
+
+        await push(ref(db, path), data);
+        return Promise.resolve();
       },
-      enabled: fetchAll || Boolean(searchTerm), // Fetch only when searchTerm or fetchAll is set
-      refetchOnWindowFocus: true,
+      onMutate: (newUserInfo) => {
+        queryClient.setQueryData(
+          ["combinedProductDelivery", searchTerm, fetchAll],
+          (prevUsers) => [
+            ...(prevUsers || []),
+            {
+              ...newUserInfo,
+              id: (Math.random() + 1).toString(36).substring(7),
+            },
+          ],
+        );
+      },
+      onSettled: () =>
+        queryClient.invalidateQueries({
+          queryKey: ["combinedProductDelivery"],
+        }),
     });
   }
 
-  // function useGetUsers() {
-  //   return useQuery({
-  //     queryKey: ["productdelivery"],
-  //     queryFn: async () => {
-  //       try {
-  //         const snapshot = await get(ref(db, "productdelivery"));
-  //         if (!snapshot.exists()) return [];
-  //         return Object.entries(snapshot.val())
-  //           .map(([id, user]) => ({ id, ...user }))
-  //           .reverse();
-  //       } catch (error) {
-  //         console.error("Error fetching users:", error);
-  //         throw new Error("Failed to fetch users");
-  //       }
-  //     },
-  //     refetchOnWindowFocus: true,
-  //   });
-  // }
-
-  //UPDATE hook (put user in api)
+  // ---------- UPDATE ----------
   function useUpdateUser() {
-    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async (values) => {
+        if (!values?.id) {
+          throw new Error("id байхгүй — update хийх боломжгүй");
+        }
+        const isBlack = values._source === "black" || values.phase === "black";
+        const path = isBlack
+          ? `${BLACK_PATH}/${values.id}`
+          : `${RESET_PATH}/${values.id}`;
+
+        let updatedData;
+        if (isBlack) {
+          updatedData = {
+            "272Code": Number(values["272Code"]) || 0,
+            Check:
+              values.Check === true ||
+              values.Check === "true" ||
+              values.Check === 1,
+            Description: values.Description ?? "",
+            HospitalTimeStamp: Number(values.HospitalTimeStamp) || 0,
+            MemberId: Number(values.MemberId),
+            OldCode: Number(values.OldCode) || 0,
+            ProductName: values.ProductName ?? "",
+            ProductReceivedCode: Number(values.ProductReceivedCode) || 0,
+            QuantityName: values.QuantityName ?? "",
+            ReceivedDate: values.ReceivedDate
+              ? dayjs(values.ReceivedDate).isValid()
+                ? dayjs(values.ReceivedDate).toISOString()
+                : new Date().toISOString()
+              : new Date().toISOString(),
+            totalCode: Number(values.totalCode) || 0,
+          };
+        } else {
+          updatedData = {
+            ID: String(values.MemberId ?? ""),
+            Name: values.QuantityName ?? "",
+            ProductName: values.ProductName ?? "",
+            Count: Number(values.ProductReceivedCode) || 0,
+            TimeStamps: values.ReceivedDate
+              ? dayjs(values.ReceivedDate).isValid()
+                ? dayjs(values.ReceivedDate).toISOString()
+                : new Date().toISOString()
+              : new Date().toISOString(),
+            Requester_TimeStamps: values.Requester_TimeStamps
+              ? dayjs(values.Requester_TimeStamps).isValid()
+                ? dayjs(values.Requester_TimeStamps).toISOString()
+                : new Date().toISOString()
+              : new Date().toISOString(),
+            Description: values.Description ?? "",
+          };
+        }
+
+        await update(ref(db, path), updatedData);
+        return Promise.resolve();
+      },
+      onMutate: (newUserInfo) => {
+        queryClient.setQueriesData(
+          { queryKey: ["combinedProductDelivery"] },
+          (prevUsers) =>
+            prevUsers?.map((prevUser) =>
+              prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+            ),
+        );
+      },
+      onSettled: () =>
+        queryClient.invalidateQueries({
+          queryKey: ["combinedProductDelivery"],
+        }),
+    });
+  }
+
+  // ---------- DELETE ----------
+  function useDeleteUser() {
     return useMutation({
       mutationFn: async (user) => {
-        const userRef = ref(db, `productdelivery/${user.id}`);
-        await update(userRef, user);
+        const path =
+          user._source === "black"
+            ? `${BLACK_PATH}/${user.id}`
+            : `${RESET_PATH}/${user.id}`;
+        await remove(ref(db, path));
         return Promise.resolve();
       },
-      //client side optimistic update
-      onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["productdelivery"], (prevUsers) =>
-          prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
-          ),
-        );
-      },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
-    });
-  }
-
-  //DELETE hook (delete user in api)
-  function useDeleteUser() {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: async (userId) => {
-        const userRef = ref(db, `productdelivery/${userId}`);
-        await remove(userRef);
-        return Promise.resolve();
-      },
-      // ★ Client тал дээр optimistic update
-      onMutate: async (userId) => {
-        // ★ Бүх "productdelivery" query-г цуцлах
-        await queryClient.cancelQueries({ queryKey: ["productdelivery"] });
-
-        // ★ Өмнөх өгөгдлийг хадгалах (алдаа гарвал буцаах)
-        const previousData = queryClient.getQueriesData({
-          queryKey: ["productdelivery"],
+      onMutate: async (user) => {
+        await queryClient.cancelQueries({
+          queryKey: ["combinedProductDelivery"],
         });
-
-        // ★ Бүх "productdelivery" query-с устгасан хэрэглэгчийг хасах
+        const previousData = queryClient.getQueriesData({
+          queryKey: ["combinedProductDelivery"],
+        });
         queryClient.setQueriesData(
-          { queryKey: ["productdelivery"] },
-          (oldData) => oldData?.filter((user) => user.id !== userId),
+          { queryKey: ["combinedProductDelivery"] },
+          (oldData) => oldData?.filter((u) => u.id !== user.id),
         );
-
         return { previousData };
       },
-      // ★ Алдаа гарвал өмнөх өгөгдлийг буцаах
-      onError: (err, userId, context) => {
+      onError: (err, user, context) => {
         if (context?.previousData) {
           context.previousData.forEach(([queryKey, data]) => {
             queryClient.setQueryData(queryKey, data);
           });
         }
       },
-      // ★ Амжилттай эсвэл алдаа гарсны дараа Firebase-с дахин татах
-      onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ["productdelivery"] });
-      },
+      onSettled: () =>
+        queryClient.invalidateQueries({
+          queryKey: ["combinedProductDelivery"],
+        }),
     });
   }
 
-  //CREATE action
+  const { mutateAsync: createUser, isPending: isCreatingUser } =
+    useCreateUser();
+  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
+    useUpdateUser();
+  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
+    useDeleteUser();
+
   const handleCreateUser = async ({ values, table }) => {
     await createUser(values);
-    table.setCreatingRow(null); //exit creating mode
+    table.setCreatingRow(null);
   };
 
-  //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
     await updateUser(values);
-    table.setEditingRow(null); //exit editing mode
+    table.setEditingRow(null);
   };
 
-  //DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(row.original.id);
+      deleteUser(row.original);
     }
   };
 
-  // Export CSV data
+  // ---------- CSV Export ----------
   const handleExportData = () => {
-    const columnsToRemove = ["id"];
-    // Function to exclude specific columns from the data
-    const excludeColumns = (data, columnsToRemove) => {
-      return data.map((item) => {
-        const newItem = {
-          ...item,
-          TimeStamps: dayjs(item.TimeStamps).format("YYYY-MM-DD HH:mm:ss"),
-          Requester_TimeStamps: dayjs(item.Requester_TimeStamps).format(
-            "YYYY-MM-DD HH:mm:ss",
-          ),
-        }; // Create a copy of the item
-        columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
-        return newItem;
-      });
-    };
-    const removedId = excludeColumns(fetchedUsers, columnsToRemove);
-
-    const csv = generateCsv(csvConfig)(removedId);
+    const cleaned = dedupedUsers.map((item) => {
+      const newItem = {
+        ...item,
+        ReceivedDate: item.ReceivedDate
+          ? dayjs(item.ReceivedDate).isValid()
+            ? dayjs(item.ReceivedDate).format("YYYY-MM-DD HH:mm:ss")
+            : ""
+          : "",
+        Requester_TimeStamps: item.Requester_TimeStamps
+          ? dayjs(item.Requester_TimeStamps).isValid()
+            ? dayjs(item.Requester_TimeStamps).format("YYYY-MM-DD HH:mm:ss")
+            : ""
+          : "",
+      };
+      delete newItem.id;
+      delete newItem._source;
+      return newItem;
+    });
+    const csv = generateCsv(csvConfig)(cleaned);
     download(csvConfig)(csv);
+  };
+
+  // 🔹 Dark горимд хүснэгтийн өнгө
+  const darkColors = {
+    paper: "#1e1e1e",
+    head: "#141414",
+    headText: "#ffffff",
+    rowEven: "#1e1e1e",
+    rowOdd: "#232323",
+    rowHover: "#2e2e2e",
+    text: "#eaeaea",
+    divider: "rgba(255,255,255,0.12)",
+    toolbar: "#1e1e1e",
   };
 
   const table = useMaterialReactTable({
     columns,
-    data: fetchedUsers,
-    createDisplayMode: "modal", //default ('row', and 'custom' are also available)
-    editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
+    data: dedupedUsers,
+    createDisplayMode: "modal",
+    editDisplayMode: "modal",
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
-      ? {
-          color: "error",
-          children: "Error loading data",
-        }
+      ? { color: "error", children: "Error loading data" }
       : undefined,
+
+    muiTablePaperProps: {
+      sx: {
+        backgroundColor: isDark ? darkColors.paper : undefined,
+        backgroundImage: "none",
+        color: isDark ? darkColors.text : undefined,
+      },
+    },
     muiTableContainerProps: {
       sx: {
         minHeight: "500px",
+        backgroundColor: isDark ? darkColors.paper : undefined,
+      },
+    },
+    muiTableHeadCellProps: {
+      sx: {
+        backgroundColor: isDark ? darkColors.head : undefined,
+        color: isDark ? darkColors.headText : undefined,
+        borderBottom: isDark ? `1px solid ${darkColors.divider}` : undefined,
+        "& .MuiTableSortLabel-root": {
+          color: isDark ? darkColors.headText : undefined,
+        },
+        "& .MuiTableSortLabel-root:hover": {
+          color: isDark ? "#90caf9" : undefined,
+        },
+        "& .MuiSvgIcon-root": {
+          color: isDark ? darkColors.headText : undefined,
+        },
+      },
+    },
+    muiTableBodyRowProps: {
+      sx: {
+        backgroundColor: isDark ? darkColors.rowEven : undefined,
+        "&:nth-of-type(odd)": {
+          backgroundColor: isDark ? darkColors.rowOdd : undefined,
+        },
+        "&:hover": {
+          backgroundColor: isDark
+            ? `${darkColors.rowHover} !important`
+            : undefined,
+        },
+        "& td": {
+          color: isDark ? darkColors.text : undefined,
+          borderBottom: isDark ? `1px solid ${darkColors.divider}` : undefined,
+        },
+      },
+    },
+    muiTopToolbarProps: {
+      sx: {
+        backgroundColor: isDark ? darkColors.toolbar : undefined,
+        color: isDark ? darkColors.text : undefined,
+      },
+    },
+    muiBottomToolbarProps: {
+      sx: {
+        backgroundColor: isDark ? darkColors.toolbar : undefined,
+        color: isDark ? darkColors.text : undefined,
+        borderTop: isDark ? `1px solid ${darkColors.divider}` : undefined,
       },
     },
 
     onCreatingRowSave: handleCreateUser,
     onEditingRowSave: handleSaveUser,
-    //optionally customize modal content
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Худалдан авалт нэмэх</DialogTitle>
+        <DialogTitle variant="h3">Бүтээгдэхүүн олголт нэмэх</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
         </DialogActions>
       </>
     ),
-    //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Бүтээгдэхүүн олголт засварлах</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -411,7 +639,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"
@@ -422,7 +650,17 @@ const Example = () => {
         </Button>
       </Box>
     ),
-    initialState: { columnVisibility: { id: false } },
+    initialState: {
+      columnVisibility: {
+        id: false,
+        "272Code": false,
+        OldCode: false,
+        totalCode: false,
+        HospitalTimeStamp: false,
+        _source: false,
+        // phase харагдана
+      },
+    },
     state: {
       isLoading: isLoadingUsers,
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
@@ -440,7 +678,6 @@ const Example = () => {
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setFetchAll(false);
-            queryClient.invalidateQueries(["promotion"]);
           }}
           variant="filled"
           size="small"
@@ -448,9 +685,8 @@ const Example = () => {
         <Button
           variant="outlined"
           onClick={() => {
-            setFetchAll(true); // Fetch all data
-            setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["promotion"]);
+            setFetchAll(true);
+            setSearchTerm("");
           }}
         >
           Бүгд
@@ -463,54 +699,57 @@ const Example = () => {
 
 const queryClient = new QueryClient();
 
-const ProductDelivery = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+const CombinedProductDelivery = () => {
+  const globalTheme = useTheme();
+  const isDark = globalTheme.palette.mode === "dark";
+
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
+          mode: globalTheme.palette.mode,
+          primary: {
+            main: isDark ? "#90caf9" : globalTheme.palette.primary.main,
           },
+          secondary: globalTheme.palette.secondary,
+          info: { main: "rgb(255,122,0)" },
           background: {
-            default:
-              globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+            default: isDark ? "#0b0b0b" : "rgb(254,255,244)",
+            paper: isDark ? "#1e1e1e" : "#ffffff",
           },
+          text: {
+            primary: isDark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.87)",
+            secondary: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
+          },
+          divider: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)",
         },
         typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
+          button: { textTransform: "none", fontSize: "1.2rem" },
         },
         components: {
           MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
+            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
           },
           MuiSwitch: {
+            styleOverrides: { thumb: { color: "pink" } },
+          },
+          MuiDialog: {
             styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
+              paper: {
+                backgroundImage: "none",
+                backgroundColor: isDark ? "#1e1e1e" : "#fff",
               },
             },
           },
         },
       }),
-    [globalTheme],
+    [globalTheme, isDark],
   );
 
   return (
-    //Put this with your other react-query providers near root of your app
     <QueryClientProvider client={queryClient}>
-      <Typography color="inherit" variant="h4">
+      <CssBaseline />
+      <Typography color="inherit" variant="h4" sx={{ mb: 2 }}>
         Бүтээгдэхүүн олголт
       </Typography>
       <ThemeProvider theme={tableTheme}>
@@ -520,4 +759,4 @@ const ProductDelivery = () => {
   );
 };
 
-export default ProductDelivery;
+export default CombinedProductDelivery;

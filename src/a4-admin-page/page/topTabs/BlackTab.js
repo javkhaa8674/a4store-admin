@@ -10,8 +10,11 @@ import {
   BlackPromotionCalculation,
   BlackTransactionReq,
   BlackOrgChart,
-  DeleteBlackMembers
+  BlackProductDelivary,
+  DeleteBlackMembers,
+  BlackEBarimtDelivery,
 } from "../mainPage/BlackMemberspage";
+
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -54,10 +57,14 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable" // 👈 Баруун, зүүн тийш гүйдэг болгох тохиргоо
+          scrollButtons="auto" // 👈 Хэрэгцээтэй үед баруун, зүүн сумтай товчийг автоматаар харуулах
         >
           <Tab label="Блэк шилжих хүсэлт" {...a11yProps(0)} />
           <Tab label="Блэк үлдсэн худалдан авалт" {...a11yProps(1)} />
           <Tab label="Бүх худалдан авалт" {...a11yProps(1)} />
+          <Tab label="Блэк бүтээгдэхүүн олголт" {...a11yProps(1)} />
+          <Tab label="Блэк e-баримт олголт" {...a11yProps(1)} />
           <Tab label="Блэк багийн бүтэц" {...a11yProps(1)} />
           <Tab label="Блэк урамшуулал бодолт" {...a11yProps(1)} />
           <Tab label="Блэк зэрэглэл дэвшүүлэх" {...a11yProps(1)} />
@@ -74,16 +81,23 @@ export default function BasicTabs() {
         <BlackAllUserInfo />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={3}>
-        <BlackOrgChart />
+        <BlackProductDelivary />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={4}>
-        <BlackPromotionCalculation/>
+        <BlackEBarimtDelivery />
       </CustomTabPanel>
+
       <CustomTabPanel value={value} index={5}>
-        <BlackCalculateLevel />
+        <BlackOrgChart />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={6}>
-      <DeleteBlackMembers/>
+        <BlackPromotionCalculation />
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={7}>
+        <BlackCalculateLevel />
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={8}>
+        <DeleteBlackMembers />
       </CustomTabPanel>
     </Box>
   );
