@@ -24,9 +24,6 @@ const NewMarketingPromotionCalculate = () => {
   const [data, setData] = useState([]);
   const [currentType, setCurrentType] = useState("");
 
-  // ✅ Transaction-той ижил: useColorScheme
-  const { mode } = useColorScheme();
-
   const getData = async (value, selection) => {
     try {
       const dataRef = ref(db, "newMarketing/UserInfo");
