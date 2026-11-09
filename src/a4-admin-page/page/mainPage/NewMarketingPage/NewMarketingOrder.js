@@ -18,7 +18,6 @@ import {
   useColorScheme,
   ThemeProvider,
   createTheme,
-  lighten,
 } from "@mui/material";
 import {
   QueryClient,

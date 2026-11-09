@@ -27,40 +27,6 @@ const NewMarketingPromotionCalculate = () => {
   // ✅ Transaction-той ижил: useColorScheme
   const { mode } = useColorScheme();
 
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: {
-            main: "rgb(255,122,0)",
-          },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none",
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: { fontSize: "1.1rem" },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: { color: "pink" },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
-
   const getData = async (value, selection) => {
     try {
       const dataRef = ref(db, "newMarketing/UserInfo");
