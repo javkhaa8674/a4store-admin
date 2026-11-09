@@ -19,6 +19,7 @@ import {
   createTheme,
   TextField,
   CssBaseline,
+  Checkbox,
 } from "@mui/material";
 import {
   QueryClient,
@@ -29,6 +30,7 @@ import {
 } from "@tanstack/react-query";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 import {
   ref,
   get,
@@ -61,11 +63,11 @@ const csvConfig = mkConfig({
     { key: "ProductReceivedCode", displayLabel: "Тоо хэмжээ" },
     { key: "ReceivedDate", displayLabel: "Огноо" },
     { key: "Description", displayLabel: "Тайлбар" },
-    { key: "272Code", displayLabel: "272 Code" },
-    { key: "OldCode", displayLabel: "Old Code" },
+    { key: "272Code", displayLabel: "272-н эрх" },
+    { key: "OldCode", displayLabel: "Үлдсэн код" },
     { key: "totalCode", displayLabel: "Total Code" },
-    { key: "Check", displayLabel: "Check" },
-    { key: "HospitalTimeStamp", displayLabel: "Hospital TimeStamp" },
+    { key: "Check", displayLabel: "Тулгалт" },
+    { key: "HospitalTimeStamp", displayLabel: "Эмнэлэг огноо" },
     { key: "Requester_TimeStamps", displayLabel: "Хүсэлт гаргасан огноо" },
   ],
 });
@@ -89,7 +91,6 @@ const Example = () => {
             if (fetchAll) {
               promoQuery = ref(db, path);
             } else if (searchTerm.length === 8) {
-              // black: MemberId, reset: ID
               const childKey = phase === "black" ? "MemberId" : "ID";
               promoQuery = query(
                 ref(db, path),
@@ -103,7 +104,6 @@ const Example = () => {
             if (!snapshot.exists()) return [];
             return Object.entries(snapshot.val()).map(([id, user]) => {
               if (phase === "black") {
-                // 🔹 Black-ийн талбаруудыг нэгтгэсэн нэр рүү map хийнэ
                 return {
                   id,
                   phase: "black",
@@ -122,7 +122,6 @@ const Example = () => {
                   Requester_TimeStamps: undefined,
                 };
               } else {
-                // 🔹 reset-ийн талбаруудыг нэгтгэсэн нэр рүү map хийнэ
                 return {
                   id,
                   phase: "reset",
@@ -151,7 +150,19 @@ const Example = () => {
             fetchFrom(BLACK_PATH, "black", "black"),
           ]);
 
-          return [...resetUsers, ...blackUsers].reverse();
+          // 🔹 ReceivedDate-ээр буурах дарааллаар эрэмбэлэх
+          const combined = [...resetUsers, ...blackUsers];
+
+          combined.sort((a, b) => {
+            const ta = a.ReceivedDate ? dayjs(a.ReceivedDate).valueOf() : 0;
+            const tb = b.ReceivedDate ? dayjs(b.ReceivedDate).valueOf() : 0;
+            if (isNaN(ta) && isNaN(tb)) return 0;
+            if (isNaN(ta)) return 1;
+            if (isNaN(tb)) return -1;
+            return tb - ta;
+          });
+
+          return combined;
         } catch (error) {
           console.error("Error fetching users:", error);
           throw new Error("Failed to fetch users");
@@ -169,7 +180,6 @@ const Example = () => {
     isLoading: isLoadingUsers,
   } = useGetUsers();
 
-  // 🔹 id-аар давхардлыг арилгах
   const dedupedUsers = useMemo(() => {
     const map = new Map();
     for (const u of fetchedUsers) {
@@ -178,16 +188,31 @@ const Example = () => {
     return Array.from(map.values());
   }, [fetchedUsers]);
 
-  // ---------- Columns (нэгтгэсэн) ----------
+  // ---------- Columns ----------
   const columns = useMemo(
     () => [
-      { accessorKey: "id", header: "id", enableEditing: false, size: 80 },
+      // 🔹 id багана — enableHiding: true (initialState-аар нуугдана)
+      {
+        accessorKey: "id",
+        header: "id",
+        enableEditing: false,
+        Edit: () => null,
+        size: 80,
+        enableHiding: true,
+      },
 
-      // 🔹 phase (ялгах багана)
+      // 🔹 phase
       {
         accessorKey: "phase",
         header: "Phase",
-        size: 90,
+        size: 120,
+        editVariant: "select",
+        editSelectOptions: ["reset", "black"],
+        muiEditTextFieldProps: {
+          select: true,
+          required: true,
+          defaultValue: "reset",
+        },
         Cell: ({ cell }) => {
           const v = cell.getValue();
           if (v === "black") return "black";
@@ -202,8 +227,13 @@ const Example = () => {
         header: "Утас",
         size: 100,
         enableClickToCopy: true,
+        muiEditTextFieldProps: { required: true },
       },
-      { accessorKey: "QuantityName", header: "Нэр" },
+      {
+        accessorKey: "QuantityName",
+        header: "Нэр",
+        muiEditTextFieldProps: { required: true, type: "text" },
+      },
       {
         accessorKey: "ProductName",
         header: "Бүтээгдэхүүний нэр",
@@ -219,6 +249,11 @@ const Example = () => {
         accessorKey: "ReceivedDate",
         header: "Огноо",
         size: 150,
+        muiEditTextFieldProps: {
+          type: "datetime-local",
+          InputLabelProps: { shrink: true },
+        },
+
         Cell: ({ cell }) => {
           const v = cell.getValue();
           if (!v) return "—";
@@ -242,7 +277,7 @@ const Example = () => {
       },
       {
         accessorKey: "OldCode",
-        header: "Old Code",
+        header: "Үлдсэн код",
         size: 90,
         muiEditTextFieldProps: { type: "number" },
       },
@@ -252,19 +287,27 @@ const Example = () => {
         size: 100,
         muiEditTextFieldProps: { type: "number" },
       },
+
+      // 🔹 Check багана — ЗӨВХӨН CHECKBOX UI
       {
         accessorKey: "Check",
-        header: "Шалгасан эсэх",
-        size: 100,
+        header: "Тулгасан эсэх",
+        size: 80,
+        // засварлах боломжтой checkbox
+        muiEditTextFieldProps: {
+          type: "checkbox",
+        },
+        // харуулах хэсэг — checkbox
         Cell: ({ cell }) => {
           const v = cell.getValue();
-          if (v === undefined || v === null || v === "") return "—";
-          return v === true || v === 1 || v === "true" ? "Тийм" : "Үгүй";
+          const checked = v === true || v === 1 || v === "true";
+          return <Checkbox checked={checked} size="small" sx={{ p: 0 }} />;
         },
       },
+
       {
         accessorKey: "HospitalTimeStamp",
-        header: "Hospital TimeStamp",
+        header: "Эмнэлэг огноо",
         size: 120,
         muiEditTextFieldProps: { type: "text" },
       },
@@ -274,6 +317,10 @@ const Example = () => {
         accessorKey: "Requester_TimeStamps",
         header: "Хүсэлт гаргасан огноо",
         size: 150,
+        muiEditTextFieldProps: {
+          type: "datetime-local",
+          InputLabelProps: { shrink: true },
+        },
         Cell: ({ cell }) => {
           const v = cell.getValue();
           if (!v) return "—";
@@ -333,25 +380,18 @@ const Example = () => {
           };
         }
 
-        await push(ref(db, path), data);
-        return Promise.resolve();
+        const newRef = await push(ref(db, path), data);
+        return {
+          ...values,
+          id: newRef.key,
+          _source: isBlack ? "black" : "reset",
+        };
       },
-      onMutate: (newUserInfo) => {
-        queryClient.setQueryData(
-          ["combinedProductDelivery", searchTerm, fetchAll],
-          (prevUsers) => [
-            ...(prevUsers || []),
-            {
-              ...newUserInfo,
-              id: (Math.random() + 1).toString(36).substring(7),
-            },
-          ],
-        );
-      },
-      onSettled: () =>
+      onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ["combinedProductDelivery"],
-        }),
+        });
+      },
     });
   }
 
@@ -484,7 +524,7 @@ const Example = () => {
   };
 
   const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
       deleteUser(row.original);
     }
   };
@@ -494,6 +534,10 @@ const Example = () => {
     const cleaned = dedupedUsers.map((item) => {
       const newItem = {
         ...item,
+        Check:
+          item.Check === true || item.Check === 1 || item.Check === "true"
+            ? "Тийм"
+            : "Үгүй",
         ReceivedDate: item.ReceivedDate
           ? dayjs(item.ReceivedDate).isValid()
             ? dayjs(item.ReceivedDate).format("YYYY-MM-DD HH:mm:ss")
@@ -532,6 +576,8 @@ const Example = () => {
     createDisplayMode: "modal",
     editDisplayMode: "modal",
     enableEditing: true,
+    enableRowActions: true,
+    enableCreateRow: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? { color: "error", children: "Error loading data" }
@@ -639,8 +685,15 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: () => (
+    renderTopToolbarCustomActions: ({ table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => table.setCreatingRow(true)}
+        >
+          Нэмэх
+        </Button>
         <Button
           variant="contained"
           startIcon={<RiFileExcel2Fill />}
@@ -652,13 +705,12 @@ const Example = () => {
     ),
     initialState: {
       columnVisibility: {
-        id: false,
+        id: false, // 🔹 id багана харагдахгүй
         "272Code": false,
         OldCode: false,
         totalCode: false,
         HospitalTimeStamp: false,
         _source: false,
-        // phase харагдана
       },
     },
     state: {

@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
-  // createRow,
   useMaterialReactTable,
 } from "material-react-table";
 import {
@@ -29,10 +28,12 @@ import {
 } from "@tanstack/react-query";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import {
   ref,
   get,
+  push,
   update,
   remove,
   orderByChild,
@@ -43,49 +44,41 @@ import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
 import { RiFileExcel2Fill } from "react-icons/ri";
 
+// ---------- Firebase зам ----------
+const EBARIMT_PATH = "ebarimt";
+
+// ---------- CSV config ----------
 const csvConfig = mkConfig({
   filename: `Ебаримт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "ID",
-      displayLabel: "Утас",
-    },
-    {
-      key: "Name",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "Count",
-      displayLabel: "Тоо хэмжээ",
-    },
-    {
-      key: "TimeStamps",
-      displayLabel: "Шийдвэрлэсэн огноо",
-    },
-    {
-      key: "Requester_TimeStamps",
-      displayLabel: "Хүсэлт гаргасан огноо",
-    },
-    {
-      key: "Description",
-      displayLabel: "Тайлбар",
-    },
+    { key: "ID", displayLabel: "Утас" },
+    { key: "Name", displayLabel: "Нэр" },
+    { key: "Count", displayLabel: "Тоо хэмжээ" },
+    { key: "TimeStamps", displayLabel: "Шийдвэрлэсэн огноо" },
+    { key: "Requester_TimeStamps", displayLabel: "Хүсэлт гаргасан огноо" },
+    { key: "Description", displayLabel: "Тайлбар" },
   ],
 });
 
 const Example = () => {
+  const queryClient = useQueryClient();
   const [validationErrors, setValidationErrors] = useState({});
-  const [searchTerm, setSearchTerm] = useState(""); // User input for search
-  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
+
+  // ---------- Columns ----------
   const columns = useMemo(
     () => [
+      // 🔹 id багана — хүснэгтэд болон modal-д харагдахгүй
       {
         accessorKey: "id",
         header: "id",
         enableEditing: false,
+        Edit: () => null, // modal дотор рендэрлэхгүй
         size: 80,
+        enableHiding: true,
       },
       {
         accessorKey: "Name",
@@ -94,13 +87,11 @@ const Example = () => {
           required: true,
           error: !!validationErrors?.firstName,
           helperText: validationErrors?.firstName,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
               firstName: undefined,
             }),
-          //optionally add validation checking for onBlur or onChange
         },
       },
       {
@@ -112,7 +103,6 @@ const Example = () => {
           required: true,
           error: !!validationErrors?.phone,
           helperText: validationErrors?.phone,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -131,19 +121,31 @@ const Example = () => {
       {
         accessorKey: "TimeStamps",
         header: "Шийдвэрлэсэн огноо",
-        size: 80,
+        size: 150,
+        muiEditTextFieldProps: {
+          type: "datetime-local",
+          InputLabelProps: { shrink: true },
+        },
         Cell: ({ cell }) => {
-          const unixTimestamp = cell.getValue();
-          return dayjs(unixTimestamp).format("YYYY-MM-DD HH:mm:ss"); // Format using dayjs
+          const v = cell.getValue();
+          if (!v) return "—";
+          const d = dayjs(v);
+          return d.isValid() ? d.format("YYYY-MM-DD HH:mm:ss") : "—";
         },
       },
       {
         accessorKey: "Requester_TimeStamps",
         header: "Хүсэлт гаргасан огноо",
-        size: 80,
+        size: 150,
+        muiEditTextFieldProps: {
+          type: "datetime-local",
+          InputLabelProps: { shrink: true },
+        },
         Cell: ({ cell }) => {
-          const unixTimestamp = cell.getValue();
-          return dayjs(unixTimestamp).format("YYYY-MM-DD HH:mm:ss"); // Format using dayjs
+          const v = cell.getValue();
+          if (!v) return "—";
+          const d = dayjs(v);
+          return d.isValid() ? d.format("YYYY-MM-DD HH:mm:ss") : "—";
         },
       },
       {
@@ -154,47 +156,37 @@ const Example = () => {
     [validationErrors],
   );
 
-  //call CREATE hook
-  const { mutateAsync: createUser, isPending: isCreatingUser } =
-    useCreateUser();
-  //call READ hook
-  const {
-    data: fetchedUsers = [],
-    isError: isLoadingUsersError,
-    isFetching: isFetchingUsers,
-    isLoading: isLoadingUsers,
-  } = useGetUsers();
-  //call UPDATE hook
-  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
-  //call DELETE hook
-  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteUser();
-
-  //CREATE hook (post new user to api)
+  // ---------- CREATE ----------
   function useCreateUser() {
-    const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
-        //send api update request here
-        await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-        return Promise.resolve();
+      mutationFn: async (values) => {
+        const { id, ...rest } = values;
+        const data = {
+          ID: String(rest.ID ?? ""),
+          Name: rest.Name ?? "",
+          Count: Number(rest.Count) || 0,
+          TimeStamps: rest.TimeStamps
+            ? dayjs(rest.TimeStamps).isValid()
+              ? dayjs(rest.TimeStamps).toISOString()
+              : new Date().toISOString()
+            : new Date().toISOString(),
+          Requester_TimeStamps: rest.Requester_TimeStamps
+            ? dayjs(rest.Requester_TimeStamps).isValid()
+              ? dayjs(rest.Requester_TimeStamps).toISOString()
+              : new Date().toISOString()
+            : new Date().toISOString(),
+          Description: rest.Description ?? "",
+        };
+        const newRef = await push(ref(db, EBARIMT_PATH), data);
+        return { ...data, id: newRef.key };
       },
-      //client side optimistic update
-      onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["ebarimt"], (prevUsers) => [
-          ...prevUsers,
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
-        ]);
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["ebarimt"] });
       },
-      // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
     });
   }
 
-  //READ hook (get users from api)
+  // ---------- READ ----------
   function useGetUsers() {
     return useQuery({
       queryKey: ["ebarimt", searchTerm, fetchAll],
@@ -202,84 +194,100 @@ const Example = () => {
         try {
           let promoQuery;
           if (fetchAll) {
-            // Fetch all data if fetchAll is true
-            promoQuery = ref(db, "ebarimt");
+            promoQuery = ref(db, EBARIMT_PATH);
           } else if (searchTerm.length === 8) {
-            // Only query if searchTerm is defined
             promoQuery = query(
-              ref(db, "ebarimt"),
+              ref(db, EBARIMT_PATH),
               orderByChild("ID"),
               equalTo(searchTerm),
             );
           } else {
-            // If fetchAll is false and searchTerm is not defined, return an empty array
             return [];
           }
           const snapshot = await get(promoQuery);
-
           if (!snapshot.exists()) return [];
-          return Object.entries(snapshot.val())
-            .map(([id, user]) => ({ id, ...user }))
-            .reverse();
+
+          const combined = Object.entries(snapshot.val()).map(([id, user]) => ({
+            id,
+            ...user,
+          }));
+
+          // 🔹 TimeStamps-ээр буурах дарааллаар эрэмбэлэх (хамгийн сүүлийн нь хамгийн дээр)
+          combined.sort((a, b) => {
+            const ta = a.TimeStamps ? dayjs(a.TimeStamps).valueOf() : 0;
+            const tb = b.TimeStamps ? dayjs(b.TimeStamps).valueOf() : 0;
+            if (isNaN(ta) && isNaN(tb)) return 0;
+            if (isNaN(ta)) return 1;
+            if (isNaN(tb)) return -1;
+            return tb - ta;
+          });
+
+          return combined;
         } catch (error) {
           console.error("Error fetching users:", error);
           throw new Error("Failed to fetch users");
         }
       },
-      enabled: fetchAll || Boolean(searchTerm), // Fetch only when searchTerm or fetchAll is set
+      enabled: fetchAll || Boolean(searchTerm),
       refetchOnWindowFocus: true,
     });
   }
 
-  //UPDATE hook (put user in api)
+  // ---------- UPDATE ----------
   function useUpdateUser() {
-    const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        console.log("user", user);
-        const userRef = ref(db, `ebarimt/${user.id}`);
-        await update(userRef, user);
-        return Promise.resolve();
+        if (!user?.id) {
+          throw new Error("id байхгүй — update хийх боломжгүй");
+        }
+        const { id, ...rest } = user;
+        const updatedData = {
+          ID: String(rest.ID ?? ""),
+          Name: rest.Name ?? "",
+          Count: Number(rest.Count) || 0,
+          TimeStamps: rest.TimeStamps
+            ? dayjs(rest.TimeStamps).isValid()
+              ? dayjs(rest.TimeStamps).toISOString()
+              : new Date().toISOString()
+            : new Date().toISOString(),
+          Requester_TimeStamps: rest.Requester_TimeStamps
+            ? dayjs(rest.Requester_TimeStamps).isValid()
+              ? dayjs(rest.Requester_TimeStamps).toISOString()
+              : new Date().toISOString()
+            : new Date().toISOString(),
+          Description: rest.Description ?? "",
+        };
+        await update(ref(db, `${EBARIMT_PATH}/${id}`), updatedData);
+        return { ...updatedData, id };
       },
-      //client side optimistic update
       onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["ebarimt"], (prevUsers) =>
+        queryClient.setQueriesData({ queryKey: ["ebarimt"] }, (prevUsers) =>
           prevUsers?.map((prevUser) =>
             prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
           ),
         );
       },
-      // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["ebarimt"] }),
     });
   }
 
-  //DELETE hook (delete user in api)
+  // ---------- DELETE ----------
   function useDeleteUser() {
-    const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (userId) => {
-        const userRef = ref(db, `ebarimt/${userId}`);
-        await remove(userRef);
-        return Promise.resolve();
+        await remove(ref(db, `${EBARIMT_PATH}/${userId}`));
+        return userId;
       },
-      // ★ Client тал дээр optimistic update
       onMutate: async (userId) => {
-        // ★ Бүх "ebarimt" query-г цуцлах
         await queryClient.cancelQueries({ queryKey: ["ebarimt"] });
-
-        // ★ Өмнөх өгөгдлийг хадгалах (алдаа гарвал буцаах)
         const previousData = queryClient.getQueriesData({
           queryKey: ["ebarimt"],
         });
-
-        // ★ Бүх "ebarimt" query-с устгасан хэрэглэгчийг хасах
         queryClient.setQueriesData({ queryKey: ["ebarimt"] }, (oldData) =>
           oldData?.filter((user) => user.id !== userId),
         );
-
         return { previousData };
       },
-      // ★ Алдаа гарвал өмнөх өгөгдлийг буцаах
       onError: (err, userId, context) => {
         if (context?.previousData) {
           context.previousData.forEach(([queryKey, data]) => {
@@ -287,98 +295,108 @@ const Example = () => {
           });
         }
       },
-      // ★ Амжилттай эсвэл алдаа гарсны дараа Firebase-с дахин татах
-      onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ["ebarimt"] });
-      },
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["ebarimt"] }),
     });
   }
 
-  //CREATE action
+  // ---------- Hooks дуудлага ----------
+  const { mutateAsync: createUser, isPending: isCreatingUser } =
+    useCreateUser();
+  const {
+    data: fetchedUsers = [],
+    isError: isLoadingUsersError,
+    isFetching: isFetchingUsers,
+    isLoading: isLoadingUsers,
+  } = useGetUsers();
+  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
+    useUpdateUser();
+  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
+    useDeleteUser();
+
+  // ---------- Actions ----------
   const handleCreateUser = async ({ values, table }) => {
     await createUser(values);
-    table.setCreatingRow(null); //exit creating mode
+    table.setCreatingRow(null);
   };
 
-  //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
     await updateUser(values);
-    table.setEditingRow(null); //exit editing mode
+    table.setEditingRow(null);
   };
 
-  //DELETE action
   const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
       deleteUser(row.original.id);
     }
   };
 
+  // ---------- Export ----------
   const handleExportData = () => {
-    const columnsToRemove = ["id"];
-    // Function to exclude specific columns from the data
-    const excludeColumns = (data, columnsToRemove) => {
-      return data.map((item) => {
-        const newItem = {
-          ...item,
-          TimeStamps: dayjs(item.TimeStamps).format("YYYY-MM-DD HH:mm:ss"),
-          Requester_TimeStamps: dayjs(item.Requester_TimeStamps).format(
-            "YYYY-MM-DD HH:mm:ss",
-          ),
-        }; // Create a copy of the item
-        columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
-        return newItem;
-      });
-    };
-    const removedId = excludeColumns(fetchedUsers, columnsToRemove);
-
-    const csv = generateCsv(csvConfig)(removedId);
+    const cleaned = fetchedUsers.map((item) => {
+      const newItem = {
+        ...item,
+        TimeStamps: item.TimeStamps
+          ? dayjs(item.TimeStamps).isValid()
+            ? dayjs(item.TimeStamps).format("YYYY-MM-DD HH:mm:ss")
+            : ""
+          : "",
+        Requester_TimeStamps: item.Requester_TimeStamps
+          ? dayjs(item.Requester_TimeStamps).isValid()
+            ? dayjs(item.Requester_TimeStamps).format("YYYY-MM-DD HH:mm:ss")
+            : ""
+          : "",
+      };
+      delete newItem.id;
+      return newItem;
+    });
+    const csv = generateCsv(csvConfig)(cleaned);
     download(csvConfig)(csv);
   };
 
+  // ---------- Table ----------
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
-    createDisplayMode: "modal", //default ('row', and 'custom' are also available)
-    editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
+    createDisplayMode: "modal",
+    editDisplayMode: "modal",
     enableEditing: true,
+    enableRowActions: true,
+    enableCreateRow: true, // 🔹 CREATE идэвхжүүлэх
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
-      ? {
-          color: "error",
-          children: "Error loading data",
-        }
+      ? { color: "error", children: "Error loading data" }
       : undefined,
     muiTableContainerProps: {
-      sx: {
-        minHeight: "500px",
-      },
+      sx: { minHeight: "500px" },
     },
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
-    //optionally customize modal content
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Худалдан авалт нэмэх</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents.filter(
+            (el) => el?.props?.column?.id !== "id",
+          )}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
         </DialogActions>
       </>
     ),
-    //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit User</DialogTitle>
+        <DialogTitle variant="h3">Худалдан авалт засварлах</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents.filter(
+            (el) => el?.props?.column?.id !== "id",
+          )}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -399,8 +417,16 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
+    // 🔹 Toolbar: Нэмэх + Татах
     renderTopToolbarCustomActions: ({ table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => table.setCreatingRow(true)}
+        >
+          Нэмэх
+        </Button>
         <Button
           variant="contained"
           startIcon={<RiFileExcel2Fill />}
@@ -428,7 +454,6 @@ const Example = () => {
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setFetchAll(false);
-            queryClient.invalidateQueries(["promotion"]);
           }}
           variant="filled"
           size="small"
@@ -436,9 +461,8 @@ const Example = () => {
         <Button
           variant="outlined"
           onClick={() => {
-            setFetchAll(true); // Fetch all data
-            setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["promotion"]);
+            setFetchAll(true);
+            setSearchTerm("");
           }}
         >
           Бүгд
@@ -452,50 +476,37 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Ebarimt = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const globalTheme = useTheme();
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
+          mode: globalTheme.palette.mode,
+          primary: globalTheme.palette.secondary,
+          info: { main: "rgb(255,122,0)" },
           background: {
             default:
               globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+                ? "rgb(254,255,244)"
+                : "#000",
           },
         },
         typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
+          button: { textTransform: "none", fontSize: "1.2rem" },
         },
         components: {
           MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
+            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
           },
           MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
+            styleOverrides: { thumb: { color: "pink" } },
           },
         },
       }),
     [globalTheme],
   );
+
   return (
-    //Put this with your other react-query providers near root of your app
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
         Е Баримт
