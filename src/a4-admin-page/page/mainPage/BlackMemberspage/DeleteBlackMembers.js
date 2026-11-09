@@ -3,8 +3,10 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import {    DeleteBlackAllUserInfo,
-    DeleteBlackOrignalUserInfo} from "./DeleteBlackTab";
+import {
+  DeleteBlackAllUserInfo,
+  DeleteBlackOrignalUserInfo,
+} from "./DeleteBlackTab";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -47,7 +49,9 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
-        > <Tab label="Блакд үлдсэн устгасан худалдан авалт" {...a11yProps(1)} />
+        >
+          {" "}
+          <Tab label="Блакд үлдсэн устгасан худалдан авалт" {...a11yProps(1)} />
           <Tab label="Бүх Худалдан авалт устгасан" {...a11yProps(1)} />
         </Tabs>
       </Box>

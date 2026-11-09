@@ -15,7 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
 } from "@mui/material";
@@ -434,19 +434,18 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const VipFeedBack = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode, //let's use the same dark/light mode as the global theme
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -474,7 +473,7 @@ const VipFeedBack = () => {
           },
         },
       }),
-    [globalTheme],
+    [mode],
   );
   return (
     <QueryClientProvider client={queryClient}>

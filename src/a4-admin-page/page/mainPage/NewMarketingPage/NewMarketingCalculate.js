@@ -18,6 +18,9 @@ import {
   MenuItem,
   Tooltip,
   IconButton,
+  useColorScheme,
+  ThemeProvider,
+  createTheme,
 } from "@mui/material";
 import { db } from "refrence/realConfig";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -158,7 +161,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Амжилтын урамшуулал",
         size: 100,
-        Cell: ({ cell, row }) => {
+        Cell: ({ cell }) => {
           return (
             <Box
               sx={{
@@ -184,7 +187,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Урамшууллын дүн",
         size: 100,
-        Cell: ({ row, cell }) => <TugrikFormatter amount={cell.getValue()} />,
+        Cell: ({ cell }) => <TugrikFormatter amount={cell.getValue()} />,
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
@@ -349,7 +352,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Нийт урамшуулал",
         size: 100,
-        Cell: ({ row, cell }) => <TugrikFormatter amount={cell.getValue()} />,
+        Cell: ({ cell }) => <TugrikFormatter amount={cell.getValue()} />,
         footer:
           selectedMember &&
           `${new Intl.NumberFormat("mn-MN", { style: "decimal" }).format(
@@ -417,12 +420,12 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
       const spoRef = query(
         ref(db, "newMarketing/UserInfo"),
         orderByChild("SponsorId"),
-        equalTo(value.phoneNumber), // Энэ хүний доор хүн байгаа эсэхийг шалгана
+        equalTo(value.phoneNumber),
       );
       const promotionRef = query(
         ref(db, "newMarketing/promotionTransaction"),
         orderByChild("ID"),
-        equalTo(value.phoneNumber), //  Мөнгө авсан эсэхийг шалгана.
+        equalTo(value.phoneNumber),
       );
       const spoResult = await get(spoRef);
       const promotionResult = await get(promotionRef);
@@ -446,7 +449,6 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         invite4personStatus: 0,
       };
 
-      // is member get money?
       if (promotionResult.exists()) {
         let promotionData = Object.entries(promotionResult.val()).map(
           ([id, data]) => ({
@@ -489,7 +491,6 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         spoData.filter((obj) => obj.type === currentType);
 
         mergedArray = [value, ...spoData];
-        // reset rawTableData value
 
         mergedArray.forEach((element, index) => {
           if (index === 0) {
@@ -516,7 +517,6 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         let rawTableData = tableData;
         const mergedArray = [value];
 
-        // reset rawTableData value
         rawTableData.forEach((element) => {
           element.currentLevel = false;
           element.invite1personLevel = false;
@@ -559,7 +559,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
 
   const table = useMaterialReactTable({
     columns,
-    data: tableData, //data must be memoized or stable (useState, useMemo, defined outside of this component, etc.)
+    data: tableData,
     getRowId: (row) => row.id,
     enableEditing: false,
     initialState: {
@@ -583,14 +583,24 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
       shape: "rounded",
       variant: "outlined",
     },
+
+    // ✅ өмнөх загвартай ижил: table container
+    muiTableContainerProps: {
+      sx: {
+        minHeight: "500px",
+      },
+    },
+
     muiTableFooterRowProps: {
       sx: {
         "& .MuiTableCell-root": {
-          fontSize: "18px", // Global text size for footer
+          fontSize: "18px",
           fontWeight: "bold",
         },
       },
     },
+
+    // ✅ өмнөх загвартай ижил: toolbar background lighten
     renderTopToolbar: () => {
       return (
         <Box
@@ -602,7 +612,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
             justifyContent: "space-between",
           })}
         >
-          <form>
+          <form onSubmit={(e) => e.preventDefault()}>
             <Box sx={{ display: "flex", gap: "0.5rem" }}>
               <TextField
                 id="selectType"
@@ -662,29 +672,73 @@ const NewMarketingCalculate = () => {
   const [currentPage, setCurrentPage] = useState("table");
   const [data, setData] = useState([]);
 
+  // ✅ өмнөх загвартай ижил: useColorScheme + createTheme + ThemeProvider
+  const { mode } = useColorScheme();
+
+  const tableTheme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode,
+          info: {
+            main: "rgb(255,122,0)",
+          },
+          background: {
+            default: mode === "light" ? "rgb(254,255,244)" : "#000",
+          },
+        },
+        typography: {
+          button: {
+            textTransform: "none",
+            fontSize: "1.2rem",
+          },
+        },
+        components: {
+          MuiTooltip: {
+            styleOverrides: {
+              tooltip: {
+                fontSize: "1.1rem",
+              },
+            },
+          },
+          MuiSwitch: {
+            styleOverrides: {
+              thumb: {
+                color: "pink",
+              },
+            },
+          },
+        },
+      }),
+    [mode],
+  );
+
   return (
-    //App.tsx or AppProviders file
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <QueryClientProvider client={queryClient}>
-        {currentPage === "table" && (
-          <ReactMaterialTable
-            setCurrentPage={setCurrentPage}
-            setData={setData}
-          />
-        )}
-        {currentPage === "chart" && (
-          <>
-            <Tooltip title="Буцах">
-              <IconButton
-                aria-label="back"
-                onClick={() => setCurrentPage("table")}
-              >
-                <ArrowBackIcon />
-              </IconButton>
-            </Tooltip>
-            <NewMarketingTeamStructure data={data} />
-          </>
-        )}
+        <ThemeProvider theme={tableTheme}>
+          <Box>
+            {currentPage === "table" && (
+              <ReactMaterialTable
+                setCurrentPage={setCurrentPage}
+                setData={setData}
+              />
+            )}
+            {currentPage === "chart" && (
+              <>
+                <Tooltip title="Буцах">
+                  <IconButton
+                    aria-label="back"
+                    onClick={() => setCurrentPage("table")}
+                  >
+                    <ArrowBackIcon />
+                  </IconButton>
+                </Tooltip>
+                <NewMarketingTeamStructure data={data} />
+              </>
+            )}
+          </Box>
+        </ThemeProvider>
       </QueryClientProvider>
     </LocalizationProvider>
   );

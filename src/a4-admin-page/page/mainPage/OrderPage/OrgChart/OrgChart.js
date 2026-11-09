@@ -4,7 +4,7 @@ import MyNode from "./my-node";
 import "./my-node.css";
 import {
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
 } from "@mui/material";
@@ -13,19 +13,18 @@ import { db } from "refrence/realConfig";
 
 const CustomNodeChart = () => {
   const orgchart = useRef();
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode,
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -53,7 +52,7 @@ const CustomNodeChart = () => {
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
   const [hierarchy, setHierarchy] = useState({
     InviterId: "",
@@ -84,8 +83,8 @@ const CustomNodeChart = () => {
         });
       }
       const reverse = fetchedResults.reverse();
-      let rest = buildNestedStructure(reverse);  
-      
+      let rest = buildNestedStructure(reverse);
+
       const hierarchicalData2 = rest[0];
       setHierarchy(hierarchicalData2);
     });
@@ -113,7 +112,7 @@ const CustomNodeChart = () => {
       } else {
         console.log("item", item);
         map[item.SponsorName + item.SponsorId].children.push(
-          map[item.QuantityName + item.MemberId]
+          map[item.QuantityName + item.MemberId],
         );
       }
     });

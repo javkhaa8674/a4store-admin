@@ -6,7 +6,7 @@ import {
   Paper,
   Grid,
   createTheme,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -22,19 +22,18 @@ const CalculateLevel = () => {
   const [data, setData] = useState([]);
   const [exports, setExports] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode,
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -62,7 +61,7 @@ const CalculateLevel = () => {
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
 
   const handleDateChange = (event) => {
@@ -209,7 +208,7 @@ const CalculateLevel = () => {
           count2++;
         }
       });
-      if (count1 > 4 && count2+(count1-5)> 9) {
+      if (count1 > 4 && count2 + (count1 - 5) > 9) {
         emanager.push({ ...element1, RankName: "БЕМ" });
       }
     });
@@ -251,7 +250,8 @@ const CalculateLevel = () => {
       let count = 0;
       zahiral.forEach((element2) => {
         if (
-          element1.MemberId + element1.QuantityName === element2.MemberId + element2.QuantityName
+          element1.MemberId + element1.QuantityName ===
+          element2.MemberId + element2.QuantityName
         ) {
           count++;
         }
@@ -313,7 +313,7 @@ const CalculateLevel = () => {
       { accessorKey: "RankName", header: "Зэрэглэл" },
       { accessorKey: "QuantityName", header: "Нэр" },
     ],
-    []
+    [],
   );
 
   const handleExport = () => {
@@ -329,7 +329,7 @@ const CalculateLevel = () => {
 
   const handleDataBase = async () => {
     const confirm = window.confirm(
-      "Та бүх гишүүдийн зэрэглэлийг дэвшүүлэхдээ итгэлтэй байна уу? Энэ үйлдлийг хийснээр системд дэхь бүх гишүүдийн зэрэглэл автоматаар шинэчлэгдэх болно."
+      "Та бүх гишүүдийн зэрэглэлийг дэвшүүлэхдээ итгэлтэй байна уу? Энэ үйлдлийг хийснээр системд дэхь бүх гишүүдийн зэрэглэл автоматаар шинэчлэгдэх болно.",
     );
 
     if (confirm) {

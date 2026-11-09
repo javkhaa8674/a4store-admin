@@ -14,7 +14,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
   TextField,
@@ -77,8 +77,8 @@ const Example = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [fetchAll, setFetchAll] = useState(false);
 
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
+  const { mode } = useColorScheme();
+  const isDark = mode === "dark";
 
   // ---------- Fetch: хоёр замаас зэрэг татаж нэгтгэнэ ----------
   function useGetUsers() {
@@ -752,18 +752,18 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const CombinedProductDelivery = () => {
-  const globalTheme = useTheme();
-  const isDark = globalTheme.palette.mode === "dark";
+  const { mode } = useColorScheme();
+  const isDark = mode === "dark";
 
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode,
+          mode,
           primary: {
             main: isDark ? "#90caf9" : globalTheme.palette.primary.main,
           },
-          secondary: globalTheme.palette.secondary,
+
           info: { main: "rgb(255,122,0)" },
           background: {
             default: isDark ? "#0b0b0b" : "rgb(254,255,244)",
@@ -795,7 +795,7 @@ const CombinedProductDelivery = () => {
           },
         },
       }),
-    [globalTheme, isDark],
+    [mode, isDark],
   );
 
   return (

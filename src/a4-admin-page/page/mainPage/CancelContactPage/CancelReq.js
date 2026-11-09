@@ -11,6 +11,7 @@ const CancelReq = () => {
   const [successMessage, setSuccessMessage] = useState(""); // For success message
   const [errorMessage, setErrorMessage] = useState(""); // For error message
   const [tworesult, setTworesult] = useState(null);
+
   useEffect(() => {
     if (searchId.length < 8) {
       setResult(null);
@@ -112,7 +113,6 @@ const CancelReq = () => {
         padding: "40px",
         maxWidth: "600px", // Limit the width to make it larger on desktop
         margin: "auto",
-        backgroundColor: "#f4f4f4",
         borderRadius: "8px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Adding a soft shadow
         "@media (max-width: 768px)": {

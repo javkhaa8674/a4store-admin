@@ -25,39 +25,64 @@ import {
   DialogTitle,
   Alert,
   Snackbar,
+  useColorScheme,
+  ThemeProvider,
+  createTheme,
 } from "@mui/material";
 
-// Icons
+// ---------------------------------------------------------------------------
+// Туслах функцууд
+// ---------------------------------------------------------------------------
+const formatCurrency = (value) => {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "₮0";
+  return new Intl.NumberFormat("mn-MN", {
+    style: "currency",
+    currency: "MNT",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
+};
 
-// Example mock data for the table
+const parseNumeric = (str) => {
+  if (str === null || str === undefined) return 0;
+  const digits = String(str).replace(/[^\d]/g, "");
+  return digits ? Number(digits) : 0;
+};
 
 const Example = () => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-  const [financeAmount, setFinanceAmount] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(""); // For success message
-  const [data, setData] = useState([]); // Set an empty array as the default value
-  const [errorMessage, setErrorMessage] = useState(""); // For
+  const [financeAmount, setFinanceAmount] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [data, setData] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
 
-  const handleOpenDialog = () => setOpenDialog(true);
+  const handleOpenDialog = (rowOriginal) => {
+    setSelectedRow(rowOriginal);
+    setFinanceAmount("");
+    setOpenDialog(true);
+  };
+
   const handleCloseDialog = () => {
-    setFinanceAmount(null); // Reset state when dialog is closed
-    setOpenDialog(false); // Close the dialog
+    setFinanceAmount("");
+    setSelectedRow(null);
+    setOpenDialog(false);
   };
 
   useEffect(() => {
-    // Fetch data from the backend
     axios
       .post("https://api-hw5amqni4q-uc.a.run.app/CancelContactfinanceData")
       .then((response) => {
         setData(response.data.data);
-        console.log(response.data.data);
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
         setErrorMessage("Алдаа гарлаа, та дахин оролдно уу");
       });
   }, []);
+
   const columns = useMemo(
     () => [
       {
@@ -65,11 +90,11 @@ const Example = () => {
         header: "Employee",
         columns: [
           {
-            accessorFn: (row) => ` ${row.Name}`,
+            accessorFn: (row) => String(row.Name ?? ""),
             id: "name",
             header: "Name",
             size: 250,
-            Cell: ({ renderedCellValue, row }) => (
+            Cell: ({ row }) => (
               <Box
                 sx={{
                   display: "flex",
@@ -77,73 +102,77 @@ const Example = () => {
                   gap: "1rem",
                 }}
               >
-                <span>{renderedCellValue}</span>
+                <span>{row.original.Name ?? ""}</span>
               </Box>
             ),
           },
           {
-            accessorKey: "MemberId",
+            accessorFn: (row) => String(row.MemberId ?? ""),
+            id: "MemberId",
             enableClickToCopy: true,
             filterVariant: "autocomplete",
             header: "Утас",
             size: 300,
+            Cell: ({ row }) => row.original.MemberId ?? "",
           },
           {
-            accessorKey: "type",
+            accessorFn: (row) => String(row.type ?? ""),
+            id: "type",
             filterVariant: "autocomplete",
             header: "Буцаалт хийх систем",
             size: 300,
-            Cell: ({ cell }) => {
-              // Check the value of 'type' and display the corresponding label
-              const value = cell.getValue();
+            Cell: ({ row }) => {
+              const value = row.original.type;
               return value === "new"
                 ? "Шинэ"
                 : value === "old"
                   ? "Хуучин"
                   : value === "two"
                     ? "Шинэ болон Хуучин"
-                    : value;
+                    : (value ?? "");
             },
           },
           {
-            accessorKey: "totalAmount",
+            accessorFn: (row) => Number(row.totalAmount) || 0,
+            id: "totalAmount",
             filterFn: "between",
             header: "Нийт авсан урамшуулал",
             size: 200,
-            Cell: ({ cell }) => (
-              <Box
-                component="span"
-                sx={(theme) => ({
-                  backgroundColor:
-                    cell.getValue() < 500000
-                      ? theme.palette.error.dark
-                      : cell.getValue() >= 500000 && cell.getValue() < 1500000
-                        ? theme.palette.warning.dark
-                        : theme.palette.success.dark,
-                  borderRadius: "0.25rem",
-                  color: "#fff",
-                  maxWidth: "9ch",
-                  p: "0.25rem",
-                })}
-              >
-                {cell.getValue()?.toLocaleString("MN-mn", {
-                  style: "currency",
-                  currency: "MNT",
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </Box>
-            ),
+            Cell: ({ cell, table }) => {
+              const value = Number(cell.getValue()) || 0;
+              const pal = table.options.theme?.palette ?? {};
+              return (
+                <Box
+                  component="span"
+                  sx={{
+                    backgroundColor:
+                      value < 500000
+                        ? (pal.error?.dark ?? "#d32f2f")
+                        : value >= 500000 && value < 1500000
+                          ? (pal.warning?.dark ?? "#ed6c02")
+                          : (pal.success?.dark ?? "#2e7d32"),
+                    borderRadius: "0.25rem",
+                    color: "#fff",
+                    maxWidth: "9ch",
+                    p: "0.25rem",
+                  }}
+                >
+                  {formatCurrency(value)}
+                </Box>
+              );
+            },
           },
-
           {
-            accessorFn: (row) => new Date(row.createRequestTimeStamp),
+            accessorFn: (row) =>
+              row.createRequestTimeStamp
+                ? new Date(row.createRequestTimeStamp)
+                : null,
             id: "createRequestTimeStamp",
             header: "Хүсэлт үүсгэсэн огноо",
             filterVariant: "date",
             filterFn: "lessThan",
             sortingFn: "datetime",
-            Cell: ({ cell }) => cell.getValue()?.toLocaleDateString(),
+            Cell: ({ cell }) => cell.getValue()?.toLocaleDateString() ?? "",
             Header: ({ column }) => <em>{column.columnDef.header}</em>,
             muiFilterTextFieldProps: {
               sx: {
@@ -157,24 +186,31 @@ const Example = () => {
     [],
   );
 
-  const handleSubmit = async () => {
-    setLoadingSubmit(true);
-    setErrorMessage(""); // Reset error message
-    setSuccessMessage(""); // Reset success message
-    try {
-      if (data.type === "two") {
-        await axios.post(
-          `https://api-hw5amqni4q-uc.a.run.app/saveCancelContact`,
-          { efundCode: 456 },
-        );
-      } else {
-        await axios.post(
-          `https://api-hw5amqni4q-uc.a.run.app/saveCancelContact`,
-          { efundCode: 456 },
-        );
-      }
+  const handleSubmit = async (rowOriginal) => {
+    const amount = parseNumeric(financeAmount);
+    if (!amount) {
+      setErrorMessage("Шилжүүлэх эцсийн дүнг зөв оруулна уу");
+      return;
+    }
 
-      setSuccessMessage("Хүсэлт амжилттай илгээгдлээ!"); // Success message
+    setLoadingSubmit(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const efundCode = rowOriginal?.type === "two" ? 456 : 456;
+
+      await axios.post(
+        "https://api-hw5amqni4q-uc.a.run.app/saveCancelContact",
+        {
+          efundCode,
+          amount,
+          memberId: rowOriginal?.MemberId,
+        },
+      );
+
+      setSuccessMessage("Хүсэлт амжилттай илгээгдлээ!");
+      handleCloseDialog();
     } catch (err) {
       setErrorMessage(
         err.response?.data?.message || "Алдаа гарлаа та дахин оролдно уу",
@@ -183,20 +219,12 @@ const Example = () => {
       setLoadingSubmit(false);
     }
   };
+
   const handleChange = (e) => {
-    let newValue = e.target.value.replace(/[^\d]/g, ""); // Remove non-numeric characters
-
-    if (newValue) {
-      // Format as currency without decimals
-      newValue = new Intl.NumberFormat("mn-MN", {
-        style: "currency",
-        currency: "MNT",
-        minimumFractionDigits: 0, // No decimals
-      }).format(newValue);
-    }
-
-    setFinanceAmount(newValue);
+    const digits = e.target.value.replace(/[^\d]/g, "");
+    setFinanceAmount(digits);
   };
+
   const table = useMaterialReactTable({
     columns,
     data,
@@ -208,8 +236,8 @@ const Example = () => {
     enableRowActions: true,
     enableRowSelection: true,
     initialState: {
-      showColumnFilters: true,
-      showGlobalFilter: true,
+      showColumnFilters: false,
+      showGlobalFilter: false,
       columnPinning: {
         left: ["mrt-row-expand", "mrt-row-select"],
         right: ["mrt-row-actions"],
@@ -227,22 +255,29 @@ const Example = () => {
       shape: "rounded",
       variant: "outlined",
     },
-    renderDetailPanel: ({ row }) => {
-      // Check if row.original.type is "two" and render accordingly
+
+    // -----------------------------------------------------------------------
+    // PromotionTransaction-той ижил: зөвхөн muiTableContainerProps
+    // -----------------------------------------------------------------------
+    muiTableContainerProps: {
+      sx: {
+        minHeight: "500px",
+      },
     },
 
     renderRowActionMenuItems: ({ closeMenu, row }) => [
       <MenuItem
-        key={0}
+        key="details"
         onClick={() => {
-          handleOpenDialog(row); // Open the dialog when the menu item is clicked
+          handleOpenDialog(row.original);
+          closeMenu();
         }}
         sx={{ m: 0 }}
       >
         Дэлгэрэнгүй
       </MenuItem>,
       <MenuItem
-        key={0}
+        key="cancel"
         onClick={() => {
           closeMenu();
         }}
@@ -250,210 +285,17 @@ const Example = () => {
       >
         Цуцлах
       </MenuItem>,
-
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Дэлгэрэнгүй</DialogTitle>
-        <DialogContent>
-          {row.original.type === "two" ? (
-            <div>two</div>
-          ) : (
-            <div
-              style={{
-                marginTop: "40px",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  background: "#fff",
-                  padding: "20px",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                  maxWidth: "800px",
-                  width: "100%",
-                }}
-              >
-                {[
-                  {
-                    label: "Төрөл",
-                    value:
-                      row.original.type === "old"
-                        ? "Хуучин систем"
-                        : row.original.type === "new"
-                          ? "Шинэ систем"
-                          : row.original.type,
-                  },
-                  { label: "Утас", value: row.original.MemberId || "" },
-                  { label: "Овог нэр", value: row.original.Name || "" },
-                  {
-                    label: "Нийт код тоо",
-                    value: row.original.CodeCount,
-                  },
-                  {
-                    label: "Буцаах код тоо",
-                    value: row.original.CodeCount || "",
-                    required: true,
-                    type: "number",
-                    color: "success",
-                  },
-                  {
-                    label: "Борлуулалтын урамшуулал авсан дүн",
-                    value: row.original.bonusAmount
-                      ? new Intl.NumberFormat("mn-MN", {
-                          style: "currency",
-                          currency: "MNT",
-                        }).format(row.original.bonusAmount)
-                      : 0,
-                  },
-                  {
-                    label: "Урилтын урамшуулал авсан дүн",
-                    value: row.original.inviteAmount
-                      ? new Intl.NumberFormat("mn-MN", {
-                          style: "currency",
-                          currency: "MNT",
-                        }).format(row.original.inviteAmount)
-                      : 0,
-                  },
-                  {
-                    label: "Нийт авсан урамшуулал",
-                    value: row.original.totalAmount
-                      ? new Intl.NumberFormat("mn-MN", {
-                          style: "currency",
-                          currency: "MNT",
-                        }).format(row.original.totalAmount)
-                      : 0,
-                  },
-                  {
-                    label: "Е-Баримт авсан дүн",
-                    value: row.original.Ebarimt
-                      ? new Intl.NumberFormat("mn-MN", {
-                          style: "currency",
-                          currency: "MNT",
-                        }).format(row.original.Ebarimt)
-                      : 0,
-                  },
-                  {
-                    label: "Бүтээгдэхүүн авсан тоо",
-                    value: row.original.Product || "0",
-                  },
-                  {
-                    label: "Банк нэр",
-                    value: row.original.accName || "",
-                  },
-                  {
-                    label: "Дансны дугаар",
-                    value: row.original.accNumber || "",
-                  },
-                ].map((field) => (
-                  <TextField
-                    key={field.label} // Unique key for each field
-                    label={field.label}
-                    variant="outlined"
-                    value={field.value}
-                    fullWidth
-                    readOnly
-                    required={field.required || false}
-                    type={field.type || "text"}
-                    color={field.color || "primary"}
-                    sx={{
-                      marginBottom: "20px",
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                      },
-                      "& .MuiFormHelperText-root": {
-                        color: "#ff9800", // Warning color for helper text
-                      },
-                    }}
-                  />
-                ))}
-
-                <TextField
-                  label="Шилжүүлэх эцсийн дүн"
-                  variant="outlined"
-                  value={financeAmount}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  type="text"
-                  error={
-                    financeAmount === "" ||
-                    isNaN(financeAmount?.replace(/[^\d]/g, ""))
-                  }
-                  color="success"
-                  focused
-                  helperText={
-                    !financeAmount ||
-                    isNaN(financeAmount?.replace(/[^\d]/g, ""))
-                      ? "Шилжүүлэх эцсийн дүн оруулна уу"
-                      : ""
-                  }
-                  sx={{
-                    marginBottom: "20px",
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                      "&.Mui-error": {
-                        borderColor: "#ff9800", // Warning color (yellow-orange)
-                      },
-                    },
-                    "& .MuiFormHelperText-root": {
-                      color: "#ff9800", // Warning color for helper text
-                    },
-                  }}
-                />
-
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={() => handleSubmit(row)}
-                  disabled={!financeAmount}
-                  fullWidth
-                  sx={{
-                    padding: "15px",
-                    fontSize: "1.2rem",
-                    backgroundColor: "#4caf50",
-                    color: "#fff",
-                    borderRadius: "8px",
-                    fontWeight: "bold",
-                    marginTop: "30px",
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                    "&:hover": {
-                      backgroundColor: "#388e3c",
-                    },
-                  }}
-                >
-                  {loadingSubmit ? (
-                    <CircularProgress
-                      size={30}
-                      color="secondary"
-                      thickness={5}
-                    />
-                  ) : (
-                    "Хүсэлт илгээх"
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
-            Хаах
-          </Button>
-        </DialogActions>
-      </Dialog>,
     ],
+
     renderTopToolbar: ({ table }) => {
       return (
         <Box
-          sx={(theme) => ({
-            backgroundColor: lighten(theme.palette.background.default, 0.05),
+          sx={{
             display: "flex",
             gap: "0.5rem",
             p: "8px",
             justifyContent: "space-between",
-          })}
+          }}
         >
           <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
             <MRT_GlobalFilterTextField table={table} />
@@ -465,11 +307,174 @@ const Example = () => {
     },
   });
 
+  const renderDialogContent = () => {
+    if (!selectedRow) return null;
+
+    if (selectedRow.type === "two") {
+      return <div>two</div>;
+    }
+
+    const fields = [
+      {
+        label: "Төрөл",
+        value:
+          selectedRow.type === "old"
+            ? "Хуучин систем"
+            : selectedRow.type === "new"
+              ? "Шинэ систем"
+              : selectedRow.type,
+      },
+      { label: "Утас", value: selectedRow.MemberId ?? "" },
+      { label: "Овог нэр", value: selectedRow.Name ?? "" },
+      { label: "Нийт код тоо", value: selectedRow.CodeCount ?? 0 },
+      {
+        label: "Буцаах код тоо",
+        value: selectedRow.refundCodeCount ?? "",
+        required: true,
+        type: "number",
+        color: "success",
+      },
+      {
+        label: "Борлуулалтын урамшуулал авсан дүн",
+        value: formatCurrency(selectedRow.bonusAmount || 0),
+      },
+      {
+        label: "Урилтын урамшуулал авсан дүн",
+        value: formatCurrency(selectedRow.inviteAmount || 0),
+      },
+      {
+        label: "Нийт авсан урамшуулал",
+        value: formatCurrency(selectedRow.totalAmount || 0),
+      },
+      {
+        label: "Е-Баримт авсан дүн",
+        value: formatCurrency(selectedRow.Ebarimt || 0),
+      },
+      {
+        label: "Бүтээгдэхүүн авсан тоо",
+        value: selectedRow.Product || "0",
+      },
+      {
+        label: "Банк нэр",
+        value: selectedRow.accName ?? "",
+      },
+      {
+        label: "Дансны дугаар",
+        value: selectedRow.accNumber ?? "",
+      },
+    ];
+
+    return (
+      <div
+        style={{
+          marginTop: "40px",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+            maxWidth: "800px",
+            width: "100%",
+          }}
+        >
+          {fields.map((field) => (
+            <TextField
+              key={field.label}
+              label={field.label}
+              variant="outlined"
+              value={field.value}
+              fullWidth
+              readOnly
+              required={field.required || false}
+              type={field.type || "text"}
+              color={field.color || "primary"}
+              sx={{
+                marginBottom: "20px",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                },
+                "& .MuiFormHelperText-root": {
+                  color: "#ff9800",
+                },
+              }}
+            />
+          ))}
+
+          <TextField
+            label="Шилжүүлэх эцсийн дүн"
+            variant="outlined"
+            value={financeAmount ? formatCurrency(financeAmount) : ""}
+            onChange={handleChange}
+            fullWidth
+            required
+            type="text"
+            error={!financeAmount}
+            color="success"
+            focused
+            helperText={!financeAmount ? "Шилжүүлэх эцсийн дүн оруулна уу" : ""}
+            sx={{
+              marginBottom: "20px",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                "&.Mui-error": {
+                  borderColor: "#ff9800",
+                },
+              },
+              "& .MuiFormHelperText-root": {
+                color: "#ff9800",
+              },
+            }}
+          />
+
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => handleSubmit(selectedRow)}
+            disabled={!financeAmount || loadingSubmit}
+            fullWidth
+            sx={{
+              padding: "15px",
+              color: "#fff",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              marginTop: "30px",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            {loadingSubmit ? (
+              <CircularProgress size={30} color="secondary" thickness={5} />
+            ) : (
+              "Хүсэлт илгээх"
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <>
+    <Box>
       <MaterialReactTable table={table} />
 
-      {/* ★ Амжилтын мэдээлэл */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle variant="h3">Дэлгэрэнгүй</DialogTitle>
+        <DialogContent>{renderDialogContent()}</DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Хаах
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={!!successMessage}
         autoHideDuration={5000}
@@ -485,7 +490,6 @@ const Example = () => {
         </Alert>
       </Snackbar>
 
-      {/* ★ Алдааны мэдээлэл */}
       <Snackbar
         open={!!errorMessage}
         autoHideDuration={5000}
@@ -500,16 +504,58 @@ const Example = () => {
           {errorMessage}
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 };
 
-// Date Picker Imports
+const CancelFinance = () => {
+  const { mode } = useColorScheme(); // PromotionTransaction-той ижил
 
-const CancelFinance = () => (
-  <LocalizationProvider dateAdapter={AdapterDayjs}>
-    <Example />
-  </LocalizationProvider>
-);
+  const tableTheme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode,
+          info: {
+            main: "rgb(255,122,0)",
+          },
+          background: {
+            default: mode === "light" ? "rgb(254,255,244)" : "#000",
+          },
+        },
+        typography: {
+          button: {
+            textTransform: "none",
+            fontSize: "1.2rem",
+          },
+        },
+        components: {
+          MuiTooltip: {
+            styleOverrides: {
+              tooltip: {
+                fontSize: "1.1rem",
+              },
+            },
+          },
+          MuiSwitch: {
+            styleOverrides: {
+              thumb: {
+                color: "pink",
+              },
+            },
+          },
+        },
+      }),
+    [mode],
+  );
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <ThemeProvider theme={tableTheme}>
+        <Example />
+      </ThemeProvider>
+    </LocalizationProvider>
+  );
+};
 
 export default CancelFinance;

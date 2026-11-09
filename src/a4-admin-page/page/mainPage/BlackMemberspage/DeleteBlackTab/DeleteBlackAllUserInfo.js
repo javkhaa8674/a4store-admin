@@ -15,7 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
 } from "@mui/material";
@@ -45,7 +45,7 @@ import { db } from "refrence/realConfig";
 
 const csvConfig = mkConfig({
   filename: `Устгасан бүх худалдан авалт-${dayjs().format(
-    "YYYY-MM-DD HH:mm:ss"
+    "YYYY-MM-DD HH:mm:ss",
   )}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
@@ -186,7 +186,7 @@ const Example = () => {
         },
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
   // CREATE hook (post new user to api)
   const useCreateUser = () => {
@@ -206,7 +206,7 @@ const Example = () => {
               ...newUserInfo,
               id: (Math.random() + 1).toString(36).substring(7),
             },
-          ]
+          ],
         );
       },
     });
@@ -226,7 +226,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "BlackMembers/delete/userInfo"),
               orderByChild("MemberId"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -259,21 +259,20 @@ const Example = () => {
         // remove undefined values
         const sendData = Object.fromEntries(
           Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
+            ([_, value]) => value !== undefined,
+          ),
         );
-        const userRef = ref(
-          db,
-          `BlackMembers/delete/userInfo/${sendData.id}`
-        );
+        const userRef = ref(db, `BlackMembers/delete/userInfo/${sendData.id}`);
         await update(userRef, sendData);
         return Promise.resolve();
       },
       onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["BlackMembers/delete/userInfo"], (prevUsers) =>
-          prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+        queryClient.setQueryData(
+          ["BlackMembers/delete/userInfo"],
+          (prevUsers) =>
+            prevUsers?.map((prevUser) =>
+              prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+            ),
         );
       },
       onSettled: () =>
@@ -292,7 +291,7 @@ const Example = () => {
       onMutate: (userId) => {
         queryClient.setQueryData(
           ["BlackMembers/delete/userInfo"],
-          (prevUsers) => prevUsers?.filter((user) => user.id !== userId)
+          (prevUsers) => prevUsers?.filter((user) => user.id !== userId),
         );
       },
 
@@ -365,7 +364,7 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
   const table = useMaterialReactTable({
@@ -373,7 +372,7 @@ const Example = () => {
     data: fetchedUsers,
     createDisplayMode: "modal",
     editDisplayMode: "modal",
-    enableEditing:true,
+    enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isError
       ? { color: "error", children: "Error loading data" }
@@ -439,18 +438,17 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-   (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={() => exportToExcel(fetchedUsers)}
-          >
-            Татаж авах
-          </Button>
-        </Box>
-      ),
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => exportToExcel(fetchedUsers)}
+        >
+          Татаж авах
+        </Button>
+      </Box>
+    ),
     initialState: {
       columnVisibility: {
         id: false,
@@ -506,19 +504,19 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const DeleteBlackAllUserInfo = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode, //let's use the same dark/light mode as the global theme
+
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -546,12 +544,12 @@ const DeleteBlackAllUserInfo = () => {
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
-      Устгасан бүх худалдан авалт
+        Устгасан бүх худалдан авалт
       </Typography>
       <ThemeProvider theme={tableTheme}>
         <Example />

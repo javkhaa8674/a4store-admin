@@ -5,7 +5,7 @@ import {
   Paper,
   Grid,
   ThemeProvider,
-  useTheme,
+  useColorScheme,
   createTheme,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -25,19 +25,19 @@ const InviterCalculation = () => {
   const [data, setData] = useState([]);
   const [membersData, setMembersData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode, //let's use the same dark/light mode as the global theme
+
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -65,7 +65,7 @@ const InviterCalculation = () => {
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
 
   // Handle Date change
@@ -120,9 +120,13 @@ const InviterCalculation = () => {
     const filteredData = data.filter((item) => {
       const itemDateFormatted = dayjs(
         item.timeStamp,
-        "YYYY-MM-DD HH:mm:ss"
+        "YYYY-MM-DD HH:mm:ss",
       ).format("YYYY-MM-DD");
-      return itemDateFormatted === selectedDateFormatted && !item.isBlackMember &&item.amount===1500000;
+      return (
+        itemDateFormatted === selectedDateFormatted &&
+        !item.isBlackMember &&
+        item.amount === 1500000
+      );
     });
 
     let realData = [];
@@ -292,7 +296,7 @@ const InviterCalculation = () => {
       { accessorKey: "orderwallet", header: "Гүйлгээний валют" },
       { accessorKey: "utga", header: "Гүйлгээний утга" },
     ],
-    []
+    [],
   );
   // Export data to Excel
   const handleExport = () => {
@@ -344,7 +348,7 @@ const InviterCalculation = () => {
         const link = document.createElement("a");
         link.href = URL.createObjectURL(file);
         link.download = `Урилтын-урамшуулал-${dayjs(selectedDate).format(
-          "YYYY-MM-DD"
+          "YYYY-MM-DD",
         )}.xlsx`;
         link.click();
       } catch (error) {

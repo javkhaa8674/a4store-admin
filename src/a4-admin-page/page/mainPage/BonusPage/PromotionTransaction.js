@@ -15,7 +15,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
   TextField,
@@ -46,7 +46,6 @@ import {
 } from "firebase/database";
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
-
 
 const date = new Date();
 
@@ -193,7 +192,7 @@ const Example = () => {
         header: "Төрөл",
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
   const [importData, setImportData] = useState([]);
   //call CREATE hook
@@ -257,7 +256,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "promotionTransaction"),
               orderByChild("ID"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -297,8 +296,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () =>
@@ -319,7 +318,7 @@ const Example = () => {
       //client side optimistic update
       onMutate: (userId) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       onSettled: () =>
@@ -538,46 +537,45 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-    (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={handleExportData}
+        >
+          Татаж авах
+        </Button>
+        <>
+          <label htmlFor="file-upload">
+            <Button
+              variant="contained"
+              component="span"
+              startIcon={<RiFileExcel2Fill />}
+            >
+              Оруулах
+            </Button>
+          </label>
+          <input
+            type="file"
+            id="file-upload"
+            accept=".xlsx, .xls"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              handleFileChange(e);
+              table.setCreatingRow(true);
+            }}
+          />
           <Button
             variant="contained"
             startIcon={<RiFileExcel2Fill />}
-            onClick={handleExportData}
+            onClick={() => window.open(downloadUrl, "_blank")}
           >
-            Татаж авах
+            Загвар файл татах
           </Button>
-          <>
-            <label htmlFor="file-upload">
-              <Button
-                variant="contained"
-                component="span"
-                startIcon={<RiFileExcel2Fill />}
-              >
-                Оруулах
-              </Button>
-            </label>
-            <input
-              type="file"
-              id="file-upload"
-              accept=".xlsx, .xls"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                handleFileChange(e);
-                table.setCreatingRow(true);
-              }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<RiFileExcel2Fill />}
-              onClick={() => window.open(downloadUrl, "_blank")}
-            >
-              Загвар файл татах
-            </Button>
-          </>
-        </Box>
-      ),
+        </>
+      </Box>
+    ),
     initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoadingUsers,
@@ -618,19 +616,18 @@ const Example = () => {
 };
 
 const PromotionTransaction = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode, //let's use the same dark/light mode as the global theme
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -658,7 +655,7 @@ const PromotionTransaction = () => {
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
 
   return (

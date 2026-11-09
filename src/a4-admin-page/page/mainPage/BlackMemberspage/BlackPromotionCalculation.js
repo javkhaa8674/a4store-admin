@@ -5,7 +5,7 @@ import {
   Paper,
   TextField,
   CircularProgress,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
 } from "@mui/material";
@@ -16,22 +16,21 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import dayjs from "dayjs";
 
 const BlackPromotionCalculation = () => {
+  const { mode } = useColorScheme();
   const [btAmount, setBtAmount] = useState(0);
   const [batAmount, setBatAmount] = useState(0);
   const [managerAmount, setManagerAmount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [exportData, setExportData] = useState([]);
-  const globalTheme = useTheme();
 
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode,
-          primary: globalTheme.palette.secondary,
+          mode,
         },
       }),
-    [globalTheme],
+    [mode],
   );
 
   const fetchData = async () => {

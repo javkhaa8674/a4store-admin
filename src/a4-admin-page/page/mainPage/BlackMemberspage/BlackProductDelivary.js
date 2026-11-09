@@ -14,7 +14,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
   TextField,
@@ -72,8 +72,8 @@ const Example = () => {
   const [fetchAll, setFetchAll] = useState(false);
 
   // 🔹 Dark горим
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
+  const { mode } = useColorScheme();
+  const isDark = mode === "dark";
 
   // ---------- Columns ----------
   const columns = useMemo(
@@ -555,18 +555,14 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const BlackProductDelivery = () => {
-  const globalTheme = useTheme();
-  const isDark = globalTheme.palette.mode === "dark";
+  const { mode } = useColorScheme();
+  const isDark = mode === "dark";
 
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode,
-          primary: {
-            main: isDark ? "#90caf9" : globalTheme.palette.primary.main,
-          },
-          secondary: globalTheme.palette.secondary,
+          mode,
           info: { main: "rgb(255,122,0)" },
           background: {
             default: isDark ? "#0b0b0b" : "rgb(254,255,244)",
@@ -598,7 +594,7 @@ const BlackProductDelivery = () => {
           },
         },
       }),
-    [globalTheme, isDark],
+    [mode, isDark],
   );
 
   return (

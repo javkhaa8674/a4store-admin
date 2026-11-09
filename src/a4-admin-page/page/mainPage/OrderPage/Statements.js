@@ -16,7 +16,7 @@ import {
   TextField,
   Typography,
   ThemeProvider,
-  useTheme,
+  useColorScheme,
   createTheme,
 } from "@mui/material";
 import {
@@ -44,6 +44,7 @@ import {
 } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import { read, utils } from "xlsx";
+
 const csvConfig = mkConfig({
   filename: `Гүйлгээний мэдээлэл-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
@@ -147,7 +148,7 @@ const Example = () => {
         header: "id",
       },
     ],
-    []
+    [],
   );
 
   const { mutateAsync: createUser, isPending: isCreatingUser } =
@@ -192,7 +193,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "statements"),
               orderByChild("memberId"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -231,8 +232,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["statements"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["statements"]), // Refetch users after mutation
@@ -250,7 +251,7 @@ const Example = () => {
       },
       onMutate: (userId) => {
         queryClient.setQueryData(["statements"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["statements"]), // Refetch users after mutation
@@ -304,7 +305,7 @@ const Example = () => {
   };
 
   const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
       deleteUser(row.original.id);
     }
   };
@@ -315,7 +316,7 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
 
@@ -438,34 +439,33 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-      (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => exportToExcel(fetchedUsers)}
+        >
+          Татаж авах
+        </Button>
+        <label htmlFor="file-upload">
           <Button
             variant="contained"
             startIcon={<RiFileExcel2Fill />}
-            onClick={() => exportToExcel(fetchedUsers)}
+            component="span"
           >
-            Татаж авах
+            Файл оруулах
           </Button>
-          <label htmlFor="file-upload">
-            <Button
-              variant="contained"
-              startIcon={<RiFileExcel2Fill />}
-              component="span"
-            >
-              Файл оруулах
-            </Button>
-          </label>
-          <input
-            type="file"
-            id="file-upload"
-            accept=".xlsx, .xls"
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-        </Box>
-      ),
+        </label>
+        <input
+          type="file"
+          id="file-upload"
+          accept=".xlsx, .xls"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+      </Box>
+    ),
     initialState: {
       columnVisibility: {
         id: false, // Hide the unixTime column by default
@@ -511,19 +511,18 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Statement = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode,
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -551,7 +550,7 @@ const Statement = () => {
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
 
   return (

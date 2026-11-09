@@ -15,7 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
 } from "@mui/material";
@@ -41,7 +41,7 @@ import {
   equalTo,
   query,
 } from "firebase/database";
-import { db } from "refrence/realConfig"; 
+import { db } from "refrence/realConfig";
 
 const csvConfig = mkConfig({
   filename: `Блэк бүх худалдан авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
@@ -80,8 +80,6 @@ const csvConfig = mkConfig({
       key: "System",
       displayLabel: "Шилжсэн",
     },
-    
-
   ],
 });
 
@@ -123,7 +121,6 @@ const Example = () => {
         muiEditTextFieldProps: {
           type: "number",
         },
-        
       },
 
       {
@@ -171,10 +168,9 @@ const Example = () => {
         accessorKey: "System",
         header: "Төрөл",
         Cell: ({ cell }) => (cell.getValue() ? "Шилжсэн" : "Шилжээгүй"),
-      }
-
+      },
     ],
-    [validationErrors]
+    [validationErrors],
   );
   // CREATE hook (post new user to api)
   const useCreateUser = () => {
@@ -211,7 +207,7 @@ const Example = () => {
             promoQuery = query(
               ref(db, "BlackMembers/userInfo"),
               orderByChild("MemberId"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
@@ -220,8 +216,10 @@ const Example = () => {
           const snapshot = await get(promoQuery);
 
           if (!snapshot.exists()) return [];
-          return Object.entries(snapshot.val())
-            .map(([id, user]) => ({ id, ...user }));
+          return Object.entries(snapshot.val()).map(([id, user]) => ({
+            id,
+            ...user,
+          }));
         } catch (error) {
           console.error("Error fetching users:", error);
           throw new Error("Failed to fetch users");
@@ -243,8 +241,8 @@ const Example = () => {
         // remove undefined values
         const sendData = Object.fromEntries(
           Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
+            ([_, value]) => value !== undefined,
+          ),
         );
         const userRef = ref(db, `BlackMembers/userInfo/${sendData.id}`);
         await update(userRef, sendData);
@@ -253,8 +251,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["BlackMembers/userInfo"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["BlackMembers/userInfo"]), // Refetch users after mutation
@@ -271,11 +269,10 @@ const Example = () => {
       },
       onMutate: (userId) => {
         queryClient.setQueryData(["BlackMembers/userInfo"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
 
-    
       onSettled: () => queryClient.invalidateQueries(["BlackMembers/userInfo"]), // Refetch users after mutation
     });
   };
@@ -285,8 +282,6 @@ const Example = () => {
     useUpdateUser();
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
-
-
 
   const handleCreateUser = async ({ values, table }) => {
     if (!values) {
@@ -346,12 +341,12 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
   const table = useMaterialReactTable({
     columns,
-    data:fetchedUsers ,
+    data: fetchedUsers,
     createDisplayMode: "modal",
     editDisplayMode: "modal",
     enableEditing: true,
@@ -420,28 +415,27 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
-   (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={() => exportToExcel(fetchedUsers)}
-          >
-            Татаж авах
-          </Button>
-        </Box>
-      ),
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => exportToExcel(fetchedUsers)}
+        >
+          Татаж авах
+        </Button>
+      </Box>
+    ),
     initialState: {
       columnVisibility: {
         id: false,
         ResidentRegistrationNumber: false,
 
-        amount:false,
+        amount: false,
         inviterId: false,
         iniviterName: false,
-        accName:false,
-        accNumber:false,
+        accName: false,
+        accNumber: false,
         // SponsorId:false,
         // SponsorName:false,
       },
@@ -486,19 +480,18 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const BlackAllUserInfo = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode, //let's use the same dark/light mode as the global theme
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(254,255,244)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -526,12 +519,12 @@ const BlackAllUserInfo = () => {
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
-      Блэк бүх худалдан авалт
+        Блэк бүх худалдан авалт
       </Typography>
       <ThemeProvider theme={tableTheme}>
         <Example />

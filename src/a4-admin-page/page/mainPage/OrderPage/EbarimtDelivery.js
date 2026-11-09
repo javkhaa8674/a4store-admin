@@ -14,7 +14,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
   TextField,
@@ -476,19 +476,16 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Ebarimt = () => {
-  const globalTheme = useTheme();
+  const { mode } = useColorScheme();
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode,
-          primary: globalTheme.palette.secondary,
+          mode,
+
           info: { main: "rgb(255,122,0)" },
           background: {
-            default:
-              globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)"
-                : "#000",
+            default: mode === "light" ? "rgb(254,255,244)" : "#000",
           },
         },
         typography: {
@@ -503,7 +500,7 @@ const Ebarimt = () => {
           },
         },
       }),
-    [globalTheme],
+    [mode],
   );
 
   return (

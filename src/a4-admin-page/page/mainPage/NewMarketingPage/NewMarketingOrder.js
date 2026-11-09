@@ -15,9 +15,10 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useTheme,
+  useColorScheme,
   ThemeProvider,
   createTheme,
+  lighten,
 } from "@mui/material";
 import {
   QueryClient,
@@ -98,11 +99,10 @@ function validateUser(user) {
 // Export CSV data
 const exportToExcel = (data) => {
   const columnsToRemove = ["id"];
-  // Function to exclude specific columns from the data
   const excludeColumns = (data, columnsToRemove) => {
     return data.map((item) => {
-      const newItem = { ...item }; // Create a copy of the item
-      columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
+      const newItem = { ...item };
+      columnsToRemove.forEach((column) => delete newItem[column]);
       return newItem;
     });
   };
@@ -114,9 +114,10 @@ const exportToExcel = (data) => {
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [searchTerm, setSearchTerm] = useState(""); // User input for search
-  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
+
   const columns = useMemo(
     () => [
       {
@@ -131,7 +132,6 @@ const Example = () => {
           required: true,
           error: !!validationErrors?.phone,
           helperText: validationErrors?.phone,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -147,7 +147,6 @@ const Example = () => {
         accessorKey: "Level",
         header: "Үе",
       },
-
       {
         accessorKey: "SponsorId",
         header: "Cпонсор ID",
@@ -178,11 +177,11 @@ const Example = () => {
         Cell: ({ cell }) => dayjs(cell.getValue()).format("YYYY-MM-DD"),
         enableEditing: true,
       },
-      
     ],
-    [validationErrors]
+    [validationErrors],
   );
-  // CREATE hook (post new user to api)
+
+  // CREATE hook
   const useCreateUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -202,6 +201,7 @@ const Example = () => {
       },
     });
   };
+
   function useGetUsers() {
     return useQuery({
       queryKey: ["newMarketing/UserInfo", searchTerm, fetchAll],
@@ -209,18 +209,14 @@ const Example = () => {
         try {
           let promoQuery;
           if (fetchAll) {
-            // Fetch all data if fetchAll is true
             promoQuery = ref(db, "newMarketing/UserInfo");
           } else if (searchTerm.length === 8) {
-            console.log(searchTerm);
-            // Only query if searchTerm is defined
             promoQuery = query(
               ref(db, "newMarketing/UserInfo"),
               orderByChild("phoneNumber"),
-              equalTo(Number(searchTerm))
+              equalTo(Number(searchTerm)),
             );
           } else {
-            // If fetchAll is false and searchTerm is not defined, return an empty array
             return [];
           }
           const snapshot = await get(promoQuery);
@@ -234,28 +230,28 @@ const Example = () => {
           throw new Error("Failed to fetch users");
         }
       },
-      enabled: fetchAll || Boolean(searchTerm), // Fetch only when searchTerm or fetchAll is set
+      enabled: fetchAll || Boolean(searchTerm),
       refetchOnWindowFocus: true,
     });
   }
-  // UPDATE hook (put user in api)
+
+  // UPDATE hook
   const useUpdateUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
         const updatedData = {
-          ...user, // Spread the original row data
+          ...user,
           phoneNumber: Number(user.phoneNumber),
           SponsorId: Number(user.SponsorId),
           index: Number(user.index),
           Level: Number(user.Level),
           bankNumber: Number(user.bankNumber),
         };
-        // remove undefined values
         const sendData = Object.fromEntries(
           Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
+            ([_, value]) => value !== undefined,
+          ),
         );
         const userRef = ref(db, `newMarketing/UserInfo/${sendData.id}`);
         await update(userRef, sendData);
@@ -264,14 +260,15 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["newMarketing/UserInfo"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
-      onSettled: () => queryClient.invalidateQueries(["newMarketing/UserInfo"]), // Refetch users after mutation
+      onSettled: () => queryClient.invalidateQueries(["newMarketing/UserInfo"]),
     });
   };
-  // DELETE hook (delete user in api)
+
+  // DELETE hook
   const useDeleteUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -282,18 +279,20 @@ const Example = () => {
       },
       onMutate: (userId) => {
         queryClient.setQueryData(["newMarketing/UserInfo"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== userId)
+          prevUsers?.filter((user) => user.id !== userId),
         );
       },
-      onSettled: () => queryClient.invalidateQueries(["newMarketing/UserInfo"]), // Refetch users after mutation
+      onSettled: () => queryClient.invalidateQueries(["newMarketing/UserInfo"]),
     });
   };
+
   const { mutateAsync: createUser, isPending: isCreatingUser } =
     useCreateUser();
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
     useUpdateUser();
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
+
   const handleCreateUser = async ({ values, table }) => {
     if (!values) {
       console.error("User values are undefined");
@@ -301,7 +300,6 @@ const Example = () => {
     }
 
     const newValidationErrors = validateUser(values);
-
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
@@ -324,7 +322,6 @@ const Example = () => {
     }
 
     const newValidationErrors = validateUser(values);
-
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
@@ -352,24 +349,29 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
+
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
     createDisplayMode: "modal",
     editDisplayMode: "modal",
-    enableEditing:true,
+    enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isError
       ? { color: "error", children: "Error loading data" }
       : undefined,
+
+    // ✅ өмнөх загвартай ижил
     muiTableContainerProps: { sx: { minHeight: "500px" } },
+
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
+
     renderCreateRowDialogContent: ({ table, row }) => (
       <>
         <DialogTitle variant="h3">Худалдан авалт нэмэх</DialogTitle>
@@ -391,13 +393,13 @@ const Example = () => {
               pattern: "[0-9]*",
             }}
           />
-          {/* Add more fields here as needed */}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
         </DialogActions>
       </>
     ),
+
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Edit User</DialogTitle>
@@ -412,6 +414,7 @@ const Example = () => {
         </DialogActions>
       </>
     ),
+
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
@@ -426,18 +429,19 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) =>
- (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="contained"
-            startIcon={<RiFileExcel2Fill />}
-            onClick={() => exportToExcel(fetchedUsers)}
-          >
-            Татаж авах
-          </Button>
-        </Box>
-      ),
+
+    renderTopToolbarCustomActions: () => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => exportToExcel(fetchedUsers)}
+        >
+          Татаж авах
+        </Button>
+      </Box>
+    ),
+
     initialState: {
       columnVisibility: {
         id: false,
@@ -478,8 +482,8 @@ const Example = () => {
         <Button
           variant="outlined"
           onClick={() => {
-            setFetchAll(true); // Fetch all data
-            setSearchTerm(""); // Clear search term
+            setFetchAll(true);
+            setSearchTerm("");
             queryClient.invalidateQueries(["promotion"]);
           }}
         >
@@ -494,26 +498,24 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const NewMarketingOrder = () => {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  // ✅ useTheme биш useColorScheme
+  const { mode } = useColorScheme();
+
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode,
           info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
+            main: "rgb(255,122,0)",
           },
           background: {
-            default:
-              globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+            default: mode === "light" ? "rgb(254,255,244)" : "#000",
           },
         },
         typography: {
           button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
+            textTransform: "none",
             fontSize: "1.2rem",
           },
         },
@@ -521,29 +523,32 @@ const NewMarketingOrder = () => {
           MuiTooltip: {
             styleOverrides: {
               tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
+                fontSize: "1.1rem",
               },
             },
           },
           MuiSwitch: {
             styleOverrides: {
               thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
+                color: "pink",
               },
             },
           },
         },
       }),
-    [globalTheme]
+    [mode],
   );
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Typography color="inherit" variant="h4">
-        Худалдан авалт
-      </Typography>
-      <ThemeProvider theme={tableTheme}>
-        <Example />
-      </ThemeProvider>
+      <Box>
+        <Typography color="inherit" variant="h4">
+          Худалдан авалт
+        </Typography>
+        <ThemeProvider theme={tableTheme}>
+          <Example />
+        </ThemeProvider>
+      </Box>
     </QueryClientProvider>
   );
 };
