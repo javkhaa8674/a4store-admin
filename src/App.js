@@ -53,12 +53,9 @@ const AppContent = () => {
 
     return () => unsubscribe(); // Cleanup listener on unmount
   }, [navigate, token]);
-  const theme = createTheme({
-    cssVariables: true,
-    palette: {
-      // mode: darkMode ? "dark" : "light",
-    },
-  });
+
+  const theme = createTheme({ palette: { mode: "dark" } });
+
   if (loading) {
     return <Loading />;
   }

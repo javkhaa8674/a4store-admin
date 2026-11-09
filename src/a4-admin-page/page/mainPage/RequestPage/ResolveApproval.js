@@ -7,26 +7,25 @@ import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Slide from "@mui/material/Slide";
 import ResolveRequestTable from "../../components/tables/ResolveRequestTable";
-import { Box, ThemeProvider, useTheme, createTheme } from "@mui/material";
+import { Box, ThemeProvider, createTheme, useColorScheme } from "@mui/material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 export default function ResolveApproval({ open, setOpen, data }) {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode,
           info: {
             main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
           },
           background: {
             default:
-              globalTheme.palette.mode === "light"
+              mode === "light"
                 ? "rgb(244, 245, 255)" //random light yellow color for the background in light mode
                 : "#000", //pure black table in dark mode for fun
           },
@@ -54,7 +53,7 @@ export default function ResolveApproval({ open, setOpen, data }) {
           },
         },
       }),
-    [globalTheme],
+    [mode],
   );
   const handleClose = () => {
     setOpen(false);

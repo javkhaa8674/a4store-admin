@@ -6,56 +6,61 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Slide from "@mui/material/Slide";
-import { Box, ThemeProvider, useTheme, createTheme } from "@mui/material";
+import { Box, ThemeProvider, createTheme } from "@mui/material";
 import AllCancelledRequestTable from "../../components/tables/AllCancelledRequestTable";
-
+import { useColorScheme } from "@mui/material/styles";
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 export default function AllCancelledApproval({ open, setOpen, data }) {
-  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme();
+
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
-          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          mode,
           info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
+            main: "rgb(255,122,0)",
           },
           background: {
-            default:
-              globalTheme.palette.mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+            default: mode === "light" ? "rgb(254,255,244)" : "#000",
           },
         },
         typography: {
           button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
+            textTransform: "none",
             fontSize: "1.2rem",
           },
         },
         components: {
+          MuiPaper: {
+            styleOverrides: {
+              root: {
+                backgroundImage: "none",
+              },
+            },
+          },
           MuiTooltip: {
             styleOverrides: {
               tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
+                fontSize: "1.1rem",
               },
             },
           },
           MuiSwitch: {
             styleOverrides: {
               thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
+                color: "pink",
               },
             },
           },
         },
       }),
-    [globalTheme],
+    [mode],
   );
+
   const handleClose = () => {
     setOpen(false);
   };
@@ -72,7 +77,7 @@ export default function AllCancelledApproval({ open, setOpen, data }) {
           <Toolbar>
             <IconButton
               edge="start"
-              color="primary.light"
+              color="inherit"
               onClick={handleClose}
               aria-label="close"
             >

@@ -169,7 +169,7 @@ const ReactAdvancedMaterialTable = () => {
         ],
       },
     ],
-    []
+    [],
   );
 
   //call CREATE hook
@@ -208,21 +208,12 @@ const ReactAdvancedMaterialTable = () => {
       deleteUser(row.original.id);
     }
   };
-  // Choose a description depending on the userRoles
+  // Зөвхөн system role-той хүн бүх асуудлыг шийдвэрлэдэг
   const handleCommentRequest = (row) => {
-    console.log("row", row);
-    if (userInfo.role.includes("cs")) {
-      setComment(row.original.Requester_Comment);
-    } else if (userInfo.role === "system") {
-      if (row.original.Level === 2) {
-        setComment(row.original.Approver1_Comment);
-      } else if (row.original.Level === 5) {
-        setComment(row.original.Approver4_Comment);
-      }
-    } else if (userInfo.role === "finance") {
-      setComment(row.original.Approver2_Comment);
-    } else if (userInfo.role === "director") {
-      setComment(row.original.Approver3_Comment);
+    if (row.original.Level === 2) {
+      setComment(row.original.Approver1_Comment);
+    } else if (row.original.Level === 5) {
+      setComment(row.original.Approver4_Comment);
     }
   };
 
@@ -244,429 +235,184 @@ const ReactAdvancedMaterialTable = () => {
     let updateData = {};
     let addData = {};
     if (modalButtonTitle === "зөвшөөрөх") {
-      if (userInfo.role === "manager") {
-        if (
-          ["Бусад", "Уригч солих", "Спонсор солих"].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Approver1_Avatar: userInfo.photoURL,
-            Approver1_Comment: comment,
-            Approver1_ID: userInfo.email,
-            Approver1_Status: "Шийдвэрлэсэн",
-            Approver1_TimeStamps: date.getTime(),
-            Approver3_Status: "Шийдвэрлэж байна",
-            Level: data.Level + 1,
-          };
-        } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver1_Avatar: userInfo.photoURL,
-            Approver1_Comment: comment,
-            Approver1_ID: userInfo.email,
-            Approver1_Status: "Шийдвэрлэсэн",
-            Approver1_TimeStamps: date.getTime(),
-            Approver2_Status: "Шийдвэрлэж байна",
-            Level: data.Level + 1,
-          };
-        }
-      } else if (userInfo.role === "finance") {
-        if (
-          ["E-баримт олголт", "Бүтээгдэхүүн олголт"].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Approver2_Avatar: userInfo.photoURL,
-            Approver2_Comment: comment,
-            Approver2_ID: userInfo.email,
-            Approver2_Status: "Шийдвэрлэсэн",
-            Approver2_TimeStamps: date.getTime(),
-            Status: "Шийдвэрлэсэн",
-          };
-          if (["E-баримт олголт"].includes(data.ApprovalType)) {
-            addData = {
-              Requester_TimeStamps: data.Requester_TimeStamps,
-              Count: data.Extra[0].ebarimt,
-              TimeStamps: date.getTime(),
-              ID: data.ID,
-              Name: data.Name,
-              Description: comment,
-            };
-            await addPost("ebarimt/", addData);
-          } else {
-            addData = {
-              Requester_TimeStamps: data.Requester_TimeStamps,
-              Count: data.Extra[0].productNumber,
-              TimeStamps: date.getTime(),
-              ID: data.ID,
-              Name: data.Name,
-              ProductName: data.Extra[0].productName,
-              Description: comment,
-              ProductCount: data.Extra[0].productNumber,
-            };
-            await addPost("productdelivery/", addData);
-          }
-        } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver2_Avatar: userInfo.photoURL,
-            Approver2_Comment: comment,
-            Approver2_ID: userInfo.email,
-            Approver2_Status: "Шийдвэрлэсэн",
-            Approver2_TimeStamps: date.getTime(),
-            Approver3_Status: "Шийдвэрлэж байна",
-            Calc: calc,
-            count: count,
-            BonusCalc: bonusCalc,
-            Level: data.Level + 1,
-          };
-        }
-      } else if (userInfo.role === "system") {
-        if (
-          [
-            "Нууц үг солиулах",
-            "Худалдан авалт хийж болохгүй байгаа",
-            "Дансны дугаар солих",
-            "Овог солих",
-            "Нэр солих",
-            "Бусад",
-            "Уригч солих",
-            "Спонсор солих",
-          ].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Шийдвэрлэсэн",
-            Approver3_TimeStamps: date.getTime(),
-            Status: "Шийдвэрлэсэн",
-          };
-        } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Шийдвэрлэсэн",
-            Approver3_TimeStamps: date.getTime(),
-            Status: "Шийдвэрлэсэн",
-          };
-          addData = {
-            Requester_TimeStamps: data.Requester_TimeStamps,
-            TimeStamps: data.TimeStamps,
-            ConfirmedTimeStamps: date.getTime(),
-            Name: data.Name,
-            ID: data.ID,
-            Count: data.Extra[0].count,
-            Description: comment,
-            Calc: data.Calc,
-            BonusCalc: data.BonusCalc,
-          };
-          await addPost("cancelContract/", addData);
-        }
-      } else if (userInfo.role === "director") {
-        if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver4_Avatar: userInfo.photoURL,
-            Approver4_Comment: comment,
-            Approver4_ID: userInfo.email,
-            Approver4_Status: "Шийдвэрлэсэн",
-            Approver4_TimeStamps: date.getTime(),
-            Level: data.Level + 1,
-            Approver3_Status: "Шийдвэрлэж байна",
-          };
-        }
-      } else if (userInfo.role === "cs") {
+      // Эхлээд E-баримт / Бүтээгдэхүүн олголтыг шалгана (хуучин finance-ийн логик)
+      if (
+        ["E-баримт олголт", "Бүтээгдэхүүн олголт"].includes(data.ApprovalType)
+      ) {
         updateData = {
           ...data,
-          Request_Avatar: userInfo.photoURL,
-          Requester_Comment: comment,
-          Requester_ID: userInfo.email,
-          Requester_Status: "Шийдвэрлэсэн",
-          Requester_TimeStamps: date.getTime(),
-          Approver1_Status: "Шийдвэрлэж байна",
-          Level: data.Level + 1,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Шийдвэрлэсэн",
+          Approver_TimeStamps: date.getTime(),
+          Status: "Шийдвэрлэсэн",
         };
+        if (["E-баримт олголт"].includes(data.ApprovalType)) {
+          addData = {
+            Requester_TimeStamps: data.Requester_TimeStamps,
+            Count: data.Extra[0].ebarimt,
+            TimeStamps: date.getTime(),
+            ID: data.ID,
+            Name: data.Name,
+            Description: comment,
+          };
+          await addPost("ebarimt/", addData);
+        } else {
+          addData = {
+            Requester_TimeStamps: data.Requester_TimeStamps,
+            Count: data.Extra[0].productNumber,
+            TimeStamps: date.getTime(),
+            ID: data.ID,
+            Name: data.Name,
+            ProductName: data.Extra[0].productName,
+            Description: comment,
+            ProductCount: data.Extra[0].productNumber,
+          };
+          await addPost("productdelivery/", addData);
+        }
+      } else if (
+        [
+          "Нууц үг солиулах",
+          "Худалдан авалт хийж болохгүй байгаа",
+          "Дансны дугаар солих",
+          "Овог солих",
+          "Нэр солих",
+          "Бусад",
+          "Уригч солих",
+          "Спонсор солих",
+        ].includes(data.ApprovalType)
+      ) {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Шийдвэрлэсэн",
+          Approver_TimeStamps: date.getTime(),
+          Status: "Шийдвэрлэсэн",
+        };
+      } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Шийдвэрлэсэн",
+          Approver_TimeStamps: date.getTime(),
+          Status: "Шийдвэрлэсэн",
+        };
+        addData = {
+          Requester_TimeStamps: data.Requester_TimeStamps,
+          TimeStamps: data.TimeStamps,
+          ConfirmedTimeStamps: date.getTime(),
+          Name: data.Name,
+          ID: data.ID,
+          Count: data.Extra[0].count,
+          Description: comment,
+          Calc: data.Calc,
+          BonusCalc: data.BonusCalc,
+        };
+        await addPost("cancelContract/", addData);
       }
     } else if (modalButtonTitle === "цуцлах") {
-      if (userInfo.role === "manager") {
-        if (
-          ["Бусад", "Уригч солих", "Спонсор солих"].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Approver1_Avatar: userInfo.photoURL,
-            Approver1_Comment: comment,
-            Approver1_ID: userInfo.email,
-            Approver1_Status: "Цуцалсан",
-            Approver1_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Approver3_Status: "Цуцлагдсан",
-            Requester_Status: "Цуцлагдсан",
-          };
-        } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver1_Avatar: userInfo.photoURL,
-            Approver1_Comment: comment,
-            Approver1_ID: userInfo.email,
-            Approver1_Status: "Цуцалсан",
-            Approver1_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Approver2_Status: "Цуцлагдсан",
-            Approver3_Status: "Цуцлагдсан",
-            Approver4_Status: "Цуцлагдсан",
-            Requester_Status: "Цуцлагдсан",
-          };
-        }
-      } else if (userInfo.role === "finance") {
-        if (
-          ["E-баримт олголт", "Бүтээгдэхүүн олголт"].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Approver2_Avatar: userInfo.photoURL,
-            Approver2_Comment: comment,
-            Approver2_ID: userInfo.email,
-            Approver2_Status: "Цуцалсан",
-            Approver2_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Requester_Status: "Цуцлагдсан",
-          };
-        } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver2_Avatar: userInfo.photoURL,
-            Approver2_Comment: comment,
-            Approver2_ID: userInfo.email,
-            Approver2_Status: "Цуцалсан",
-            Approver2_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Calc: calc,
-            BonusCalc: bonusCalc,
-            Approver3_Status: "Цуцлагдсан",
-            Approver4_Status: "Цуцлагдсан",
-            Approver1_Status: "Цуцлагдсан",
-            Requester_Status: "Цуцлагдсан",
-          };
-        }
-      } else if (userInfo.role === "system") {
-        if (
-          [
-            "Нууц үг солиулах",
-            "Худалдан авалт хийж болохгүй байгаа",
-            "Дансны дугаар солих",
-            "Овог солих",
-            "Нэр солих",
-            "Бусад",
-            "Уригч солих",
-            "Спонсор солих",
-          ].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Цуцалсан",
-            Approver3_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Requester_Status: "Цуцлагдсан",
-            Approver1_Status: "Цуцлагдсан",
-          };
-        } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Цуцалсан",
-            Approver3_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Requester_Status: "Цуцлагдсан",
-            Approver1_Status: "Цуцлагдсан",
-            Approver2_Status: "Цуцлагдсан",
-            Approver4_Status: "Цуцлагдсан",
-          };
-        }
-      } else if (userInfo.role === "director") {
-        if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Approver4_Avatar: userInfo.photoURL,
-            Approver4_Comment: comment,
-            Approver4_ID: userInfo.email,
-            Approver4_Status: "Цуцалсан",
-            Approver4_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Requester_Status: "Цуцлагдсан",
-            Approver1_Status: "Цуцлагдсан",
-            Approver2_Status: "Цуцлагдсан",
-          };
-        }
-      } else if (userInfo.role === "cs") {
-        if (
-          [
-            "Нууц үг солиулах",
-            "Худалдан авалт хийж болохгүй байгаа",
-            "Дансны дугаар солих",
-            "Овог солих",
-            "Нэр солих",
-          ].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Requester_Avatar: userInfo.photoURL,
-            Requester_Comment: comment,
-            Requester_ID: userInfo.email,
-            Requester_Status: "Цуцалсан",
-            Requester_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Approver3_Status: "Цуцлагдсан",
-          };
-        } else if (
-          ["Бусад", "Уригч солих", "Спонсор солих"].includes(data.ApprovalType)
-        ) {
-          updateData = {
-            ...data,
-            Requester_Avatar: userInfo.photoURL,
-            Requester_Comment: comment,
-            Requester_ID: userInfo.email,
-            Requester_Status: "Цуцалсан",
-            Requester_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Approver1_Status: "Цуцлагдсан",
-            Approver3_Status: "Цуцлагдсан",
-          };
-        } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-          updateData = {
-            ...data,
-            Requester_Avatar: userInfo.photoURL,
-            Requester_Comment: comment,
-            Requester_ID: userInfo.email,
-            Requester_Status: "Цуцалсан",
-            Requester_TimeStamps: date.getTime(),
-            Status: "Цуцалсан",
-            Approver1_Status: "Цуцлагдсан",
-            Approver2_Status: "Цуцлагдсан",
-            Approver3_Status: "Цуцлагдсан",
-            Approver4_Status: "Цуцлагдсан",
-          };
-        }
+      if (
+        ["E-баримт олголт", "Бүтээгдэхүүн олголт"].includes(data.ApprovalType)
+      ) {
+        // Хуучин finance-ийн цуцлах логик
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Цуцалсан",
+          Approver_TimeStamps: date.getTime(),
+          Status: "Цуцалсан",
+          Requester_Status: "Цуцлагдсан",
+        };
+      } else if (
+        [
+          "Нууц үг солиулах",
+          "Худалдан авалт хийж болохгүй байгаа",
+          "Дансны дугаар солих",
+          "Овог солих",
+          "Нэр солих",
+          "Бусад",
+          "Уригч солих",
+          "Спонсор солих",
+        ].includes(data.ApprovalType)
+      ) {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Цуцалсан",
+          Approver_TimeStamps: date.getTime(),
+          Status: "Цуцалсан",
+          Requester_Status: "Цуцлагдсан",
+          Approver1_Status: "Цуцлагдсан",
+        };
+      } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Цуцалсан",
+          Approver_TimeStamps: date.getTime(),
+          Status: "Цуцалсан",
+          Requester_Status: "Цуцлагдсан",
+          Approver1_Status: "Цуцлагдсан",
+          Approver2_Status: "Цуцлагдсан",
+          Approver4_Status: "Цуцлагдсан",
+        };
       }
     } else if (modalButtonTitle === "буцаах") {
-      if (userInfo.role === "finance") {
-        if (selectedWorkerMajor === "cs") {
-          updateData = {
-            ...data,
-            Approver2_Avatar: userInfo.photoURL,
-            Approver2_Comment: comment,
-            Approver2_ID: userInfo.email,
-            Approver2_Status: "Буцаасан",
-            Approver2_TimeStamps: date.getTime(),
-            Requester_Status: "Шийдвэрлэж байна",
-            Calc: calc,
-            BonusCalc: bonusCalc,
-            Level: 1,
-          };
-        } else if (selectedWorkerMajor === "cs менежер") {
-          updateData = {
-            ...data,
-            Approver2_Avatar: userInfo.photoURL,
-            Approver2_Comment: comment,
-            Approver2_ID: userInfo.email,
-            Approver2_Status: "Буцаасан",
-            Approver2_TimeStamps: date.getTime(),
-            Approver1_Status: "Шийдвэрлэж байна",
-            Calc: calc,
-            BonusCalc: bonusCalc,
-            Level: 2,
-          };
-        }
-      } else if (userInfo.role === "system") {
-        if (selectedWorkerMajor === "cs") {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Буцаасан",
-            Approver3_TimeStamps: date.getTime(),
-            Requester_Status: "Шийдвэрлэж байна",
-            Level: 1,
-          };
-        } else if (selectedWorkerMajor === "cs менежер") {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Буцаасан",
-            Approver3_TimeStamps: date.getTime(),
-            Approver1_Status: "Шийдвэрлэж байна",
-            Level: 2,
-          };
-        } else if (selectedWorkerMajor === "санхүү") {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Буцаасан",
-            Approver3_TimeStamps: date.getTime(),
-            Approver2_Status: "Шийдвэрлэж байна",
-            Level: 3,
-          };
-        } else if (selectedWorkerMajor === "удирдлага") {
-          updateData = {
-            ...data,
-            Approver3_Avatar: userInfo.photoURL,
-            Approver3_Comment: comment,
-            Approver3_ID: userInfo.email,
-            Approver3_Status: "Буцаасан",
-            Approver3_TimeStamps: date.getTime(),
-            Approver4_Status: "Шийдвэрлэж байна",
-            Level: 4,
-          };
-        }
-      } else if (userInfo.role === "director") {
-        if (selectedWorkerMajor === "cs") {
-          updateData = {
-            ...data,
-            Approver4_Avatar: userInfo.photoURL,
-            Approver4_Comment: comment,
-            Approver4_ID: userInfo.email,
-            Approver4_Status: "Буцаасан",
-            Approver4_TimeStamps: date.getTime(),
-            Requester_Status: "Шийдвэрлэж байна",
-            Level: 1,
-          };
-        } else if (selectedWorkerMajor === "cs менежер") {
-          updateData = {
-            ...data,
-            Approver4_Avatar: userInfo.photoURL,
-            Approver4_Comment: comment,
-            Approver4_ID: userInfo.email,
-            Approver4_Status: "Буцаасан",
-            Approver4_TimeStamps: date.getTime(),
-            Approver1_Status: "Шийдвэрлэж байна",
-            Level: 2,
-          };
-        } else if (selectedWorkerMajor === "санхүү") {
-          updateData = {
-            ...data,
-            Approver4_Avatar: userInfo.photoURL,
-            Approver4_Comment: comment,
-            Approver4_ID: userInfo.email,
-            Approver4_Status: "Буцаасан",
-            Approver4_TimeStamps: date.getTime(),
-            Approver2_Status: "Шийдвэрлэж байна",
-            Level: 3,
-          };
-        }
+      if (selectedWorkerMajor === "cs") {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Буцаасан",
+          Approver_TimeStamps: date.getTime(),
+          Requester_Status: "Шийдвэрлэж байна",
+          Level: 1,
+        };
+      } else if (selectedWorkerMajor === "cs менежер") {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Буцаасан",
+          Approver_TimeStamps: date.getTime(),
+          Approver1_Status: "Шийдвэрлэж байна",
+          Level: 2,
+        };
+      } else if (selectedWorkerMajor === "санхүү") {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Буцаасан",
+          Approver_TimeStamps: date.getTime(),
+          Approver2_Status: "Шийдвэрлэж байна",
+          Level: 3,
+        };
+      } else if (selectedWorkerMajor === "удирдлага") {
+        updateData = {
+          ...data,
+          Approver_Avatar: userInfo.photoURL,
+          Approver_Comment: comment,
+          Approver_ID: userInfo.email,
+          Approver_Status: "Буцаасан",
+          Approver_TimeStamps: date.getTime(),
+          Approver4_Status: "Шийдвэрлэж байна",
+          Level: 4,
+        };
       }
     }
 
@@ -682,22 +428,22 @@ const ReactAdvancedMaterialTable = () => {
     const statementQuery = query(
       statementRef,
       orderByChild("memberId"),
-      equalTo(Number(row.original.ID))
+      equalTo(Number(row.original.ID)),
     );
     const buyQuery = query(
       buyRef,
       orderByChild("MemberId"),
-      equalTo(Number(row.original.ID))
+      equalTo(Number(row.original.ID)),
     );
     const productQuery = query(
       productRef,
       orderByChild("ID"),
-      equalTo(row.original.ID)
+      equalTo(row.original.ID),
     );
     const ebarimtQuery = query(
       ebarimtRef,
       orderByChild("ID"),
-      equalTo(row.original.ID)
+      equalTo(row.original.ID),
     );
 
     const statementSnapshot = await get(statementQuery);
@@ -776,7 +522,7 @@ const ReactAdvancedMaterialTable = () => {
 
   const table = useMaterialReactTable({
     columns,
-    data: fetchedResults, //data must be memoized or stable (useState, useMemo, defined outside of this component, etc.)
+    data: fetchedResults,
     getRowId: (row) => row.id,
     enableHiding: true,
     enableColumnFilterModes: true,
@@ -794,7 +540,7 @@ const ReactAdvancedMaterialTable = () => {
     },
     displayColumnDefOptions: {
       "mrt-row-numbers": {
-        enableHiding: true, //now row numbers are hidable too
+        enableHiding: true,
       },
     },
     paginationDisplayMode: "pages",
@@ -805,14 +551,14 @@ const ReactAdvancedMaterialTable = () => {
     },
     muiPaginationProps: {
       color: "secondary",
-      rowsPerPageOptions: [10, 20, 30],
+      rowsPerPageOptions: [10, 20, 30, 50, 100],
       shape: "rounded",
       variant: "outlined",
     },
     onCreatingRowSave: handleCreateRequest,
     onEditingRowSave: handleSaveRequest,
     renderDetailPanel: ({ row }) => {
-      console.log("row", row.original);
+      console.log("row.original", row.original);
       return (
         <>
           <Box
@@ -841,7 +587,7 @@ const ReactAdvancedMaterialTable = () => {
                       }}
                     />
                   </Grid>
-                )
+                ),
             )}
           </Grid>
         </>
@@ -896,39 +642,35 @@ const ReactAdvancedMaterialTable = () => {
         </ListItemIcon>
         Цуцлах
       </MenuItem>,
-      ["finance", "director", "system"].includes(userInfo.role) && (
-        <MenuItem
-          key={400}
-          onClick={() => {
-            getReturnWorker(row.original);
-            handleCommentRequest(row);
-            setModalButtonTitle("буцаах");
-            table.setEditingRow(row);
-            closeMenu();
-          }}
-          sx={{ m: 0 }}
-        >
-          <ListItemIcon>
-            <KeyboardReturnIcon />
-          </ListItemIcon>
-          Буцаах
-        </MenuItem>
-      ),
-      userInfo.role === "system" && (
-        <MenuItem
-          key={500}
-          onClick={() => {
-            openDeleteConfirmModal(row);
-            closeMenu();
-          }}
-          sx={{ m: 0 }}
-        >
-          <ListItemIcon>
-            <DeleteIcon />
-          </ListItemIcon>
-          Устгах
-        </MenuItem>
-      ),
+      <MenuItem
+        key={400}
+        onClick={() => {
+          getReturnWorker(row.original);
+          handleCommentRequest(row);
+          setModalButtonTitle("буцаах");
+          table.setEditingRow(row);
+          closeMenu();
+        }}
+        sx={{ m: 0 }}
+      >
+        <ListItemIcon>
+          <KeyboardReturnIcon />
+        </ListItemIcon>
+        Буцаах
+      </MenuItem>,
+      <MenuItem
+        key={500}
+        onClick={() => {
+          openDeleteConfirmModal(row);
+          closeMenu();
+        }}
+        sx={{ m: 0 }}
+      >
+        <ListItemIcon>
+          <DeleteIcon />
+        </ListItemIcon>
+        Устгах
+      </MenuItem>,
     ],
     renderEditRowDialogContent: ({ table, row }) => (
       <>
@@ -982,7 +724,7 @@ const ReactAdvancedMaterialTable = () => {
                         Үлдсэн дүн:{" "}
                         <strong>
                           {numberWithCommas(
-                            summary.transactionCount - summary.ebarimtCount
+                            summary.transactionCount - summary.ebarimtCount,
                           )}{" "}
                           ₮
                         </strong>
@@ -1007,7 +749,6 @@ const ReactAdvancedMaterialTable = () => {
                       <Box
                         sx={{
                           width: "100%",
-                          // maxWidth: 600,
                           bgcolor: "background.paper",
                           borderRadius: 2,
                           boxShadow: 3,
@@ -1045,7 +786,7 @@ const ReactAdvancedMaterialTable = () => {
                                     </Typography>
                                   }
                                   secondary={dayjs(
-                                    transaction.TimeStamps
+                                    transaction.TimeStamps,
                                   ).format("YYYY-MM-DD HH:mm:ss")}
                                 />
                                 <Typography variant="body2" align="right">
@@ -1082,7 +823,6 @@ const ReactAdvancedMaterialTable = () => {
                       <Box
                         sx={{
                           width: "100%",
-                          // maxWidth: 600,
                           bgcolor: "background.paper",
                           borderRadius: 2,
                           boxShadow: 3,
@@ -1120,7 +860,7 @@ const ReactAdvancedMaterialTable = () => {
                                     </Typography>
                                   }
                                   secondary={dayjs(
-                                    transaction.TimeStamps
+                                    transaction.TimeStamps,
                                   ).format("YYYY-MM-DD HH:mm:ss")}
                                 />
                                 <Typography variant="body2" align="right">
@@ -1134,7 +874,7 @@ const ReactAdvancedMaterialTable = () => {
                                   </Typography>
                                 </Typography>
                               </ListItem>
-                              {index < ebarimtData.length - 1 && <Divider />}
+                              {index < productData.length - 1 && <Divider />}
                             </div>
                           ))}
                         </List>
@@ -1156,7 +896,6 @@ const ReactAdvancedMaterialTable = () => {
                       <Box
                         sx={{
                           width: "100%",
-                          // maxWidth: 600,
                           bgcolor: "background.paper",
                           borderRadius: 2,
                           boxShadow: 3,
@@ -1194,7 +933,7 @@ const ReactAdvancedMaterialTable = () => {
                                     </Typography>
                                   }
                                   secondary={dayjs(
-                                    transaction.timeStamp
+                                    transaction.timeStamp,
                                   ).format("YYYY-MM-DD HH:mm:ss")}
                                 />
                                 <Tooltip
@@ -1241,7 +980,7 @@ const ReactAdvancedMaterialTable = () => {
                                   </Stack>
                                 </Tooltip>
                               </ListItem>
-                              {index < ebarimtData.length - 1 && <Divider />}
+                              {index < buyData.length - 1 && <Divider />}
                             </div>
                           ))}
                         </List>
@@ -1303,7 +1042,7 @@ const ReactAdvancedMaterialTable = () => {
                                     </Typography>
                                   }
                                   secondary={dayjs(
-                                    transaction.tranPostedDate
+                                    transaction.tranPostedDate,
                                   ).format("YYYY-MM-DD HH:mm:ss")}
                                 />
                                 <Typography variant="body2" align="right">
@@ -1316,7 +1055,7 @@ const ReactAdvancedMaterialTable = () => {
                                   </Typography>
                                 </Typography>
                               </ListItem>
-                              {index < ebarimtData.length - 1 && <Divider />}
+                              {index < statementData.length - 1 && <Divider />}
                             </div>
                           ))}
                         </List>
@@ -1342,49 +1081,47 @@ const ReactAdvancedMaterialTable = () => {
               />
               <TextField
                 id="standard-read-only-input"
-                label="ID"
+                label="Нэр"
                 defaultValue={row.original.Name}
                 InputProps={{
                   readOnly: true,
                 }}
                 variant="standard"
               />
-              {userInfo.role === "finance" &&
-                row.original.ApprovalType === "Буцаалт хийх" && (
-                  <TextField
-                    id="standard-read-only-input"
-                    label="Бодолт"
-                    value={calc}
-                    onChange={(e) => setCalc(e.target.value)}
-                    variant="standard"
-                    type="number"
-                    multiline
-                  />
-                )}
-              {userInfo.role === "finance" &&
-                row.original.ApprovalType === "Буцаалт хийх" && (
-                  <TextField
-                    id="standard-read-only-input"
-                    label="Бонус Бодолт"
-                    value={bonusCalc}
-                    onChange={(e) => setBonusCalc(e.target.value)}
-                    variant="standard"
-                    type="number"
-                    multiline
-                  />
-                )}
-              {userInfo.role === "finance" &&
-                row.original.ApprovalType === "Буцаалт хийх" && (
-                  <TextField
-                    id="standard-read-only-input"
-                    label="Шилжүүлэх эцсийн дүн"
-                    value={count}
-                    onChange={(e) => setCount(e.target.value)}
-                    variant="standard"
-                    type="number"
-                    multiline
-                  />
-                )}
+              {/* Буцаалт хийх үед бодолт, бонус бодолт, эцсийн дүн оруулна (хуучин finance-ийн логик) */}
+              {row.original.ApprovalType === "Буцаалт хийх" && (
+                <TextField
+                  id="standard-read-only-input"
+                  label="Бодолт"
+                  value={calc}
+                  onChange={(e) => setCalc(e.target.value)}
+                  variant="standard"
+                  type="number"
+                  multiline
+                />
+              )}
+              {row.original.ApprovalType === "Буцаалт хийх" && (
+                <TextField
+                  id="standard-read-only-input"
+                  label="Бонус Бодолт"
+                  value={bonusCalc}
+                  onChange={(e) => setBonusCalc(e.target.value)}
+                  variant="standard"
+                  type="number"
+                  multiline
+                />
+              )}
+              {row.original.ApprovalType === "Буцаалт хийх" && (
+                <TextField
+                  id="standard-read-only-input"
+                  label="Шилжүүлэх эцсийн дүн"
+                  value={count}
+                  onChange={(e) => setCount(e.target.value)}
+                  variant="standard"
+                  type="number"
+                  multiline
+                />
+              )}
               <TextField
                 id="standard-read-only-input"
                 label="Тайлбар"
@@ -1425,7 +1162,6 @@ const ReactAdvancedMaterialTable = () => {
               Хадгалах
             </Button>
           )}
-          {/* <MRT_EditActionButtons variant="text" table={table} row={row} /> */}
         </DialogActions>
       </>
     ),
@@ -1441,7 +1177,6 @@ const ReactAdvancedMaterialTable = () => {
           })}
         >
           <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            {/* import MRT sub-components */}
             <MRT_GlobalFilterTextField table={table} />
             <MRT_ToggleFiltersButton table={table} />
             <MRT_ShowHideColumnsButton table={table} />
@@ -1465,11 +1200,9 @@ const ReactAdvancedMaterialTable = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        //send api update request here
-        await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         return Promise.resolve();
       },
-      //client side optimistic update
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["users"], (prevUsers) => [
           ...prevUsers,
@@ -1479,37 +1212,24 @@ const ReactAdvancedMaterialTable = () => {
           },
         ]);
       },
-      // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
     });
   }
 
   //READ hook (get users from api)
+  // Зөвхөн system role-той хүн бүх асуудлыг шийдвэрлэдэг тул Approver_Status ашиглана
   function useGetRequest() {
     return useQuery({
       queryKey: ["request"],
       queryFn: async () => {
-        //send api request here
         try {
-          console.log("userInfo role", userInfo.role==="system");
-          let approver_status;
-          if (userInfo.role === "system") {
-            approver_status = "Approver3_Status";
-          } else if (userInfo.role === "finance") {
-            approver_status = "Approver2_Status";
-          } else if (userInfo.role === "manager") {
-            approver_status = "Approver1_Status";
-          } else if (userInfo.role === "cs") {
-            approver_status = "Requester_Status";
-          } else if (userInfo.role === "director") {
-            approver_status = "Approver4_Status";
-          }
+          const approver_status = "Status";
           const fetchedResults = [];
           const que = query(
             ref(db, "request"),
             orderByChild(approver_status),
-            equalTo("Шийдвэрлэж байна")
+            equalTo("Шийдвэрлэж байна"),
           );
-   
+
           const snapshot = await get(que);
           snapshot.forEach((childSnapshot) => {
             let rawData = childSnapshot.val();
@@ -1520,8 +1240,6 @@ const ReactAdvancedMaterialTable = () => {
         } catch (error) {
           console.log(error);
         }
-        //await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-        //return Promise.resolve(data);
       },
       refetchOnWindowFocus: false,
     });
@@ -1532,7 +1250,6 @@ const ReactAdvancedMaterialTable = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (request) => {
-        //send api update request here
         const requestRef = ref(db, `request/${request.id}/`);
         await update(requestRef, request);
         return Promise.resolve();
@@ -1540,11 +1257,11 @@ const ReactAdvancedMaterialTable = () => {
       onMutate: (newRequestInfo) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
           prevRequests?.map((prevRequest) =>
-            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest
-          )
+            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest,
+          ),
         );
       },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }),
     });
   }
 
@@ -1553,7 +1270,6 @@ const ReactAdvancedMaterialTable = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (requestId) => {
-        //send api update request here
         try {
           await remove(ref(db, `request/${requestId}`));
           return Promise.resolve();
@@ -1561,13 +1277,12 @@ const ReactAdvancedMaterialTable = () => {
           console.log(error);
         }
       },
-      //client side optimistic update
       onMutate: (requestId) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
-          prevRequests?.filter((request) => request.id !== requestId)
+          prevRequests?.filter((request) => request.id !== requestId),
         );
       },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }),
     });
   }
 
@@ -1577,7 +1292,6 @@ const ReactAdvancedMaterialTable = () => {
 const queryClient = new QueryClient();
 
 const ResolveRequestTable = ({ data }) => (
-  //App.tsx or AppProviders file
   <LocalizationProvider dateAdapter={AdapterDayjs}>
     <QueryClientProvider client={queryClient}>
       <ReactAdvancedMaterialTable data={data} />

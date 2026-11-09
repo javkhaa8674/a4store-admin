@@ -13,8 +13,153 @@ import StepConnector, {
 import { Typography, Tooltip, Box, Card, CardContent } from "@mui/material";
 import dayjs from "dayjs";
 
+// ---------------------------------------------------------------------------
+// Туслах: ApprovalType болон байгаа Approver талбаруудаас шатны төрлийг тодорхойлно
+// ---------------------------------------------------------------------------
+const getStepperConfig = (data) => {
+  const {
+    ApprovalType,
+    Approver1_Status,
+    Approver2_Status,
+    Approver3_Status,
+    Approver4_Status,
+    Approver_Status,
+  } = data || {};
+
+  // 1) Хамгийн их шаттай (хуучин урсгал) — Approver4 байвал 5 шат
+  if (Approver4_Status !== undefined) {
+    return {
+      key: "full",
+      steps: [
+        { kind: "requester" },
+        { kind: "approver", n: 1 },
+        { kind: "approver", n: 2 },
+        { kind: "approver", n: 3 },
+        { kind: "approver", n: 4 },
+      ],
+    };
+  }
+
+  // 2) Approver3 + Approver1/2 байвал 4 шат (Буцаалт хийх хуучин урсгал)
+  if (Approver3_Status !== undefined && Approver1_Status !== undefined) {
+    if (Approver2_Status !== undefined) {
+      return {
+        key: "full",
+        steps: [
+          { kind: "requester" },
+          { kind: "approver", n: 1 },
+          { kind: "approver", n: 2 },
+          { kind: "approver", n: 3 },
+        ],
+      };
+    }
+    // Approver1 + Approver3 (manager урсгал)
+    return {
+      key: "manager",
+      steps: [
+        { kind: "requester" },
+        { kind: "approver", n: 1 },
+        { kind: "approver", n: 3 },
+      ],
+    };
+  }
+
+  // 3) Approver2 байвал 2 шат (finance урсгал)
+  if (Approver2_Status !== undefined) {
+    return {
+      key: "finance",
+      steps: [{ kind: "requester" }, { kind: "approver", n: 2 }],
+    };
+  }
+
+  // 4) Approver3 байвал 2 шат (system урсгал)
+  if (Approver3_Status !== undefined) {
+    return {
+      key: "system",
+      steps: [{ kind: "requester" }, { kind: "approver", n: 3 }],
+    };
+  }
+
+  // 5) Approver (шинэ system шууд) — 2 шат
+  if (Approver_Status !== undefined) {
+    return {
+      key: "systemDirect",
+      steps: [{ kind: "requester" }, { kind: "approver", n: "direct" }],
+    };
+  }
+
+  // 6) Default — ApprovalType-аас хамааруулж 2 шат (Approver)
+  switch (ApprovalType) {
+    case "E-баримт олголт":
+    case "Бүтээгдэхүүн олголт":
+      return {
+        key: "systemDirect",
+        steps: [{ kind: "requester" }, { kind: "approver", n: "direct" }],
+      };
+    case "Буцаалт хийх":
+    case "Уригч солих":
+    case "Спонсор солих":
+    case "Бусад":
+    case "Нууц үг солиулах":
+    case "Худалдан авалт хийж болохгүй байгаа":
+    case "Дансны дугаар солих":
+    case "Овог солих":
+    case "Нэр солих":
+    default:
+      return {
+        key: "systemDirect",
+        steps: [{ kind: "requester" }, { kind: "approver", n: "direct" }],
+      };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Туслах: Тухайн approver-ийн талбаруудыг авах (direct = Approver_*)
+// ---------------------------------------------------------------------------
+const getApproverFields = (data, n) => {
+  if (n === "direct") {
+    return {
+      id: data.Approver_ID,
+      avatar: data.Approver_Avatar,
+      major: data.Approver_Major,
+      status: data.Approver_Status,
+      comment: data.Approver_Comment,
+      timeStamps: data.Approver_TimeStamps,
+    };
+  }
+  const p = `Approver${n}_`;
+  return {
+    id: data[`${p}ID`],
+    avatar: data[`${p}Avatar`],
+    major: data[`${p}Major`],
+    status: data[`${p}Status`],
+    comment: data[`${p}Comment`],
+    timeStamps: data[`${p}TimeStamps`],
+  };
+};
+
+const successStatuses = ["Шийдвэрлэсэн", "Илгээсэн", "approved"];
+
+const isSuccess = (status) => successStatuses.includes(status);
+
 export default function CustomizedSteppers({ row }) {
-  const levelUp = useMemo(() => row.original.Level - 1, [row]);
+  const data = row.original;
+
+  const config = useMemo(() => getStepperConfig(data), [data]);
+
+  // Requester + Approver-уудын нийт шат
+  const totalSteps = config.steps.length;
+
+  // Идэвхтэй шат: Level - 1, гэхдээ [0 .. totalSteps-1] хязгаарт
+  const activeStep = useMemo(() => {
+    const level = Number(data.Level) || 1;
+    const idx = level - 1;
+    if (idx < 0) return 0;
+    if (idx > totalSteps - 1) return totalSteps - 1;
+    return idx;
+  }, [data.Level, totalSteps]);
+
+  // --------------------------- Styled компонентууд ---------------------------
   const QontoStepIconRoot = styled("div")(({ theme, ownerState }) => ({
     color: theme.palette.mode === "dark" ? theme.palette.grey[700] : "#eaeaf0",
     display: "flex",
@@ -38,7 +183,6 @@ export default function CustomizedSteppers({ row }) {
 
   function QontoStepIcon(props) {
     const { active, completed, className } = props;
-
     return (
       <QontoStepIconRoot ownerState={{ active }} className={className}>
         {completed ? (
@@ -51,16 +195,8 @@ export default function CustomizedSteppers({ row }) {
   }
 
   QontoStepIcon.propTypes = {
-    /**
-     * Whether this step is active.
-     * @default false
-     */
     active: PropTypes.bool,
     className: PropTypes.string,
-    /**
-     * Mark the step as completed. Is passed to child components.
-     * @default false
-     */
     completed: PropTypes.bool,
   };
 
@@ -111,755 +247,155 @@ export default function CustomizedSteppers({ row }) {
     }),
   }));
 
+  // --------------------------- Step Icon ---------------------------
   function ColorlibStepIcon(props) {
     const { active, completed, className } = props;
+    const stepIndex = Number(props.icon) - 1;
+    const stepConfig = config.steps[stepIndex];
 
-    const version1 = {
-      1: (
-        <Tooltip title={row.original.Requester_ID}>
-          <Avatar alt="Remy Sharp" src={row.original.Requester_Avatar} />
+    let avatarNode = null;
+
+    if (!stepConfig) {
+      avatarNode = null;
+    } else if (stepConfig.kind === "requester") {
+      avatarNode = (
+        <Tooltip title={data.Requester_ID || ""}>
+          <Avatar alt="Requester" src={data.Requester_Avatar || ""} />
         </Tooltip>
-      ),
-      2: (
-        <Tooltip title={row.original.Approver3_ID}>
-          <Avatar alt="Remy Sharp1" src={row.original.Approver3_Avatar} />
+      );
+    } else if (stepConfig.kind === "approver") {
+      const f = getApproverFields(data, stepConfig.n);
+      avatarNode = (
+        <Tooltip title={f.id || ""}>
+          <Avatar alt={`Approver ${stepConfig.n}`} src={f.avatar || ""} />
         </Tooltip>
-      ),
-    };
-    const version2 = {
-      1: (
-        <Tooltip title={row.original.Requester_ID}>
-          <Avatar alt="Remy Sharp" src={row.original.Requester_Avatar} />
-        </Tooltip>
-      ),
-      2: (
-        <Tooltip title={row.original.Approver2_ID}>
-          <Avatar alt="Remy Sharp1" src={row.original.Approver2_Avatar} />
-        </Tooltip>
-      ),
-    };
-    const version3 = {
-      1: (
-        <Tooltip title={row.original.Requester_ID}>
-          <Avatar alt="Remy Sharp" src={row.original.Requester_Avatar} />
-        </Tooltip>
-      ),
-      2: (
-        <Tooltip title={row.original.Approver1_ID}>
-          <Avatar alt="Remy Sharp1" src={row.original.Approver1_Avatar} />
-        </Tooltip>
-      ),
-      3: (
-        <Tooltip title={row.original.Approver3_ID}>
-          <Avatar alt="Remy Sharp2" src={row.original.Approver3_Avatar} />
-        </Tooltip>
-      ),
-    };
-    const version4 = {
-      1: (
-        <Tooltip title={row.original.Requester_ID}>
-          <Avatar alt="Remy Sharp" src={row.original.Requester_Avatar} />
-        </Tooltip>
-      ),
-      2: (
-        <Tooltip title={row.original.Approver1_ID}>
-          <Avatar alt="Remy Sharp1" src={row.original.Approver1_Avatar} />
-        </Tooltip>
-      ),
-      3: (
-        <Tooltip title={row.original.Approver2_ID}>
-          <Avatar alt="Remy Sharp2" src={row.original.Approver2_Avatar} />
-        </Tooltip>
-      ),
-      4: (
-        <Tooltip title={row.original.Approver3_ID}>
-          <Avatar alt="Remy Sharp4" src={row.original.Approver3_Avatar} />
-        </Tooltip>
-      ),
-    };
-    const version5 = {
-      1: (
-        <Tooltip title={row.original.Requester_ID}>
-          <Avatar alt="Remy Sharp" src={row.original.Requester_Avatar} />
-        </Tooltip>
-      ),
-      2: (
-        <Tooltip title={row.original.Approver3_ID}>
-          <Avatar alt="Remy Sharp1" src={row.original.Approver_Avatar} />
-        </Tooltip>
-      ),
-    };
+      );
+    }
 
     return (
       <ColorlibStepIconRoot
         ownerState={{ completed, active }}
         className={className}
       >
-        {row.original.Version === 1
-          ? version1[String(props.icon)]
-          : row.original.Version === 2
-            ? version2[String(props.icon)]
-            : row.original.Version === 3
-              ? version3[String(props.icon)]
-              : row.original.Version === 4
-                ? version4[String(props.icon)]
-                : version5[String(props.icon)]}
+        {avatarNode}
       </ColorlibStepIconRoot>
     );
   }
 
   ColorlibStepIcon.propTypes = {
-    /**
-     * Whether this step is active.
-     * @default false
-     */
     active: PropTypes.bool,
     className: PropTypes.string,
-    /**
-     * Mark the step as completed. Is passed to child components.
-     * @default false
-     */
     completed: PropTypes.bool,
-    /**
-     * The label displayed in the step icon.
-     */
     icon: PropTypes.node,
   };
+
+  // --------------------------- Нэг шатны Card ---------------------------
+  const renderStepCard = (stepConfig) => {
+    if (stepConfig.kind === "requester") {
+      const status = data.Requester_Status;
+      return (
+        <Card sx={{ minWidth: 100 }}>
+          <CardContent
+            component="div"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Box
+              component="span"
+              sx={(theme) => ({
+                backgroundColor: isSuccess(status)
+                  ? theme.palette.success.main
+                  : theme.palette.warning.dark,
+                borderRadius: "0.25rem",
+                color: "#fff",
+                maxWidth: "14ch",
+                p: "0.25rem",
+              })}
+            >
+              {status}
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              {data.Requester_Major}
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ marginTop: 1 }}
+            >
+              {data.Requester_TimeStamps &&
+                dayjs(data.Requester_TimeStamps).format("YYYY/MM/DD HH:mm:ss")}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {data.Requester_Comment}
+            </Typography>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // approver
+    const f = getApproverFields(data, stepConfig.n);
+    return (
+      <Card sx={{ minWidth: 100 }}>
+        <CardContent
+          component="div"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Box
+            component="span"
+            sx={(theme) => ({
+              backgroundColor: isSuccess(f.status)
+                ? theme.palette.success.main
+                : theme.palette.warning.dark,
+              borderRadius: "0.25rem",
+              color: "#fff",
+              maxWidth: "14ch",
+              p: "0.25rem",
+            })}
+          >
+            {f.status}
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            {f.major}
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ marginTop: 1 }}
+          >
+            {f.timeStamps && dayjs(f.timeStamps).format("YYYY/MM/DD HH:mm:ss")}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {f.comment}
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // --------------------------- Render ---------------------------
   return (
     <Stack sx={{ width: "100%" }} spacing={4}>
-      {row.original.Version === 1 && (
-        <Stepper
-          alternativeLabel
-          activeStep={row.original.Level - 1}
-          connector={<ColorlibConnector />}
-        >
-          <Step>
+      <Stepper
+        alternativeLabel
+        activeStep={activeStep}
+        connector={<ColorlibConnector />}
+      >
+        {config.steps.map((stepConfig, idx) => (
+          <Step key={`${config.key}-${idx}`}>
             <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Requester_Status === "Илгээсэн"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Requester_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {dayjs(row.original.Requester_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss",
-                    )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
+              {renderStepCard(stepConfig)}
             </StepLabel>
           </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 150 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver3_Status === "Шийдвэрлэсэн"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver3_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver3_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Approver3_TimeStamps &&
-                      dayjs(row.original.Approver3_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver3_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-        </Stepper>
-      )}
-      {row.original.Version === 2 && (
-        <Stepper
-          alternativeLabel
-          activeStep={row.original.Level - 1}
-          connector={<ColorlibConnector />}
-        >
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Requester_Status === "Шийдвэрлэж байна"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Requester_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Requester_TimeStamps &&
-                      dayjs(row.original.Requester_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver2_Status === "Шийдвэрлэж байна"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver2_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver2_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {dayjs(row.original.Approver2_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss",
-                    )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver2_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-        </Stepper>
-      )}
-      {row.original.Version === 3 && (
-        <Stepper
-          alternativeLabel
-          activeStep={levelUp}
-          connector={<ColorlibConnector />}
-        >
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Requester_Status === "Шийдвэрлэж байна"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Requester_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Requester_TimeStamps &&
-                      dayjs(row.original.Requester_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 150 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver1_Status === "approved"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver1_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver1_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {dayjs(row.original.Approver1_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss",
-                    )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver1_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver3_Status === "Шийдвэрлэж байна"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver3_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver3_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {dayjs(row.original.Approver3_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss",
-                    )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver3_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-        </Stepper>
-      )}
-      {row.original.Version === 4 && (
-        <Stepper
-          alternativeLabel
-          activeStep={row.original.Level - 1}
-          connector={<ColorlibConnector />}
-        >
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Requester_Status === "Шийдвэрлэж байна"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Requester_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Requester_TimeStamps &&
-                      dayjs(row.original.Requester_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 150 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver1_Status === "approved"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver1_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver1_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Approver1_TimeStamps &&
-                      dayjs(row.original.Approver1_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver1_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver2_Status === "Шийдвэрлэж байна"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver2_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver2_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Approver2_TimeStamps &&
-                      dayjs(row.original.Approver2_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver2_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver3_Status === "Шийдвэрлэж байна"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver3_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver3_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Approver3_TimeStamps &&
-                      dayjs(row.original.Approver3_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver3_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-        </Stepper>
-      )}
-      {row.original.Version === 5 && (
-        <Stepper
-          alternativeLabel
-          activeStep={levelUp}
-          connector={<ColorlibConnector />}
-        >
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Requester_Status === "Илгээсэн"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Requester_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {row.original.Requester_TimeStamps &&
-                      dayjs(row.original.Requester_TimeStamps).format(
-                        "YYYY/MM/DD HH:mm:ss",
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Requester_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-              <Card sx={{ minWidth: 100 }}>
-                <CardContent
-                  component="div"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={(theme) => ({
-                      backgroundColor:
-                        row.original.Approver_Status === "Шийдвэрлэсэн"
-                          ? theme.palette.success.main
-                          : theme.palette.warning.dark,
-                      borderRadius: "0.25rem",
-                      color: "#fff",
-                      maxWidth: "14ch",
-                      p: "0.25rem",
-                    })}
-                  >
-                    {row.original.Approver_Status}
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver_Major}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ marginTop: 1 }}
-                  >
-                    {dayjs(row.original.Approver_TimeStamps).format(
-                      "YYYY/MM/DD HH:mm:ss",
-                    )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.original.Approver_Comment}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </StepLabel>
-          </Step>
-        </Stepper>
-      )}
+        ))}
+      </Stepper>
     </Stack>
   );
 }

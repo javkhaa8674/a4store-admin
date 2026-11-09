@@ -42,6 +42,7 @@ const Approval = () => {
   const [openCancelApproval, setOpenCancelApproval] = useState(false);
   const [openReturnedApproval, setOpenReturnedApproval] = useState(false);
   const { loading } = AuthStore.useState();
+
   const [sumData, setSumData] = useState({
     Resolving_Request: [],
     Closed_Request: [],
@@ -54,6 +55,7 @@ const Approval = () => {
     Sent_Request: [],
     Closed_Request: [],
     Cancelled_Request: [],
+    Declined_Request: [],
   });
 
   const getData = async () => {
@@ -74,20 +76,21 @@ const Approval = () => {
         Sent_Request: [],
         Closed_Request: [],
         Cancelled_Request: [],
+        Declined_Request: [],
       };
       result.forEach((el) => {
-        // Only corresponding level is displayed
+        // ★ Нийт (Status-аар)
         if (el.Status === "Шийдвэрлэж байна") {
           total.Resolving_Request.push(el);
         }
         if (el.Status === "Шийдвэрлэсэн") {
           total.Closed_Request.push(el);
         }
-        if (el.Status === "Цуцалсан") {
+        if (el.Status === "Цуцалсан" || el.Status === "Цуцлагдсан") {
           total.Declined_Request.push(el);
         }
 
-        // ★ Шатлал болон userRoles шалгахгүйгээр бүх хүсэлтийг харуулах
+        // ★ Хэрэглэгчийн (Requester_Status-аар)
         if (el.Requester_Status === "Шийдвэрлэж байна") {
           userTotal.Resolving_Request.push(el);
         } else if (el.Requester_Status === "Хүлээгдэж байна") {
@@ -97,7 +100,14 @@ const Approval = () => {
         } else if (el.Requester_Status === "Шийдвэрлэсэн") {
           userTotal.Closed_Request.push(el);
         } else if (el.Requester_Status === "Цуцалсан") {
-          userTotal.Cancelled_Request.push(el); // ★ Closed биш Cancelled-д нэмэх
+          userTotal.Cancelled_Request.push(el);
+        } else if (el.Requester_Status === "Цуцлагдсан") {
+          userTotal.Declined_Request.push(el);
+        } else if (
+          el.Requester_Status === "Буцаасан" ||
+          el.Requester_Status === "Буцаагдсан"
+        ) {
+          userTotal.Reasigned_Request.push(el);
         }
       });
       setSumData(total);
@@ -122,6 +132,7 @@ const Approval = () => {
         Хүсэлтийн бүртгэл
       </Typography>
       <Grid container spacing={{ xs: 2, md: 3 }} sx={{ marginTop: 2 }}>
+        {/* ================= Хариуцаж авсан хүсэлт ================= */}
         <Grid item xs={12} sm={4} md={4}>
           <Box>
             <Typography variant="h5">Хариуцаж авсан хүсэлт</Typography>
@@ -206,7 +217,7 @@ const Approval = () => {
               }
               onClick={() => setOpenCancelledApproval(!openCancelledApproval)}
             >
-              Цуцлагдсан хүсэлт
+              Цуцалсан хүсэлт
             </Button>
           </Item>
           <Item>
@@ -216,7 +227,7 @@ const Approval = () => {
               sx={{ justifyContent: "flex-start" }}
               startIcon={
                 <Badge
-                  badgeContent={userData.Cancelled_Request.length}
+                  badgeContent={userData.Declined_Request.length}
                   color="secondary"
                 >
                   <DoDisturbAltIcon />
@@ -224,7 +235,7 @@ const Approval = () => {
               }
               onClick={() => setOpenCancelApproval(!openCancelApproval)}
             >
-              Цуцалсан хүсэлт
+              Цуцлагдсан хүсэлт
             </Button>
           </Item>
           <Item>
@@ -246,6 +257,8 @@ const Approval = () => {
             </Button>
           </Item>
         </Grid>
+
+        {/* ================= Нийт ================= */}
         <Grid item xs={12} sm={4} md={4}>
           <Box>
             <Typography variant="h5">Нийт</Typography>
@@ -309,6 +322,8 @@ const Approval = () => {
             </Button>
           </Item>
         </Grid>
+
+        {/* ================= Шинэчлэх ================= */}
         <Grid item xs={12} sm={4} md={4}>
           <Box>
             <Typography variant="h5">Шинэчлэх</Typography>
@@ -331,6 +346,8 @@ const Approval = () => {
           </Grid>
         </Grid>
       </Grid>
+
+      {/* ================= Dialogs ================= */}
       <Grid container>
         <CreateApproval
           open={openCreateApproval}
@@ -349,37 +366,37 @@ const Approval = () => {
         <ConfirmedApproval
           open={openConfirmedApproval}
           setOpen={setOpenConfirmedApproval}
-          data={userData.Pending_Request}
+          data={userData.Closed_Request}
         />
         <CancelledApproval
           open={openCancelledApproval}
           setOpen={setOpenCancelledApproval}
-          data={userData.Pending_Request}
+          data={userData.Cancelled_Request}
         />
         <CancelApproval
           open={openCancelApproval}
           setOpen={setOpenCancelApproval}
-          data={userData.Pending_Request}
+          data={userData.Declined_Request}
         />
         <ReturnedApproval
           open={openReturnedApproval}
           setOpen={setOpenReturnedApproval}
-          data={userData.Pending_Request}
+          data={userData.Reasigned_Request}
         />
         <AllResolveApproval
           open={allOpenResolveApproval}
           setOpen={setAllOpenResolveApproval}
-          data={userData.Pending_Request}
+          data={sumData.Resolving_Request}
         />
         <AllConfirmedApproval
           open={allOpenConfirmedApproval}
           setOpen={setAllOpenConfirmedApproval}
-          data={userData.Pending_Request}
+          data={sumData.Closed_Request}
         />
         <AllCancelledApproval
           open={allOpenCancelledApproval}
           setOpen={setAllOpenCancelledApproval}
-          data={userData.Pending_Request}
+          data={sumData.Declined_Request}
         />
       </Grid>
     </Box>

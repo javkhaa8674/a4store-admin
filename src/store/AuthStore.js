@@ -1,6 +1,6 @@
 import { Store, registerInDevtools } from "pullstate";
 import { ref, set, child, get, push } from "firebase/database";
-import { db,  dbRef } from "refrence/realConfig";
+import { db, dbRef } from "refrence/realConfig";
 
 export const AuthStore = new Store({
   isLoggedIn: false,
@@ -18,7 +18,7 @@ export const AuthStore = new Store({
   userInfo: {
     token: null,
     phoneNumber: "",
-    phoneNumber2:"",
+    phoneNumber2: "",
     centerName: "",
     firstName: "",
     lastName: "",
@@ -26,9 +26,8 @@ export const AuthStore = new Store({
     bankName: "",
     province: "",
     registrationNumber: "",
-    signatureURL:"",
-    newMarketing:null,
-
+    signatureURL: "",
+    newMarketing: null,
   },
   actionText: {
     title: "",
@@ -42,12 +41,11 @@ export const AuthStore = new Store({
   successText: "",
   buyCount: 1,
   amount: 0,
-  vipAmount:0,
-  darkMode: false,
-  language:"MN",
-  productInfo:null,
-  checkBuy:null,
-  newYearTree:false,
+  vipAmount: 0,
+  language: "MN",
+  productInfo: null,
+  checkBuy: null,
+  newYearTree: false,
 });
 
 // export const SignInUser = async (e) => {

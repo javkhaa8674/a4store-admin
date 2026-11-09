@@ -20,7 +20,11 @@ import {
   AccordionSummary,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import {
+  createTheme,
+  ThemeProvider,
+  useColorScheme,
+} from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
 import Dialog from "@mui/material/Dialog";
 import Slide from "@mui/material/Slide";
@@ -122,9 +126,42 @@ const CreateApproval = ({ open, setOpen }) => {
   const { admin, loading, darkMode } = AuthStore.useState();
   const [sendData, setSendData] = useState({});
   const [isValid, setValid] = useState(false);
+  const { mode } = useColorScheme();
   const theme = createTheme({
     palette: {
-      mode: darkMode ? "dark" : "light",
+      mode,
+
+      info: {
+        main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
+      },
+      background: {
+        default:
+          mode === "light"
+            ? "rgb(254,255,244)" //random light yellow color for the background in light mode
+            : "#000", //pure black table in dark mode for fun
+      },
+    },
+    typography: {
+      button: {
+        textTransform: "none", //customize typography styles for all buttons in table by default
+        fontSize: "1.2rem",
+      },
+    },
+    components: {
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            fontSize: "1.1rem", //override to make tooltip font size larger
+          },
+        },
+      },
+      MuiSwitch: {
+        styleOverrides: {
+          thumb: {
+            color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
+          },
+        },
+      },
     },
   });
   const [statementData, setStatementData] = useState([]);
