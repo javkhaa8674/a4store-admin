@@ -760,10 +760,6 @@ const CombinedProductDelivery = () => {
       createTheme({
         palette: {
           mode,
-          primary: {
-            main: isDark ? "#90caf9" : globalTheme.palette.primary.main,
-          },
-
           info: { main: "rgb(255,122,0)" },
           background: {
             default: isDark ? "#0b0b0b" : "rgb(254,255,244)",

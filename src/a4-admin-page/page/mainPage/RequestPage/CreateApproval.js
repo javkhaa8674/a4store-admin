@@ -123,7 +123,7 @@ const CreateApproval = ({ open, setOpen }) => {
     buyCount: 0,
     productCount: 0,
   });
-  const { admin, loading, darkMode } = AuthStore.useState();
+  const { admin, loading } = AuthStore.useState();
   const [sendData, setSendData] = useState({});
   const [isValid, setValid] = useState(false);
   const { mode } = useColorScheme();
