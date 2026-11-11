@@ -26,10 +26,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { auth, firestore } from "../../refrence/storeConfig";
 import { doc, getDoc } from "firebase/firestore";
-import {
-  signInWithEmailAndPassword,
-  signInWithCustomToken,
-} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import AlertComponent from "components/alert";
 import axios from "../../storeaxios";
 
