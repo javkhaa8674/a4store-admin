@@ -100,11 +100,6 @@ const LoginPage = () => {
       );
 
       if (response.data.customToken) {
-        const userCredential = await signInWithCustomToken(
-          auth,
-          response.data.customToken,
-        );
-        //console.log("User Credential:", userCredential);
         navigation("/wallet");
       }
     } catch (error) {
