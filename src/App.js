@@ -11,6 +11,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Signin from "./user-page/auth/signin";
 import AdminStore from "./store-admin-page/StoreAdmin";
 import { ThemeProvider, createTheme, Box } from "@mui/material";
+import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import CssBaseline from "@mui/material/CssBaseline";
 import ProtectedRouteAdmin from "./ProtectedRouteAdmin";
 import { PrimeReactProvider } from "primereact"; // Adjust the import path as needed
@@ -39,14 +40,13 @@ const AppContent = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         if (!token) {
-          console.log("User is signed in:", user);
           // If user is signed in, navigate to home page (only once)
           if (window.location.pathname === "/signin") {
             navigate("/wallet");
           }
         }
       } else {
-        console.log("No user is signed in.");
+        //console.log("No user is signed in.");
       }
       setLoading(false); // Stop showing loading state once auth state is determined
     });
@@ -54,14 +54,23 @@ const AppContent = () => {
     return () => unsubscribe(); // Cleanup listener on unmount
   }, [navigate, token]);
 
-  const theme = createTheme({ palette: { mode: "dark" } });
+  const theme = createTheme({
+    cssVariables: {
+      colorSchemeSelector: "data", // эсвэл 'class'
+    },
+    colorSchemes: {
+      light: true,
+      dark: true,
+    },
+  });
 
   if (loading) {
     return <Loading />;
   }
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme} defaultMode="dark">
+      <InitColorSchemeScript defaultMode="dark" />
       <CssBaseline />
       <PrimeReactProvider>
         <Box sx={{ position: "relative", zIndex: 3, overflow: "auto" }}>

@@ -88,16 +88,16 @@ const UserHeader = () => {
               >
                 {/* Avatar */}
                 <Avatar
-                  src={userData?.avatarUrl || "https://via.placeholder.com/40"}
+                  src={userData?.avatarUrl || undefined}
                   alt={userData?.lastName || "User Avatar"}
                   sx={{
                     width: 40,
                     height: 40,
                     marginRight: "10px",
+                    color: "white",
                   }}
                 >
-                  {!userData?.avatarUrl &&
-                    `${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
+                  {`${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
                 </Avatar>
                 {/* User Name */}
                 <Typography

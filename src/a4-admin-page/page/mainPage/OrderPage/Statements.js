@@ -454,7 +454,7 @@ const Example = () => {
             startIcon={<RiFileExcel2Fill />}
             component="span"
           >
-            Файл оруулах
+            Оруулах
           </Button>
         </label>
         <input
@@ -466,6 +466,24 @@ const Example = () => {
         />
       </Box>
     ),
+
+    muiTopToolbarProps: {
+      sx: {
+        overflowX: "auto",
+        overflowY: "hidden",
+        flexWrap: "nowrap",
+        // Гар утасны scroll-ыг гөлгөр болгох
+        WebkitOverflowScrolling: "touch",
+        // Scrollbar-ыг нимгэн болгох (сонголтоор)
+        "&::-webkit-scrollbar": {
+          height: "6px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgba(0,0,0,0.3)",
+          borderRadius: "3px",
+        },
+      },
+    },
     initialState: {
       columnVisibility: {
         id: false, // Hide the unixTime column by default

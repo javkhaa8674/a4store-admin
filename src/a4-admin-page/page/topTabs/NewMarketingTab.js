@@ -7,7 +7,7 @@ import {
   NewMarketingCalculate,
   NewMarketingOrder,
   NewMarketingPromotionTransaction,
-  NewMarketingPromotionCalculate
+  NewMarketingPromotionCalculate,
 } from "../mainPage/NewMarketingPage";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -51,6 +51,8 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Худалдан авалт" {...a11yProps(0)} />
           <Tab label="Гишүүний тоцоолол" {...a11yProps(1)} />
@@ -59,16 +61,16 @@ export default function BasicTabs() {
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-        <NewMarketingOrder/>
+        <NewMarketingOrder />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        <NewMarketingCalculate/>
+        <NewMarketingCalculate />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
-       <NewMarketingPromotionTransaction/>
+        <NewMarketingPromotionTransaction />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={3}>
-        <NewMarketingPromotionCalculate/>
+        <NewMarketingPromotionCalculate />
       </CustomTabPanel>
     </Box>
   );

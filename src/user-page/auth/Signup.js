@@ -20,23 +20,33 @@ import { MdPhone, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom"; // Import react-router-dom for navigation
 
-const StyledCard = styled(Card)(({ theme }) => ({
-  background: "rgba(255, 255, 255, 0.9)",
+const StyledCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== "currentMode",
+})(({ theme, currentMode }) => ({
+  background:
+    currentMode === "dark"
+      ? "rgba(30, 30, 30, 0.95)"
+      : "rgba(255, 255, 255, 0.9)",
+  color: theme.palette.text.primary,
   borderRadius: 16,
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+  boxShadow:
+    currentMode === "dark"
+      ? "0 8px 32px rgba(0, 0, 0, 0.8)"
+      : "0 8px 32px rgba(0, 0, 0, 0.5)",
   padding: theme.spacing(4),
   maxWidth: 450,
   width: "100%",
 }));
 
-const Background = styled(Box)({
-  background: "#1976d2",
+const Background = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   padding: "20px",
-});
+  background: theme.vars.palette.background.default,
+  transition: "background 0.3s ease",
+}));
 
 const RegisterStepper = () => {
   const theme = useTheme();
@@ -73,7 +83,11 @@ const RegisterStepper = () => {
       setErrors({});
     } else if (activeStep === 2) {
       // Validate user details
-      if (!formData.firstName || !formData.lastName || !formData.registerNumber) {
+      if (
+        !formData.firstName ||
+        !formData.lastName ||
+        !formData.registerNumber
+      ) {
         setErrors({ userDetails: "Бүх талбарыг бөглөнө үү" });
         return;
       }
@@ -155,7 +169,11 @@ const RegisterStepper = () => {
                         sx={{ mt: 3 }}
                         onClick={handleNext}
                       >
-                        {loading ? <CircularProgress size={24} /> : "OTP Илгээх"}
+                        {loading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          "OTP Илгээх"
+                        )}
                       </Button>
                     </Box>
                   )}
@@ -181,7 +199,11 @@ const RegisterStepper = () => {
                         sx={{ mt: 3 }}
                         onClick={handleNext}
                       >
-                        {loading ? <CircularProgress size={24} /> : "Баталгаажуулах"}
+                        {loading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          "Баталгаажуулах"
+                        )}
                       </Button>
                     </Box>
                   )}
@@ -197,7 +219,10 @@ const RegisterStepper = () => {
                         name="firstName"
                         value={formData.firstName}
                         onChange={(e) =>
-                          setFormData({ ...formData, firstName: e.target.value })
+                          setFormData({
+                            ...formData,
+                            firstName: e.target.value,
+                          })
                         }
                         error={!!errors.userDetails}
                         helperText={errors.userDetails}

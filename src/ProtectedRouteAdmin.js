@@ -19,7 +19,7 @@ const ProtectedRoute = ({ children, redirectTo }) => {
   };
 
   const userData = getUserData();
-  console.log("userData", userData.role);
+
   if (!userAuth || !["admin", "system"].includes(userData.role)) {
     return <Navigate to={redirectTo} />;
   }

@@ -57,8 +57,8 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
-          variant="scrollable" // 👈 Баруун, зүүн тийш гүйдэг болгох тохиргоо
-          scrollButtons="auto" // 👈 Хэрэгцээтэй үед баруун, зүүн сумтай товчийг автоматаар харуулах
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Блэк шилжих хүсэлт" {...a11yProps(0)} />
           <Tab label="Блэк үлдсэн худалдан авалт" {...a11yProps(1)} />

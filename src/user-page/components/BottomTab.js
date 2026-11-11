@@ -17,6 +17,9 @@ const StyledBottomNav = styled(Paper)(({ theme }) => ({
   right: 0,
   paddingBottom: "env(safe-area-inset-bottom)",
   zIndex: 1000,
+  // ★ theme.vars ашиглаж горим солигдоход автоматаар шинэчлэгдэнэ
+  backgroundColor: theme.vars.palette.background.paper,
+  color: theme.vars.palette.text.primary,
   "& .MuiBottomNavigationAction-root": {
     minWidth: "auto",
     padding: "6px 12px",
@@ -24,7 +27,7 @@ const StyledBottomNav = styled(Paper)(({ theme }) => ({
       padding: "6px 8px",
     },
     "&.Mui-selected": {
-      color: theme.palette.primary.main,
+      color: theme.vars.palette.primary.main,
     },
   },
   "& .MuiBottomNavigationAction-label": {
@@ -68,6 +71,7 @@ const BottomNavigationBar = () => {
     console.log(path);
     navigate(path);
   };
+
   return (
     <StyledBottomNav elevation={3}>
       <BottomNavigation
@@ -78,7 +82,8 @@ const BottomNavigationBar = () => {
         showLabels={!isMobile}
         sx={{
           height: isMobile ? 56 : 64,
-          backgroundColor: theme.palette.background.paper,
+          // ★ theme.vars ашиглаж горимд тохируулан өнгө авна
+          backgroundColor: theme.vars.palette.background.paper,
         }}
       >
         {navigationItems.map((item, index) => (
@@ -87,14 +92,15 @@ const BottomNavigationBar = () => {
             label={item.label}
             icon={item.icon}
             aria-label={item.ariaLabel}
-            onClick={() => handleNavigate(item.navigate)} // Fix applied here
+            onClick={() => handleNavigate(item.navigate)}
             sx={{
               minWidth: isMobile ? "auto" : 80,
+              // ★ theme.vars ашиглаж горим солигдоход hover өнгө шинэчлэгдэнэ
               "&:hover": {
-                backgroundColor: theme.palette.action.hover,
+                backgroundColor: theme.vars.palette.action.hover,
               },
               "&:focus-visible": {
-                outline: `2px solid ${theme.palette.primary.main}`,
+                outline: `2px solid ${theme.vars.palette.primary.main}`,
                 outlineOffset: -2,
               },
             }}

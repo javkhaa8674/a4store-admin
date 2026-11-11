@@ -3,7 +3,8 @@ import PropTypes from "prop-types";
 
 // MUI Components
 import { Stack, Chip, Typography, Menu, MenuItem } from "@mui/material";
-import { useColorScheme } from "@mui/material/styles";
+import { useColorScheme, useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { IconButton } from "@mui/material";
 import {
   LightMode as LightModeIcon,
@@ -79,7 +80,6 @@ const NAVIGATION = [
         title: "Худалдан авалт",
         icon: <LocalGroceryStoreIcon />,
       },
-
       {
         segment: "bonus",
         title: "Урамшуулал",
@@ -107,7 +107,6 @@ const NAVIGATION = [
         title: "Мэдээ мэдээлэл",
         icon: <FeedIcon />,
       },
-
       {
         segment: "organization",
         title: "Хамтрагч байгуулга",
@@ -137,7 +136,6 @@ const NAVIGATION = [
       },
     ],
   },
-
   {
     segment: "black",
     title: "Блак",
@@ -217,6 +215,11 @@ function ToolbarActionsSearch() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const userData = JSON.parse(localStorage.getItem("user"));
+
+  // ★ Mobile эсэхийг шалгах
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
     setIsMenuOpen(true);
@@ -238,8 +241,44 @@ function ToolbarActionsSearch() {
       });
   };
 
-  const renderMenu = (
-    <>
+  const userName =
+    userData?.lastName || userData?.firstName
+      ? `${userData?.lastName || ""} ${userData?.firstName || ""}`.trim()
+      : "Unknown User";
+
+  return (
+    <Stack direction="row" alignItems="center" spacing={2}>
+      {/* ★ Avatar: mobile үед дарж Menu нээх боломжтой */}
+      <Avatar
+        src={userData?.avatarUrl || undefined}
+        alt={userData?.lastName || "User Avatar"}
+        onClick={handleMenuOpen}
+        sx={{
+          width: 40,
+          height: 40,
+          marginRight: "10px",
+          color: "white",
+          cursor: "pointer",
+        }}
+      >
+        {`${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
+      </Avatar>
+
+      {/* ★ Mobile үед хэрэглэгчийн нэр харагдахгүй */}
+      {!isMobile && (
+        <Typography
+          variant="subtitle1"
+          sx={{
+            color: "inherit",
+            fontWeight: 500,
+            textTransform: "capitalize",
+          }}
+        >
+          {userName}
+        </Typography>
+      )}
+
+      {/* ★ Menu: mobile үед ч render хийгдэнэ, гэхдээ зөвхөн Avatar дарж нээгдэнэ */}
       <Menu
         anchorEl={anchorEl}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -249,41 +288,18 @@ function ToolbarActionsSearch() {
         open={isMenuOpen}
         onClose={handleMenuClose}
       >
+        {/* Mobile үед цэсэн дотор хэрэглэгчийн нэрийг харуулна */}
+        {isMobile && (
+          <MenuItem disabled sx={{ opacity: 1 }}>
+            <Typography variant="body2" fontWeight={500}>
+              {userName}
+            </Typography>
+          </MenuItem>
+        )}
         <MenuItem onClick={handleSignOut}>Гарах</MenuItem>
       </Menu>
-      <Typography
-        variant="subtitle1"
-        sx={{
-          color: "inherit",
-          fontWeight: 500,
-          textTransform: "capitalize",
-        }}
-      >
-        {userData?.lastName || userData?.firstName
-          ? `${userData?.lastName || ""} ${userData?.firstName || ""}`.trim()
-          : "Unknown User"}
-      </Typography>
-    </>
-  );
 
-  return (
-    <Stack direction="row" alignItems="center" spacing={2}>
-      <Avatar
-        src={userData?.avatarUrl || "https://via.placeholder.com/40"}
-        alt={userData?.lastName || "User Avatar"}
-        onClick={handleMenuOpen}
-        sx={{
-          width: 40,
-          height: 40,
-          marginRight: "10px",
-          backgroundColor: "primary.main",
-        }}
-      >
-        {!userData?.avatarUrl &&
-          `${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
-      </Avatar>
-      {renderMenu}
-      {/* ThemeSwitcher Component */}
+      {/* ThemeSwitcher үргэлж харагдана */}
       <ThemeSwitcher />
     </Stack>
   );
@@ -333,7 +349,7 @@ function CustomAppTitle() {
 
 function DashboardLayoutSlots(props) {
   const { window } = props;
-  const router = useDemoRouter("/dashboard");
+  const router = useDemoRouter("/member/Order");
   const demoWindow = window !== undefined ? window() : undefined;
 
   return (

@@ -49,6 +49,8 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Баланс" {...a11yProps(0)} />
           <Tab label="Шилжүүлэг" {...a11yProps(1)} />

@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
-  // createRow,
   useMaterialReactTable,
 } from "material-react-table";
 import {
@@ -54,78 +53,16 @@ const csvConfig = mkConfig({
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "TranDate",
-      displayLabel: "Гүйлгээний огноо",
-    },
-    {
-      key: "Branch",
-      displayLabel: "Салбар",
-    },
-    {
-      key: "BeginningBalance",
-      displayLabel: "Эхний үлдэгдэл",
-      Cell: ({ cell }) => {
-        const formattedCurrency = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "MNT",
-          minimumFractionDigits: 2,
-        }).format(cell.getValue());
-        return formattedCurrency;
-      },
-    },
-    {
-      key: "Debit",
-      displayLabel: "Дебит гүйлгээ",
-      Cell: ({ cell }) => {
-        const formattedCurrency = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "MNT",
-          minimumFractionDigits: 2,
-        }).format(cell.getValue());
-        return formattedCurrency;
-      },
-    },
-    {
-      key: "Credit",
-      displayLabel: "Кредит гүйлгээ",
-      Cell: ({ cell }) => {
-        const formattedCurrency = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "MNT",
-          minimumFractionDigits: 2,
-        }).format(cell.getValue());
-        return formattedCurrency;
-      },
-    },
-    {
-      key: "EndingBalance",
-      displayLabel: "Эцсийн үлдэгдэл",
-      Cell: ({ cell }) => {
-        const formattedCurrency = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "MNT",
-          minimumFractionDigits: 2,
-        }).format(cell.getValue());
-        return formattedCurrency;
-      },
-    },
-    {
-      key: "TransactionRemarks",
-      displayLabel: "Гүйлгээний утга",
-    },
-    {
-      key: "ToAccNumber",
-      displayLabel: "Харьцсан данс",
-    },
-    {
-      key: "Type",
-      displayLabel: "Төрөл",
-    },
-    {
-      key: "ID",
-      displayLabel: "Утас",
-    },
+    { key: "TranDate", displayLabel: "Гүйлгээний огноо" },
+    { key: "Branch", displayLabel: "Салбар" },
+    { key: "BeginningBalance", displayLabel: "Эхний үлдэгдэл" },
+    { key: "Debit", displayLabel: "Дебит гүйлгээ" },
+    { key: "Credit", displayLabel: "Кредит гүйлгээ" },
+    { key: "EndingBalance", displayLabel: "Эцсийн үлдэгдэл" },
+    { key: "TransactionRemarks", displayLabel: "Гүйлгээний утга" },
+    { key: "ToAccNumber", displayLabel: "Харьцсан данс" },
+    { key: "Type", displayLabel: "Төрөл" },
+    { key: "ID", displayLabel: "Утас" },
   ],
 });
 
@@ -136,15 +73,13 @@ const downloadUrl =
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [searchTerm, setSearchTerm] = useState(""); // User input for search
-  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fetchAll, setFetchAll] = useState(false);
+  const [importData, setImportData] = useState([]);
+
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: false,
-      },
+      { accessorKey: "id", header: "id", enableEditing: false },
       {
         accessorKey: "ID",
         header: "Утас",
@@ -152,12 +87,8 @@ const Example = () => {
           required: true,
           error: !!validationErrors?.phone,
           helperText: validationErrors?.phone,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              phone: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, phone: undefined }),
         },
       },
       {
@@ -179,40 +110,26 @@ const Example = () => {
           return formattedCurrency;
         },
       },
-      {
-        accessorKey: "TransactionRemarks",
-        header: "Гүйлгээний утга",
-      },
-      {
-        accessorKey: "ToAccNumber",
-        header: "Харьцсан данс",
-      },
-      {
-        accessorKey: "Type",
-        header: "Төрөл",
-      },
+      { accessorKey: "TransactionRemarks", header: "Гүйлгээний утга" },
+      { accessorKey: "ToAccNumber", header: "Харьцсан данс" },
+      { accessorKey: "Type", header: "Төрөл" },
     ],
     [validationErrors],
   );
-  const [importData, setImportData] = useState([]);
-  //call CREATE hook
+
   const { mutateAsync: createUser, isPending: isCreatingUser } =
     useCreateUser();
-  //call READ hook
   const {
     data: fetchedUsers = [],
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
   } = useGetUsers();
-  //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
     useUpdateUser();
-  //call DELETE hook
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
 
-  //CREATE hook (post new user to api)
   function useCreateUser() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -221,11 +138,8 @@ const Example = () => {
           const newPostKey = push(child(ref(db), "posts")).key;
           await set(ref(db, "promotionTransaction/" + newPostKey), value);
         }
-        //send api update request here
-
         return Promise.resolve();
       },
-      //client side optimistic update
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers = []) => [
           ...prevUsers,
@@ -236,11 +150,10 @@ const Example = () => {
         ]);
       },
       onSettled: () =>
-        queryClient.invalidateQueries({ queryKey: ["promotion"] }), //refetch users after mutation, disabled for demo
+        queryClient.invalidateQueries({ queryKey: ["promotion"] }),
     });
   }
 
-  //READ hook (get users from api)
   function useGetUsers() {
     return useQuery({
       queryKey: ["promotion", searchTerm, fetchAll],
@@ -248,22 +161,17 @@ const Example = () => {
         try {
           let promoQuery;
           if (fetchAll) {
-            // Fetch all data if fetchAll is true
             promoQuery = ref(db, "promotionTransaction");
           } else if (searchTerm.length === 8) {
-            console.log(searchTerm);
-            // Only query if searchTerm is defined
             promoQuery = query(
               ref(db, "promotionTransaction"),
               orderByChild("ID"),
               equalTo(Number(searchTerm)),
             );
           } else {
-            // If fetchAll is false and searchTerm is not defined, return an empty array
             return [];
           }
           const snapshot = await get(promoQuery);
-
           if (!snapshot.exists()) return [];
           return Object.entries(snapshot.val())
             .map(([id, user]) => ({ id, ...user }))
@@ -273,26 +181,23 @@ const Example = () => {
           throw new Error("Failed to fetch users");
         }
       },
-      enabled: fetchAll || Boolean(searchTerm), // Fetch only when searchTerm or fetchAll is set
+      enabled: fetchAll || Boolean(searchTerm),
       refetchOnWindowFocus: true,
     });
   }
 
-  //UPDATE hook (put user in api)
   function useUpdateUser() {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        //send api update request here
         const updatedData = {
-          ...user, // Spread the original row data
+          ...user,
           ID: Number(user.ID),
         };
         const userRef = ref(db, `promotionTransaction/${updatedData.id}`);
         await update(userRef, updatedData);
         return Promise.resolve();
       },
-      //client side optimistic update
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
@@ -301,66 +206,52 @@ const Example = () => {
         );
       },
       onSettled: () =>
-        queryClient.invalidateQueries({ queryKey: ["promotion"] }), //refetch users after mutation, disabled for demo
+        queryClient.invalidateQueries({ queryKey: ["promotion"] }),
     });
   }
 
-  //DELETE hook (delete user in api)
   function useDeleteUser() {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (userId) => {
-        //send api update request here
         const userRef = ref(db, `promotionTransaction/${userId}`);
         await remove(userRef);
         return Promise.resolve();
       },
-      //client side optimistic update
       onMutate: (userId) => {
         queryClient.setQueryData(["promotion"], (prevUsers) =>
           prevUsers?.filter((user) => user.id !== userId),
         );
       },
       onSettled: () =>
-        queryClient.invalidateQueries({ queryKey: ["promotion"] }), //refetch users after mutation, disabled for demo
+        queryClient.invalidateQueries({ queryKey: ["promotion"] }),
     });
   }
 
-  //CREATE action
   const handleCreateUser = async ({ values, table }) => {
     await createUser(importData);
-    table.setCreatingRow(null); //exit creating mode
+    table.setCreatingRow(null);
   };
 
-  //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
     await updateUser(values);
-    table.setEditingRow(null); //exit editing mode
+    table.setEditingRow(null);
   };
-  // Export CSV data
+
   const handleExportData = () => {
     const columnsToRemove = ["id"];
-    // Function to exclude specific columns from the data
     const excludeColumns = (data, columnsToRemove) => {
       return data.map((item) => {
-        const newItem = { ...item }; // Create a copy of the item
-        columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
+        const newItem = { ...item };
+        columnsToRemove.forEach((column) => delete newItem[column]);
         return newItem;
       });
     };
     const removedId = excludeColumns(fetchedUsers, columnsToRemove);
-
     const csv = generateCsv(csvConfig)(removedId);
     download(csvConfig)(csv);
   };
 
-  //DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       deleteUser(row.original.id);
@@ -374,7 +265,7 @@ const Example = () => {
     }
   };
 
-  const processExcelFile = async (file, table) => {
+  const processExcelFile = async (file) => {
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
@@ -384,12 +275,9 @@ const Example = () => {
           cellNF: false,
           cellText: false,
         });
-
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        let data = utils.sheet_to_json(sheet, {
-          header: 1,
-        });
+        let data = utils.sheet_to_json(sheet, { header: 1 });
         const customHeader = [
           "TranDate",
           "Debit",
@@ -399,57 +287,62 @@ const Example = () => {
           "ID",
         ];
         data[0] = customHeader;
-
         const updatedData = utils.sheet_to_json(utils.aoa_to_sheet(data), {
           header: customHeader,
           dateNF: "yyyy-mm-dd",
-          defval: "", // Handle empty cells if needed
+          defval: "",
         });
-
-        // Remove the first entry only if it exists
         if (updatedData.length > 0) {
-          updatedData.splice(0, 1); // Remove the first element
+          updatedData.splice(0, 1);
         }
-        console.log(updatedData);
-        // if (formattedData.length > 0) {
-        //   await saveData2(formattedData); // Ensure saveData2 is defined and used
-        //   console.log("Data saved successfully");
-        // } else {
-        //   console.log("No data to save");
-        // }
         setImportData(updatedData);
       } catch (error) {
         console.error("Error processing file:", error);
       }
     };
-
     reader.readAsArrayBuffer(file);
   };
 
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
-    createDisplayMode: "modal", //default ('row', and 'custom' are also available)
-    editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
+    createDisplayMode: "modal",
+    editDisplayMode: "modal",
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
-      ? {
-          color: "error",
-          children: "Error loading data",
-        }
+      ? { color: "error", children: "Error loading data" }
       : undefined,
     muiTableContainerProps: {
+      sx: { minHeight: "500px" },
+    },
+
+    // ★ Toolbar-д хэвтээ scroll нэмэх
+    muiTopToolbarProps: {
       sx: {
-        minHeight: "500px",
+        overflowX: "auto",
+        overflowY: "hidden",
+        flexWrap: "nowrap",
+        WebkitOverflowScrolling: "touch",
+        "&::-webkit-scrollbar": { height: "6px" },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgba(0,0,0,0.3)",
+          borderRadius: "3px",
+        },
       },
     },
+
+    // ★ Paper-ийн overflow-ыг чөлөөлөх (scroll ажиллахын тулд)
+    muiTablePaperProps: {
+      sx: { overflow: "visible" },
+    },
+
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
-    //optionally customize modal content
-    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
+
+    renderCreateRowDialogContent: ({ table, row }) => (
       <>
         <DialogTitle variant="h3">Мэдээлэл оруулах</DialogTitle>
         <DialogContent
@@ -464,7 +357,6 @@ const Example = () => {
                   dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
                 enableEditing: true,
               },
-
               {
                 accessorKey: "Debit",
                 header: "Дебит гүйлгээ",
@@ -477,30 +369,18 @@ const Example = () => {
                   return formattedCurrency;
                 },
               },
-              {
-                accessorKey: "TransactionRemarks",
-                header: "Гүйлгээний утга",
-              },
-              {
-                accessorKey: "ToAccNumber",
-                header: "Харьцсан данс",
-              },
-              {
-                accessorKey: "Type",
-                header: "Төрөл",
-              },
-              {
-                accessorKey: "ID",
-                header: "Утас",
-              },
+              { accessorKey: "TransactionRemarks", header: "Гүйлгээний утга" },
+              { accessorKey: "ToAccNumber", header: "Харьцсан данс" },
+              { accessorKey: "Type", header: "Төрөл" },
+              { accessorKey: "ID", header: "Утас" },
             ]}
             data={importData}
             enableSorting
             enableColumnOrdering
             initialState={{ showGlobalFilter: true }}
             dialogProps={{
-              maxWidth: "sm", // Adjust the max width if needed
-              fullWidth: true, // Make the dialog full width
+              maxWidth: "sm",
+              fullWidth: true,
             }}
           />
         </DialogContent>
@@ -509,20 +389,21 @@ const Example = () => {
         </DialogActions>
       </>
     ),
-    //optionally customize modal content
+
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Edit User</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
         </DialogActions>
       </>
     ),
+
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
@@ -537,8 +418,17 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
+
+    // ★ Box-д flexWrap: nowrap + minWidth: max-content
     renderTopToolbarCustomActions: ({ table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: "1rem",
+          flexWrap: "nowrap",
+          minWidth: "max-content",
+        }}
+      >
         <Button
           variant="contained"
           startIcon={<RiFileExcel2Fill />}
@@ -576,6 +466,7 @@ const Example = () => {
         </>
       </Box>
     ),
+
     initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoadingUsers,
@@ -594,7 +485,7 @@ const Example = () => {
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setFetchAll(false);
-            queryClient.invalidateQueries(["promotion"]);
+            queryClient.invalidateQueries({ queryKey: ["promotion"] });
           }}
           variant="filled"
           size="small"
@@ -602,9 +493,9 @@ const Example = () => {
         <Button
           variant="outlined"
           onClick={() => {
-            setFetchAll(true); // Fetch all data
-            setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["promotion"]);
+            setFetchAll(true);
+            setSearchTerm("");
+            queryClient.invalidateQueries({ queryKey: ["promotion"] });
           }}
         >
           Бүгд
@@ -616,42 +507,26 @@ const Example = () => {
 };
 
 const PromotionTransaction = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const { mode } = useColorScheme();
   const tableTheme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode, //let's use the same dark/light mode as the global theme
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
+          mode,
+          info: { main: "rgb(255,122,0)" },
           background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
+            default: mode === "light" ? "rgb(254,255,244)" : "#000",
           },
         },
         typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
+          button: { textTransform: "none", fontSize: "1.2rem" },
         },
         components: {
           MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
+            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
           },
           MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
+            styleOverrides: { thumb: { color: "pink" } },
           },
         },
       }),
@@ -659,12 +534,12 @@ const PromotionTransaction = () => {
   );
 
   return (
-    //Put this with your other react-query providers near root of your app
     <QueryClientProvider client={queryClient}>
-      <Typography color="inherit" variant="h4">
-        Урамшуулал олголт
-      </Typography>
       <ThemeProvider theme={tableTheme}>
+        {/* ★ Typography-г ThemeProvider дотор зөөсөн */}
+        <Typography color="inherit" variant="h4">
+          Урамшуулал олголт
+        </Typography>
         <Example />
       </ThemeProvider>
     </QueryClientProvider>
@@ -672,7 +547,3 @@ const PromotionTransaction = () => {
 };
 
 export default PromotionTransaction;
-
-function validateUser(user) {
-  return "";
-}

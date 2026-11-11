@@ -8,7 +8,7 @@ import {
   UserInfo,
   ProductDelivery,
   EbarimtDelivery,
-  OrgChart
+  OrgChart,
 } from "../mainPage/OrderPage";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -52,6 +52,8 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Дансны хуулга" {...a11yProps(0)} />
           <Tab label="Худалдан авалт" {...a11yProps(1)} />
@@ -70,10 +72,10 @@ export default function BasicTabs() {
         <ProductDelivery />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={3}>
-       <EbarimtDelivery/>
+        <EbarimtDelivery />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={4}>
-      <OrgChart/>
+        <OrgChart />
       </CustomTabPanel>
     </Box>
   );

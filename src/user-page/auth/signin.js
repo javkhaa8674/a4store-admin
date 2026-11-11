@@ -14,6 +14,8 @@ import {
   Switch,
   FormControlLabel,
 } from "@mui/material";
+import { useColorScheme } from "@mui/material/styles";
+
 import {
   MdPhone,
   MdEmail,
@@ -31,24 +33,37 @@ import {
 import AlertComponent from "components/alert";
 import axios from "../../storeaxios";
 
-const StyledCard = styled(Card)(({ theme }) => ({
-  background: "rgba(255, 255, 255, 0.9)",
+// useColorScheme-ийн mode-ийг ашиглахын тулд styled компонент руу mode дамжуулах шаардлагатай
+const StyledCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== "currentMode",
+})(({ theme, currentMode }) => ({
+  background:
+    currentMode === "dark"
+      ? "rgba(30, 30, 30, 0.95)"
+      : "rgba(255, 255, 255, 0.9)",
+  color: theme.palette.text.primary,
   borderRadius: 16,
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+  boxShadow:
+    currentMode === "dark"
+      ? "0 8px 32px rgba(0, 0, 0, 0.8)"
+      : "0 8px 32px rgba(0, 0, 0, 0.5)",
   padding: theme.spacing(4),
   maxWidth: 450,
   width: "100%",
 }));
 
-const Background = styled(Box)({
+const Background = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   padding: "20px",
-});
+  background: theme.vars.palette.background.default,
+  transition: "background 0.3s ease",
+}));
 
 const LoginPage = () => {
+  const { mode, systemMode } = useColorScheme();
   const navigation = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -65,9 +80,11 @@ const LoginPage = () => {
     severity: "",
   });
 
+  // Бодит харагдах горимыг тодорхойлох: mode нь "system" үед systemMode-ийг ашиглана
+  const currentMode = mode === "system" ? systemMode : mode;
+
   const token = new URLSearchParams(window.location.search).get("token");
 
-  // ★ handleSignIns-г useCallback-аар боосон
   const handleSignIns = useCallback(async () => {
     console.log("Token from query params:", token);
     setLoading(true);
@@ -87,7 +104,7 @@ const LoginPage = () => {
           auth,
           response.data.customToken,
         );
-        console.log("User Credential:", userCredential);
+        //console.log("User Credential:", userCredential);
         navigation("/wallet");
       }
     } catch (error) {
@@ -97,7 +114,6 @@ const LoginPage = () => {
     }
   }, [token, navigation]);
 
-  // ★ useEffect dependency array-д handleSignIns нэмсэн
   useEffect(() => {
     if (token) {
       handleSignIns();
@@ -153,7 +169,6 @@ const LoginPage = () => {
       );
       const uid = userCredential.user.uid;
 
-      // Fetch user data from Firestore
       const userRef = doc(firestore, "users", uid);
       const userSnap = await getDoc(userRef);
 
@@ -234,23 +249,27 @@ const LoginPage = () => {
 
   return (
     <>
-      <Background>
+      <Background currentMode={currentMode}>
         <Container component="main" maxWidth="xs">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <StyledCard>
+            <StyledCard currentMode={currentMode}>
               <CardContent>
                 <Box display="flex" flexDirection="column" alignItems="center">
-                  {/* ★ alt attribute нэмсэн */}
                   <img
                     src="https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/789456.png?alt=media&token=f8572a7a-cf71-4de3-908d-66da285897a3"
                     alt="A4You лого"
                     style={{
                       width: 150,
                       height: 100,
+                      filter:
+                        currentMode === "dark"
+                          ? "brightness(0) invert(1)"
+                          : "none",
+                      transition: "filter 0.3s ease",
                     }}
                   />
                 </Box>
@@ -259,6 +278,7 @@ const LoginPage = () => {
                     component="h1"
                     variant="h5"
                     gutterBottom
+                    color="textPrimary"
                     sx={{ fontWeight: 700 }}
                   >
                     Тавтай морил
@@ -276,9 +296,15 @@ const LoginPage = () => {
                       <Switch
                         checked={useEmail}
                         onChange={() => setUseEmail(!useEmail)}
+                        color="secondary"
                       />
                     }
                     label={useEmail ? "Имэйлээр нэвтрэх" : "Утсаар нэвтрэх"}
+                    sx={{
+                      "& .MuiFormControlLabel-label": {
+                        color: (theme) => theme.vars.palette.text.secondary,
+                      },
+                    }}
                   />
                   <Box
                     component="form"

@@ -46,18 +46,19 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Файл импорт" {...a11yProps(0)} />
           <Tab label="Файл экспорт" {...a11yProps(1)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-     <Import/>
+        <Import />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-      <Export/>
+        <Export />
       </CustomTabPanel>
-
     </Box>
   );
 }

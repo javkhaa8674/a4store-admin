@@ -3,7 +3,13 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import { PromotionTransaction, EbarimtTransaction, PromotionCalculation, InviterCalculation, CalculateLevel} from "../mainPage/BonusPage";
+import {
+  PromotionTransaction,
+  EbarimtTransaction,
+  PromotionCalculation,
+  InviterCalculation,
+  CalculateLevel,
+} from "../mainPage/BonusPage";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -46,6 +52,8 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Тооцоо шалгах" {...a11yProps(0)} />
           <Tab label="Урамшуулал олголт" {...a11yProps(1)} />
@@ -62,16 +70,16 @@ export default function BasicTabs() {
         <PromotionTransaction />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
-      <EbarimtTransaction/>
+        <EbarimtTransaction />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={3}>
-       <PromotionCalculation/>
+        <PromotionCalculation />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={4}>
-    <InviterCalculation/>
+        <InviterCalculation />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={5}>
-       <CalculateLevel/>
+        <CalculateLevel />
       </CustomTabPanel>
     </Box>
   );

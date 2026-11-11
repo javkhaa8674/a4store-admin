@@ -51,6 +51,8 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Устгасан худалдан авалт" {...a11yProps(0)} />
           <Tab label="Устгасан дансны хуулга" {...a11yProps(1)} />
@@ -59,10 +61,10 @@ export default function BasicTabs() {
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-       <DeleteUserInfo/>
+        <DeleteUserInfo />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-      <DeleteStatements/>
+        <DeleteStatements />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
         <ProductDelivery />

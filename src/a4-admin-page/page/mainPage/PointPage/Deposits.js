@@ -463,6 +463,19 @@ const Example = () => {
         </Button>
       </Box>
     ),
+    muiTopToolbarProps: {
+      sx: {
+        overflowX: "auto",
+        overflowY: "hidden",
+        flexWrap: "nowrap",
+        WebkitOverflowScrolling: "touch",
+        "&::-webkit-scrollbar": { height: "6px" },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgba(0,0,0,0.3)",
+          borderRadius: "3px",
+        },
+      },
+    },
     initialState: {
       columnVisibility: {
         id: false,

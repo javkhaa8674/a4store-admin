@@ -48,6 +48,8 @@ export default function BasicTabs() {
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="Хүсэлтийн бүртгэл" {...a11yProps(0)} />
           <Tab label="Аппликэйшн бүртгэл" {...a11yProps(1)} />
@@ -57,7 +59,7 @@ export default function BasicTabs() {
         <Request />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        <Members/>
+        <Members />
       </CustomTabPanel>
     </Box>
   );
