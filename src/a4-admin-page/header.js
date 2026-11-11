@@ -12,6 +12,7 @@ import {
 } from "@mui/icons-material";
 import { signOut } from "firebase/auth";
 import { auth } from "refrence/storeConfig"; // Use the pre-configured Firebase auth instance
+
 // MUI Icons
 import Avatar from "@mui/material/Avatar";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -31,14 +32,16 @@ import Groups2Icon from "@mui/icons-material/Groups2";
 import FiberNewIcon from "@mui/icons-material/FiberNew";
 import CurrencyRubleIcon from "@mui/icons-material/CurrencyRuble";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
+
 // MUI Theming
-import { createTheme, CssVarsProvider } from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
+
 // Toolpad Core
 import { AppProvider } from "@toolpad/core/AppProvider";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { useDemoRouter } from "@toolpad/core/internal";
 
-//page import
+// page import
 import {
   RequestTab,
   OrderTab,
@@ -157,6 +160,7 @@ const demoTheme = createTheme({
   cssVariables: {
     colorSchemeSelector: "data-toolpad-color-scheme",
   },
+  defaultColorScheme: "light", // ★ default color scheme зааж өгөх
   colorSchemes: {
     light: {
       palette: {
@@ -306,15 +310,19 @@ function ToolbarActionsSearch() {
 }
 
 function ThemeSwitcher() {
-  const { mode, setMode } = useColorScheme();
+  // ★ useColorScheme-ийг зөв ашиглах
+  const { mode, setMode, systemMode } = useColorScheme();
+
+  // mode undefined байж болзошгүй тул systemMode-ийг fallback болгон ашиглана
+  const currentMode = mode ?? systemMode ?? "light";
 
   const toggleMode = () => {
-    setMode(mode === "light" ? "dark" : "light");
+    setMode(currentMode === "light" ? "dark" : "light");
   };
 
   return (
     <IconButton onClick={toggleMode} color="inherit">
-      {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+      {currentMode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
     </IconButton>
   );
 }
@@ -352,25 +360,26 @@ function DashboardLayoutSlots(props) {
   const router = useDemoRouter("/member/Order");
   const demoWindow = window !== undefined ? window() : undefined;
 
+  // ★ CssVarsProvider-ийг хасаж, AppProvider-т theme-ийг дамжуулна
+  // AppProvider нь дотооддоо CssVarsProvider ашигладаг тул
+  // useColorScheme зөв ажиллах болно
   return (
-    <CssVarsProvider theme={demoTheme}>
-      <AppProvider
-        navigation={NAVIGATION}
-        router={router}
-        theme={demoTheme}
-        window={demoWindow}
+    <AppProvider
+      navigation={NAVIGATION}
+      router={router}
+      theme={demoTheme}
+      window={demoWindow}
+    >
+      <DashboardLayout
+        slots={{
+          appTitle: CustomAppTitle,
+          toolbarActions: ToolbarActionsSearch,
+          sidebarFooter: SidebarFooter,
+        }}
       >
-        <DashboardLayout
-          slots={{
-            appTitle: CustomAppTitle,
-            toolbarActions: ToolbarActionsSearch,
-            sidebarFooter: SidebarFooter,
-          }}
-        >
-          <DemoPageContent pathname={router.pathname} />
-        </DashboardLayout>
-      </AppProvider>
-    </CssVarsProvider>
+        <DemoPageContent pathname={router.pathname} />
+      </DashboardLayout>
+    </AppProvider>
   );
 }
 
