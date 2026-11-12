@@ -1,37 +1,33 @@
-import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 // MUI Components
-import { Stack, Chip, Typography, Menu, MenuItem } from "@mui/material";
-import { useColorScheme, useTheme } from "@mui/material/styles";
+import { Chip, Menu, MenuItem, Stack, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { IconButton } from "@mui/material";
-import {
-  LightMode as LightModeIcon,
-  DarkMode as DarkModeIcon,
-} from "@mui/icons-material";
+
 import { signOut } from "firebase/auth";
 import { auth } from "refrence/storeConfig"; // Use the pre-configured Firebase auth instance
 
 // MUI Icons
-import Avatar from "@mui/material/Avatar";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import MarkChatUnreadIcon from "@mui/icons-material/MarkChatUnread";
-import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
 import CalculateIcon from "@mui/icons-material/Calculate";
-import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
-import DisplaySettingsIcon from "@mui/icons-material/DisplaySettings";
-import FeedbackIcon from "@mui/icons-material/Feedback";
-import FeedIcon from "@mui/icons-material/Feed";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
-import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
-import ImportExportIcon from "@mui/icons-material/ImportExport";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Groups2Icon from "@mui/icons-material/Groups2";
-import FiberNewIcon from "@mui/icons-material/FiberNew";
 import CurrencyRubleIcon from "@mui/icons-material/CurrencyRuble";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DisplaySettingsIcon from "@mui/icons-material/DisplaySettings";
+import FeedIcon from "@mui/icons-material/Feed";
+import FeedbackIcon from "@mui/icons-material/Feedback";
+import FiberNewIcon from "@mui/icons-material/FiberNew";
+import Groups2Icon from "@mui/icons-material/Groups2";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
+import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
+import MarkChatUnreadIcon from "@mui/icons-material/MarkChatUnread";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
+import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
+import Avatar from "@mui/material/Avatar";
 
 // MUI Theming
 import { createTheme } from "@mui/material/styles";
@@ -40,23 +36,23 @@ import { createTheme } from "@mui/material/styles";
 import { AppProvider } from "@toolpad/core/AppProvider";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { useDemoRouter } from "@toolpad/core/internal";
-
+import { ThemeSwitcher } from "../theme/ThemeSwitcher"; // Import the ThemeSwitcher component
 // page import
-import {
-  RequestTab,
-  OrderTab,
-  BonusTab,
-  CancelMemberTab,
-  FeedbackTab,
-  DeleteTab,
-  ExportImportTab,
-  BlackTab,
-  NewMarketingTab,
-  PointTab,
-} from "./page/topTabs";
 import News from "./page/mainPage/news";
 import Organizations from "./page/mainPage/Organizations";
 import Product from "./page/mainPage/Product";
+import {
+  BlackTab,
+  BonusTab,
+  CancelMemberTab,
+  DeleteTab,
+  ExportImportTab,
+  FeedbackTab,
+  NewMarketingTab,
+  OrderTab,
+  PointTab,
+  RequestTab,
+} from "./page/topTabs";
 
 const NAVIGATION = [
   {
@@ -306,24 +302,6 @@ function ToolbarActionsSearch() {
       {/* ThemeSwitcher үргэлж харагдана */}
       <ThemeSwitcher />
     </Stack>
-  );
-}
-
-function ThemeSwitcher() {
-  // ★ useColorScheme-ийг зөв ашиглах
-  const { mode, setMode, systemMode } = useColorScheme();
-
-  // mode undefined байж болзошгүй тул systemMode-ийг fallback болгон ашиглана
-  const currentMode = mode ?? systemMode ?? "light";
-
-  const toggleMode = () => {
-    setMode(currentMode === "light" ? "dark" : "light");
-  };
-
-  return (
-    <IconButton onClick={toggleMode} color="inherit">
-      {currentMode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
-    </IconButton>
   );
 }
 

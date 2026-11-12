@@ -12,7 +12,9 @@ import {
 import { useState } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { ThemeSwitcher } from "../../theme/ThemeSwitcher"; // Import the ThemeSwitcher component
 import { logout } from "../auth/Logout"; // Import the reusable logout function
+
 const StyledAppBar = styled(AppBar)(() => ({
   background: "theme.palette.primary.main",
   marginBottom: "40px",
@@ -42,6 +44,7 @@ const UserHeader = () => {
   };
 
   const handleLogout = logout(navigate); // Create the logout handler
+
   const getUserData = () => {
     try {
       const users = localStorage.getItem("user"); // Get the stored data
@@ -112,6 +115,7 @@ const UserHeader = () => {
                     ? `${userData?.lastName || ""} ${userData?.firstName || ""}`.trim()
                     : "Unknown User"}
                 </Typography>
+                <ThemeSwitcher />
               </Box>
 
               {/* Dropdown Menu */}
