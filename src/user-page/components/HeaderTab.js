@@ -115,9 +115,8 @@ const UserHeader = () => {
                     ? `${userData?.lastName || ""} ${userData?.firstName || ""}`.trim()
                     : "Unknown User"}
                 </Typography>
-                <ThemeSwitcher />
               </Box>
-
+              <ThemeSwitcher />
               {/* Dropdown Menu */}
               <Menu
                 id="menu-appbar"
