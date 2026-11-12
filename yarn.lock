@@ -5188,6 +5188,7 @@ __metadata:
     draftjs-to-html: "npm:^0.9.1"
     eslint: "npm:^9.24.0"
     eslint-config-react-app: "npm:^7.0.1"
+    eslint-plugin-unused-imports: "npm:^4.4.1"
     export-to-csv: "npm:^1.4.0"
     firebase: "npm:^11.2.0"
     framer-motion: "npm:^12.6.3"
@@ -8177,6 +8178,19 @@ __metadata:
   peerDependencies:
     eslint: ^7.5.0 || ^8.0.0
   checksum: 10c0/55c7792345710a2b951acb0552ebe4e491d988f7d37fd308749e75fdbc36142b9a151ecec03b39992f672afea1a99dd3c3d2fb9f737ef18f56d7168e294fd9eb
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-unused-imports@npm:^4.4.1":
+  version: 4.4.1
+  resolution: "eslint-plugin-unused-imports@npm:4.4.1"
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^8.0.0-0 || ^7.0.0 || ^6.0.0 || ^5.0.0
+    eslint: ^10.0.0 || ^9.0.0 || ^8.0.0
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+  checksum: 10c0/bef630eedc3c239ca1c0a11c6af60485310e3934bd0819d3eb51e0acabdafc722c97d35457750a957541f5cc6a99aa78abb359eb3837d3702d836b6d24cbd573
   languageName: node
   linkType: hard
 

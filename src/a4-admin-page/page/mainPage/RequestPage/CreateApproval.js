@@ -701,7 +701,7 @@ const CreateApproval = ({ open, setOpen }) => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={tableTheme}>
       <Dialog
         fullScreen
         open={open}
