@@ -16,7 +16,6 @@ import {
   Typography,
   useColorScheme,
   ThemeProvider,
-  createTheme,
   TextField,
   CssBaseline,
 } from "@mui/material";
@@ -43,6 +42,7 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
 import { RiFileExcel2Fill } from "react-icons/ri";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 // ---------- Firebase зам ----------
 const PRODUCT_PATH = "BlackMembers/ProductDelivery";
@@ -78,12 +78,7 @@ const Example = () => {
   // ---------- Columns ----------
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: false,
-        size: 80,
-      },
+      { accessorKey: "id", header: "id", enableEditing: false, size: 80 },
       {
         accessorKey: "MemberId",
         header: "Утас",
@@ -91,10 +86,7 @@ const Example = () => {
         enableClickToCopy: true,
         muiEditTextFieldProps: { type: "number" },
       },
-      {
-        accessorKey: "QuantityName",
-        header: "Нэр",
-      },
+      { accessorKey: "QuantityName", header: "Нэр" },
       {
         accessorKey: "ProductName",
         header: "Бүтээгдэхүүний нэр",
@@ -155,10 +147,7 @@ const Example = () => {
           return dayjs(v).format("YYYY-MM-DD HH:mm:ss");
         },
       },
-      {
-        accessorKey: "Description",
-        header: "Тайлбар",
-      },
+      { accessorKey: "Description", header: "Тайлбар" },
     ],
     [],
   );
@@ -555,47 +544,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const BlackProductDelivery = () => {
-  const { mode } = useColorScheme();
-  const isDark = mode === "dark";
-
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: { main: "rgb(255,122,0)" },
-          background: {
-            default: isDark ? "#0b0b0b" : "rgb(254,255,244)",
-            paper: isDark ? "#1e1e1e" : "#ffffff",
-          },
-          text: {
-            primary: isDark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.87)",
-            secondary: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
-          },
-          divider: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)",
-        },
-        typography: {
-          button: { textTransform: "none", fontSize: "1.2rem" },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
-          },
-          MuiSwitch: {
-            styleOverrides: { thumb: { color: "pink" } },
-          },
-          MuiDialog: {
-            styleOverrides: {
-              paper: {
-                backgroundImage: "none",
-                backgroundColor: isDark ? "#1e1e1e" : "#fff",
-              },
-            },
-          },
-        },
-      }),
-    [mode, isDark],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <QueryClientProvider client={queryClient}>

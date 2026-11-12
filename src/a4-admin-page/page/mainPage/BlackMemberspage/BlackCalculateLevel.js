@@ -5,8 +5,6 @@ import {
   Typography,
   Paper,
   Grid,
-  createTheme,
-  useColorScheme,
   ThemeProvider,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -15,54 +13,14 @@ import { db } from "refrence/realConfig";
 import { ref, onValue, set } from "firebase/database";
 import { MaterialReactTable } from "material-react-table";
 import * as XLSX from "xlsx";
-
+import { useTableTheme } from "../../../../theme/useTableTheme";
 dayjs.extend(localizedFormat);
 
 const BlackCalculateLevel = () => {
   const [data, setData] = useState([]);
   const [exports, setExports] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
@@ -381,9 +339,7 @@ const BlackCalculateLevel = () => {
               variant="outlined"
               size="small"
               fullWidth
-              InputLabelProps={{
-                shrink: true,
-              }}
+              InputLabelProps={{ shrink: true }}
               sx={{ mb: 2 }} // Add margin at the bottom for better spacing
             />
           </Grid>

@@ -14,9 +14,7 @@ import {
   IconButton,
   Tooltip,
   TextField,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
   Typography,
 } from "@mui/material";
 import {
@@ -41,7 +39,7 @@ import {
   equalTo,
   query,
 } from "firebase/database";
-
+import { useTableTheme } from "../../../../theme/useTableTheme";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import { AuthStore } from "store/AuthStore";
 
@@ -50,38 +48,14 @@ const csvConfig = mkConfig({
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "lastName",
-      displayLabel: "Овог",
-    },
-    {
-      key: "firstName",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "phoneNumber",
-      displayLabel: "ID",
-    },
-    {
-      key: "bankName",
-      displayLabel: "Банкны нэр",
-    },
-    {
-      key: "accountNumber",
-      displayLabel: "Дансны дугаар",
-    },
-    {
-      key: "registrationNumber",
-      displayLabel: "Регистрийн дугаар",
-    },
-    {
-      key: "province",
-      displayLabel: "Оршин сугаа хаяг",
-    },
-    {
-      key: "centerName",
-      displayLabel: "Төвийн нэр",
-    },
+    { key: "lastName", displayLabel: "Овог" },
+    { key: "firstName", displayLabel: "Нэр" },
+    { key: "phoneNumber", displayLabel: "ID" },
+    { key: "bankName", displayLabel: "Банкны нэр" },
+    { key: "accountNumber", displayLabel: "Дансны дугаар" },
+    { key: "registrationNumber", displayLabel: "Регистрийн дугаар" },
+    { key: "province", displayLabel: "Оршин сугаа хаяг" },
+    { key: "centerName", displayLabel: "Төвийн нэр" },
   ],
 });
 
@@ -188,10 +162,7 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["Members"], (prevUsers) => [
           ...(prevUsers || []),
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
+          { ...newUserInfo, id: (Math.random() + 1).toString(36).substring(7) },
         ]);
       },
     });
@@ -427,9 +398,7 @@ const Example = () => {
         // Гар утасны scroll-ыг гөлгөр болгох
         WebkitOverflowScrolling: "touch",
         // Scrollbar-ыг нимгэн болгох (сонголтоор)
-        "&::-webkit-scrollbar": {
-          height: "6px",
-        },
+        "&::-webkit-scrollbar": { height: "6px" },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "rgba(0,0,0,0.3)",
           borderRadius: "3px",
@@ -481,48 +450,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const MemberRegistration = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">

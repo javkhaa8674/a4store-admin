@@ -15,9 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
   Chip,
 } from "@mui/material";
 import {
@@ -37,46 +35,20 @@ import { db, auth } from "refrence/realConfig";
 import { read, utils } from "xlsx";
 import axiosA4 from "storeaxios";
 import axios from "axios";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   columnHeaders: [
-    {
-      key: "id",
-      displayLabel: "id",
-    },
-    {
-      key: "type",
-      displayLabel: "Төрөл",
-    },
-    {
-      key: "amount",
-      displayLabel: "Шилжүүлсэн дүн",
-    },
-    {
-      key: "description",
-      displayLabel: "Гүйлгээний утга",
-    },
-    {
-      key: "fee",
-      displayLabel: "Шимтгэл",
-    },
-    {
-      key: "receiverId",
-      displayLabel: "Хүлээн авагч",
-    },
-    {
-      key: "senderId",
-      displayLabel: "Шилжүүлэгч",
-    },
-    {
-      key: "timestamp",
-      displayLabel: "Огноо",
-    },
-    {
-      key: "totalDeduction",
-      displayLabel: "Нийт дүн",
-    },
+    { key: "id", displayLabel: "id" },
+    { key: "type", displayLabel: "Төрөл" },
+    { key: "amount", displayLabel: "Шилжүүлсэн дүн" },
+    { key: "description", displayLabel: "Гүйлгээний утга" },
+    { key: "fee", displayLabel: "Шимтгэл" },
+    { key: "receiverId", displayLabel: "Хүлээн авагч" },
+    { key: "senderId", displayLabel: "Шилжүүлэгч" },
+    { key: "timestamp", displayLabel: "Огноо" },
+    { key: "totalDeduction", displayLabel: "Нийт дүн" },
   ],
   quoteStrings: '"',
 });
@@ -111,10 +83,7 @@ const Example = () => {
 
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id",
-        header: "id",
-      },
+      { accessorKey: "id", header: "id" },
       {
         accessorKey: "type",
         header: "Төрөл",
@@ -140,26 +109,11 @@ const Example = () => {
           return <Chip label={label} color={color} size="small" />;
         },
       },
-      {
-        accessorKey: "amount",
-        header: "Шилжүүлсэн дүн",
-      },
-      {
-        accessorKey: "description",
-        header: "Гүйлгээний утга",
-      },
-      {
-        accessorKey: "fee",
-        header: "Шимтгэл",
-      },
-      {
-        accessorKey: "receiverId",
-        header: "Хүлээн авагч",
-      },
-      {
-        accessorKey: "senderId",
-        header: "Шилжүүлэгч",
-      },
+      { accessorKey: "amount", header: "Шилжүүлсэн дүн" },
+      { accessorKey: "description", header: "Гүйлгээний утга" },
+      { accessorKey: "fee", header: "Шимтгэл" },
+      { accessorKey: "receiverId", header: "Хүлээн авагч" },
+      { accessorKey: "senderId", header: "Шилжүүлэгч" },
       {
         accessorKey: "timestamp",
         header: "Огноо",
@@ -168,10 +122,7 @@ const Example = () => {
           return dayjs(value).format("YYYY-MM-DD HH:mm:ss");
         },
       },
-      {
-        accessorKey: "totalDeduction",
-        header: "Нийт дүн",
-      },
+      { accessorKey: "totalDeduction", header: "Нийт дүн" },
     ],
     [],
   );
@@ -210,9 +161,7 @@ const Example = () => {
             console.log("fetchAll enabled");
             const result = await axiosA4.post(
               `/getTransactions`,
-              {
-                senderId: null,
-              },
+              { senderId: null },
               {
                 headers: {
                   "Content-Type": "application/json",
@@ -226,9 +175,7 @@ const Example = () => {
             console.log(searchTerm);
             const result = await axiosA4.post(
               `/getTransactionById?phone=${searchTerm}`,
-              {
-                senderId: null,
-              },
+              { senderId: null },
               {
                 headers: {
                   "Content-Type": "application/json",
@@ -257,10 +204,7 @@ const Example = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        const updatedData = {
-          ...user,
-          MemberId: Number(user.MemberId),
-        };
+        const updatedData = { ...user, MemberId: Number(user.MemberId) };
         // remove undefined values
         const sendData = Object.fromEntries(
           Object.entries(updatedData).filter(
@@ -417,9 +361,7 @@ const Example = () => {
         });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const data = utils.sheet_to_json(sheet, {
-          defval: "",
-        });
+        const data = utils.sheet_to_json(sheet, { defval: "" });
         let realData = [];
         data.forEach((element) => {
           if (element.register > 0) {
@@ -497,39 +439,18 @@ const Example = () => {
         >
           <MaterialReactTable
             columns={[
-              {
-                accessorKey: "senderId",
-                header: "sender id",
-              },
-              {
-                accessorKey: "receiverId",
-                header: "receiver Id",
-              },
-              {
-                accessorKey: "amount",
-                header: "amount",
-              },
-              {
-                accessorKey: "description",
-                header: "description",
-              },
-              {
-                accessorKey: "type",
-                header: "type",
-              },
-              {
-                accessorKey: "fee",
-                header: "fee",
-              },
+              { accessorKey: "senderId", header: "sender id" },
+              { accessorKey: "receiverId", header: "receiver Id" },
+              { accessorKey: "amount", header: "amount" },
+              { accessorKey: "description", header: "description" },
+              { accessorKey: "type", header: "type" },
+              { accessorKey: "fee", header: "fee" },
             ]}
             data={importData}
             enableSorting
             enableColumnOrdering
             initialState={{ showGlobalFilter: true }}
-            dialogProps={{
-              maxWidth: "sm",
-              fullWidth: true,
-            }}
+            dialogProps={{ maxWidth: "sm", fullWidth: true }}
           />
         </DialogContent>
         <DialogActions>
@@ -609,20 +530,14 @@ const Example = () => {
         // Гар утасны scroll-ыг гөлгөр болгох
         WebkitOverflowScrolling: "touch",
         // Scrollbar-ыг нимгэн болгох (сонголтоор)
-        "&::-webkit-scrollbar": {
-          height: "6px",
-        },
+        "&::-webkit-scrollbar": { height: "6px" },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "rgba(0,0,0,0.3)",
           borderRadius: "3px",
         },
       },
     },
-    initialState: {
-      columnVisibility: {
-        id: false,
-      },
-    },
+    initialState: { columnVisibility: { id: false } },
     state: {
       isLoading: isLoading,
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
@@ -665,45 +580,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Transactions = () => {
-  const { mode } = useColorScheme();
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-
-          info: {
-            main: "rgb(255,122,0)",
-          },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none",
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem",
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink",
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">

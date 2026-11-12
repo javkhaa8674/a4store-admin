@@ -59,8 +59,23 @@ const AppContent = () => {
       colorSchemeSelector: "data", // эсвэл 'class'
     },
     colorSchemes: {
-      light: true,
-      dark: true,
+      light: {
+        palette: {
+          info: { main: "rgb(255,122,0)" },
+          background: { default: "rgb(254,255,244)" },
+        },
+      },
+      dark: {
+        palette: {
+          info: { main: "rgb(255,122,0)" },
+          background: { default: "#000" },
+        },
+      },
+    },
+    typography: { button: { textTransform: "none", fontSize: "1.2rem" } },
+    components: {
+      MuiTooltip: { styleOverrides: { tooltip: { fontSize: "1.1rem" } } },
+      MuiSwitch: { styleOverrides: { thumb: { color: "pink" } } },
     },
   });
 

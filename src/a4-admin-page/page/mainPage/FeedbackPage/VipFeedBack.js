@@ -15,9 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import {
   QueryClient,
@@ -34,6 +32,7 @@ import dayjs from "dayjs";
 import { ref, get, set, update, remove } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import "dayjs/locale/mn";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const status = ["Active", "Inactive"];
 
@@ -42,42 +41,15 @@ const csvConfig = mkConfig({
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "Status",
-      displayLabel: "Төлөв",
-    },
-    {
-      key: "timeStamp",
-      displayLabel: "Огноо",
-    },
-    {
-      key: "RequestMemberId",
-      displayLabel: "Хүсэлт гаргагчийн утас",
-    },
-    {
-      key: "RequestName",
-      displayLabel: "Хүсэлт гаргагчийн нэр",
-    },
-    {
-      key: "VipMemberId",
-      displayLabel: "Утас",
-    },
-    {
-      key: "VipName",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "totalEbarimt",
-      displayLabel: "Е-баримтын дүн",
-    },
-    {
-      key: "totalPromotion",
-      displayLabel: "Урамшууллын дүн",
-    },
-    {
-      key: "FeedBack",
-      displayLabel: "Тайлбар",
-    },
+    { key: "Status", displayLabel: "Төлөв" },
+    { key: "timeStamp", displayLabel: "Огноо" },
+    { key: "RequestMemberId", displayLabel: "Хүсэлт гаргагчийн утас" },
+    { key: "RequestName", displayLabel: "Хүсэлт гаргагчийн нэр" },
+    { key: "VipMemberId", displayLabel: "Утас" },
+    { key: "VipName", displayLabel: "Нэр" },
+    { key: "totalEbarimt", displayLabel: "Е-баримтын дүн" },
+    { key: "totalPromotion", displayLabel: "Урамшууллын дүн" },
+    { key: "FeedBack", displayLabel: "Тайлбар" },
   ],
 });
 
@@ -193,9 +165,7 @@ const Example = () => {
         header: "Төлөв",
         editVariant: "select",
         editSelectOptions: status,
-        muiEditTextFieldProps: {
-          select: true,
-        },
+        muiEditTextFieldProps: { select: true },
       },
       {
         accessorKey: "timeStamp",
@@ -214,16 +184,8 @@ const Example = () => {
         header: "Хүсэлт гаргагчийн нэр",
         enableEditing: true,
       },
-      {
-        accessorKey: "VipMemberId",
-        header: "Утас",
-        enableEditing: true,
-      },
-      {
-        accessorKey: "VipName",
-        header: "Нэр",
-        enableEditing: true,
-      },
+      { accessorKey: "VipMemberId", header: "Утас", enableEditing: true },
+      { accessorKey: "VipName", header: "Нэр", enableEditing: true },
       {
         accessorKey: "totalEbarimt",
         header: "Е-баримтын дүн",
@@ -250,16 +212,8 @@ const Example = () => {
           return formattedCurrency;
         },
       },
-      {
-        accessorKey: "FeedBack",
-        header: "Тайлбар",
-        enableEditing: true,
-      },
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: true,
-      },
+      { accessorKey: "FeedBack", header: "Тайлбар", enableEditing: true },
+      { accessorKey: "id", header: "id", enableEditing: true },
     ],
     [],
   );
@@ -424,9 +378,7 @@ const Example = () => {
         // Гар утасны scroll-ыг гөлгөр болгох
         WebkitOverflowScrolling: "touch",
         // Scrollbar-ыг нимгэн болгох (сонголтоор)
-        "&::-webkit-scrollbar": {
-          height: "6px",
-        },
+        "&::-webkit-scrollbar": { height: "6px" },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "rgba(0,0,0,0.3)",
           borderRadius: "3px",
@@ -451,47 +403,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const VipFeedBack = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Typography variant="h4">VIP хүсэлт</Typography>

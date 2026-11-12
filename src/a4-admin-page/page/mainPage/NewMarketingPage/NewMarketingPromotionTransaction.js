@@ -15,9 +15,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
   TextField,
 } from "@mui/material";
 import {
@@ -46,6 +44,7 @@ import {
 } from "firebase/database";
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const date = new Date();
 
@@ -54,14 +53,8 @@ const csvConfig = mkConfig({
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "TranDate",
-      displayLabel: "Гүйлгээний огноо",
-    },
-    {
-      key: "Branch",
-      displayLabel: "Салбар",
-    },
+    { key: "TranDate", displayLabel: "Гүйлгээний огноо" },
+    { key: "Branch", displayLabel: "Салбар" },
     {
       key: "BeginningBalance",
       displayLabel: "Эхний үлдэгдэл",
@@ -110,22 +103,10 @@ const csvConfig = mkConfig({
         return formattedCurrency;
       },
     },
-    {
-      key: "TransactionRemarks",
-      displayLabel: "Гүйлгээний утга",
-    },
-    {
-      key: "ToAccNumber",
-      displayLabel: "Харьцсан данс",
-    },
-    {
-      key: "Type",
-      displayLabel: "Төрөл",
-    },
-    {
-      key: "ID",
-      displayLabel: "Утас",
-    },
+    { key: "TransactionRemarks", displayLabel: "Гүйлгээний утга" },
+    { key: "ToAccNumber", displayLabel: "Харьцсан данс" },
+    { key: "Type", displayLabel: "Төрөл" },
+    { key: "ID", displayLabel: "Утас" },
   ],
 });
 
@@ -139,11 +120,7 @@ const Example = () => {
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: false,
-      },
+      { accessorKey: "id", header: "id", enableEditing: false },
       {
         accessorKey: "ID",
         header: "Утас",
@@ -153,10 +130,7 @@ const Example = () => {
           helperText: validationErrors?.phone,
           //remove any previous validation errors when user focuses on the input
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              phone: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, phone: undefined }),
         },
       },
       {
@@ -178,22 +152,10 @@ const Example = () => {
           return formattedCurrency;
         },
       },
-      {
-        accessorKey: "TransactionRemarks",
-        header: "Гүйлгээний утга",
-      },
-      {
-        accessorKey: "ToAccNumber",
-        header: "Харьцсан данс",
-      },
-      {
-        accessorKey: "Type",
-        header: "Төрөл",
-      },
-      {
-        accessorKey: "Set",
-        header: "Багц",
-      },
+      { accessorKey: "TransactionRemarks", header: "Гүйлгээний утга" },
+      { accessorKey: "ToAccNumber", header: "Харьцсан данс" },
+      { accessorKey: "Type", header: "Төрөл" },
+      { accessorKey: "Set", header: "Багц" },
     ],
     [validationErrors],
   );
@@ -232,10 +194,7 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers = []) => [
           ...prevUsers,
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
+          { ...newUserInfo, id: (Math.random() + 1).toString(36).substring(7) },
         ]);
       },
       onSettled: () =>
@@ -400,9 +359,7 @@ const Example = () => {
 
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        let data = utils.sheet_to_json(sheet, {
-          header: 1,
-        });
+        let data = utils.sheet_to_json(sheet, { header: 1 });
         const customHeader = [
           "TranDate",
           "Debit",
@@ -448,16 +405,9 @@ const Example = () => {
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
-      ? {
-          color: "error",
-          children: "Error loading data",
-        }
+      ? { color: "error", children: "Error loading data" }
       : undefined,
-    muiTableContainerProps: {
-      sx: {
-        minHeight: "500px",
-      },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
     onEditingRowCancel: () => setValidationErrors({}),
@@ -491,28 +441,13 @@ const Example = () => {
                   return formattedCurrency;
                 },
               },
-              {
-                accessorKey: "TransactionRemarks",
-                header: "Гүйлгээний утга",
-              },
-              {
-                accessorKey: "ToAccNumber",
-                header: "Харьцсан данс",
-              },
+              { accessorKey: "TransactionRemarks", header: "Гүйлгээний утга" },
+              { accessorKey: "ToAccNumber", header: "Харьцсан данс" },
 
-              {
-                accessorKey: "Set",
-                header: "Багц",
-              },
+              { accessorKey: "Set", header: "Багц" },
 
-              {
-                accessorKey: "Type",
-                header: "Төрөл",
-              },
-              {
-                accessorKey: "ID",
-                header: "Утас",
-              },
+              { accessorKey: "Type", header: "Төрөл" },
+              { accessorKey: "ID", header: "Утас" },
             ]}
             data={importData}
             enableSorting
@@ -636,48 +571,7 @@ const Example = () => {
 };
 
 const NewMarketingPromotionTransaction = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     //Put this with your other react-query providers near root of your app

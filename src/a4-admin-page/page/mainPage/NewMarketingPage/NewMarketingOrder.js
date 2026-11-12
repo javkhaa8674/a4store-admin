@@ -15,9 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import {
   QueryClient,
@@ -42,52 +40,23 @@ import {
   query,
 } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Шинэ маркетингийн худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "phoneNumber",
-      displayLabel: "Утас",
-    },
-    {
-      key: "Name",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "timeStamp",
-      displayLabel: "Огноо",
-    },
-    {
-      key: "Level",
-      displayLabel: "Үе",
-    },
-    {
-      key: "index",
-      displayLabel: "Байрлал",
-    },
-    {
-      key: "type",
-      displayLabel: "Төрөл",
-    },
-    {
-      key: "SponsorId",
-      displayLabel: "Спонсор Id",
-    },
-    {
-      key: "SponsorName",
-      displayLabel: "Спонсорын нэр",
-    },
-    {
-      key: "bankName",
-      displayLabel: "Банкны нэр",
-    },
-    {
-      key: "bankNumber",
-      displayLabel: "Дансны дугаар",
-    },
+    { key: "phoneNumber", displayLabel: "Утас" },
+    { key: "Name", displayLabel: "Нэр" },
+    { key: "timeStamp", displayLabel: "Огноо" },
+    { key: "Level", displayLabel: "Үе" },
+    { key: "index", displayLabel: "Байрлал" },
+    { key: "type", displayLabel: "Төрөл" },
+    { key: "SponsorId", displayLabel: "Спонсор Id" },
+    { key: "SponsorName", displayLabel: "Спонсорын нэр" },
+    { key: "bankName", displayLabel: "Банкны нэр" },
+    { key: "bankNumber", displayLabel: "Дансны дугаар" },
   ],
 });
 
@@ -119,11 +88,7 @@ const Example = () => {
 
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: false,
-      },
+      { accessorKey: "id", header: "id", enableEditing: false },
       {
         accessorKey: "phoneNumber",
         header: "Утас",
@@ -132,44 +97,17 @@ const Example = () => {
           error: !!validationErrors?.phone,
           helperText: validationErrors?.phone,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              phone: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, phone: undefined }),
         },
       },
-      {
-        accessorKey: "Name",
-        header: "Овог нэр",
-      },
-      {
-        accessorKey: "Level",
-        header: "Үе",
-      },
-      {
-        accessorKey: "SponsorId",
-        header: "Cпонсор ID",
-      },
-      {
-        accessorKey: "SponsorName",
-        header: "Cпонсор нэр",
-      },
-      {
-        accessorKey: "index",
-        header: "Байрлал",
-      },
-      {
-        accessorKey: "type",
-        header: "Төрөл",
-      },
-      {
-        accessorKey: "bankName",
-        header: "Банкны нэр",
-      },
-      {
-        accessorKey: "bankNumber",
-        header: "Дансны дугаар",
-      },
+      { accessorKey: "Name", header: "Овог нэр" },
+      { accessorKey: "Level", header: "Үе" },
+      { accessorKey: "SponsorId", header: "Cпонсор ID" },
+      { accessorKey: "SponsorName", header: "Cпонсор нэр" },
+      { accessorKey: "index", header: "Байрлал" },
+      { accessorKey: "type", header: "Төрөл" },
+      { accessorKey: "bankName", header: "Банкны нэр" },
+      { accessorKey: "bankNumber", header: "Дансны дугаар" },
       {
         accessorKey: "timeStamp",
         header: "Гүйлгээний огноо",
@@ -192,10 +130,7 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["newMarketing/UserInfo"], (prevUsers) => [
           ...(prevUsers || []),
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
+          { ...newUserInfo, id: (Math.random() + 1).toString(36).substring(7) },
         ]);
       },
     });
@@ -497,46 +432,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const NewMarketingOrder = () => {
-  // ✅ useTheme биш useColorScheme
-  const { mode } = useColorScheme();
-
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: {
-            main: "rgb(255,122,0)",
-          },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none",
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem",
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink",
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <QueryClientProvider client={queryClient}>

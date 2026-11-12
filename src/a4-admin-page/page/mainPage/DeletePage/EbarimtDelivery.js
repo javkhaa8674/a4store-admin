@@ -15,9 +15,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
   TextField,
 } from "@mui/material";
 import {
@@ -42,36 +40,19 @@ import {
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
 import { RiFileExcel2Fill } from "react-icons/ri";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Ебаримт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "ID",
-      displayLabel: "Утас",
-    },
-    {
-      key: "Name",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "Count",
-      displayLabel: "Тоо хэмжээ",
-    },
-    {
-      key: "TimeStamps",
-      displayLabel: "Шийдвэрлэсэн огноо",
-    },
-    {
-      key: "Requester_TimeStamps",
-      displayLabel: "Хүсэлт гаргасан огноо",
-    },
-    {
-      key: "Description",
-      displayLabel: "Тайлбар",
-    },
+    { key: "ID", displayLabel: "Утас" },
+    { key: "Name", displayLabel: "Нэр" },
+    { key: "Count", displayLabel: "Тоо хэмжээ" },
+    { key: "TimeStamps", displayLabel: "Шийдвэрлэсэн огноо" },
+    { key: "Requester_TimeStamps", displayLabel: "Хүсэлт гаргасан огноо" },
+    { key: "Description", displayLabel: "Тайлбар" },
   ],
 });
 
@@ -81,12 +62,7 @@ const Example = () => {
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: false,
-        size: 80,
-      },
+      { accessorKey: "id", header: "id", enableEditing: false, size: 80 },
       {
         accessorKey: "deletedAt",
         header: "Устгасан огноо",
@@ -102,10 +78,7 @@ const Example = () => {
           helperText: validationErrors?.firstName,
           //remove any previous validation errors when user focuses on the input
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              firstName: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, firstName: undefined }),
           //optionally add validation checking for onBlur or onChange
         },
       },
@@ -119,19 +92,14 @@ const Example = () => {
           helperText: validationErrors?.phone,
           //remove any previous validation errors when user focuses on the input
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              phone: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, phone: undefined }),
         },
       },
       {
         accessorKey: "Count",
         header: "Тоо хэмжээ",
         size: 80,
-        muiEditTextFieldProps: {
-          type: "number",
-        },
+        muiEditTextFieldProps: { type: "number" },
       },
       {
         accessorKey: "TimeStamps",
@@ -151,10 +119,7 @@ const Example = () => {
           return dayjs(unixTimestamp).format("YYYY-MM-DD HH:mm:ss"); // Format using dayjs
         },
       },
-      {
-        accessorKey: "Description",
-        header: "Тайлбар",
-      },
+      { accessorKey: "Description", header: "Тайлбар" },
     ],
     [validationErrors],
   );
@@ -189,10 +154,7 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["delete/ebarimt"], (prevUsers) => [
           ...prevUsers,
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
+          { ...newUserInfo, id: (Math.random() + 1).toString(36).substring(7) },
         ]);
       },
       // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -326,16 +288,9 @@ const Example = () => {
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
-      ? {
-          color: "error",
-          children: "Error loading data",
-        }
+      ? { color: "error", children: "Error loading data" }
       : undefined,
-    muiTableContainerProps: {
-      sx: {
-        minHeight: "500px",
-      },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
     onEditingRowCancel: () => setValidationErrors({}),
@@ -435,47 +390,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const EbarimtDelivery = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
   return (
     //Put this with your other react-query providers near root of your app
     <QueryClientProvider client={queryClient}>

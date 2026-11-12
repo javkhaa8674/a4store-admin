@@ -5,33 +5,23 @@ import {
   Paper,
   TextField,
   CircularProgress,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import { db } from "refrence/realConfig";
 import { ref, onValue } from "firebase/database";
 import { MaterialReactTable } from "material-react-table";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import dayjs from "dayjs";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const BlackPromotionCalculation = () => {
-  const { mode } = useColorScheme();
   const [btAmount, setBtAmount] = useState(0);
   const [batAmount, setBatAmount] = useState(0);
   const [managerAmount, setManagerAmount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [exportData, setExportData] = useState([]);
 
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   const fetchData = async () => {
     setLoading(true);
@@ -156,38 +146,14 @@ const BlackPromotionCalculation = () => {
     fieldSeparator: ",",
     decimalSeparator: ".",
     columnHeaders: [
-      {
-        key: "MemberId",
-        displayLabel: "Утас",
-      },
-      {
-        key: "QuantityName",
-        displayLabel: "Нэр",
-      },
-      {
-        key: "accNumber",
-        displayLabel: "Дансны дугаар",
-      },
-      {
-        key: "accName",
-        displayLabel: "Банкны нэр",
-      },
-      {
-        key: "btCount",
-        displayLabel: "БТ",
-      },
-      {
-        key: "batCount",
-        displayLabel: "БАТ",
-      },
-      {
-        key: "managerCount",
-        displayLabel: "БМ",
-      },
-      {
-        key: "totalAmounts",
-        displayLabel: "Нийт мөнгөн дүн",
-      },
+      { key: "MemberId", displayLabel: "Утас" },
+      { key: "QuantityName", displayLabel: "Нэр" },
+      { key: "accNumber", displayLabel: "Дансны дугаар" },
+      { key: "accName", displayLabel: "Банкны нэр" },
+      { key: "btCount", displayLabel: "БТ" },
+      { key: "batCount", displayLabel: "БАТ" },
+      { key: "managerCount", displayLabel: "БМ" },
+      { key: "totalAmounts", displayLabel: "Нийт мөнгөн дүн" },
     ],
   });
 

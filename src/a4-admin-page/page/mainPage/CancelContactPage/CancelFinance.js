@@ -24,11 +24,9 @@ import {
   DialogTitle,
   Alert,
   Snackbar,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
-
+import { useTableTheme } from "../../../../theme/useTableTheme";
 // ---------------------------------------------------------------------------
 // Туслах функцууд
 // ---------------------------------------------------------------------------
@@ -94,13 +92,7 @@ const Example = () => {
             header: "Name",
             size: 250,
             Cell: ({ row }) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 <span>{row.original.Name ?? ""}</span>
               </Box>
             ),
@@ -173,11 +165,7 @@ const Example = () => {
             sortingFn: "datetime",
             Cell: ({ cell }) => cell.getValue()?.toLocaleDateString() ?? "",
             Header: ({ column }) => <em>{column.columnDef.header}</em>,
-            muiFilterTextFieldProps: {
-              sx: {
-                minWidth: "250px",
-              },
-            },
+            muiFilterTextFieldProps: { sx: { minWidth: "250px" } },
           },
         ],
       },
@@ -201,11 +189,7 @@ const Example = () => {
 
       await axios.post(
         "https://api-hw5amqni4q-uc.a.run.app/saveCancelContact",
-        {
-          efundCode,
-          amount,
-          memberId: rowOriginal?.MemberId,
-        },
+        { efundCode, amount, memberId: rowOriginal?.MemberId },
       );
 
       setSuccessMessage("Хүсэлт амжилттай илгээгдлээ!");
@@ -244,10 +228,7 @@ const Example = () => {
     },
     paginationDisplayMode: "pages",
     positionToolbarAlertBanner: "bottom",
-    muiSearchTextFieldProps: {
-      size: "small",
-      variant: "outlined",
-    },
+    muiSearchTextFieldProps: { size: "small", variant: "outlined" },
     muiPaginationProps: {
       color: "secondary",
       rowsPerPageOptions: [10, 20, 30],
@@ -258,11 +239,7 @@ const Example = () => {
     // -----------------------------------------------------------------------
     // PromotionTransaction-той ижил: зөвхөн muiTableContainerProps
     // -----------------------------------------------------------------------
-    muiTableContainerProps: {
-      sx: {
-        minHeight: "500px",
-      },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
 
     renderRowActionMenuItems: ({ closeMenu, row }) => [
       <MenuItem
@@ -312,9 +289,7 @@ const Example = () => {
         // Гар утасны scroll-ыг гөлгөр болгох
         WebkitOverflowScrolling: "touch",
         // Scrollbar-ыг нимгэн болгох (сонголтоор)
-        "&::-webkit-scrollbar": {
-          height: "6px",
-        },
+        "&::-webkit-scrollbar": { height: "6px" },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "rgba(0,0,0,0.3)",
           borderRadius: "3px",
@@ -366,27 +341,14 @@ const Example = () => {
         label: "Е-Баримт авсан дүн",
         value: formatCurrency(selectedRow.Ebarimt || 0),
       },
-      {
-        label: "Бүтээгдэхүүн авсан тоо",
-        value: selectedRow.Product || "0",
-      },
-      {
-        label: "Банк нэр",
-        value: selectedRow.accName ?? "",
-      },
-      {
-        label: "Дансны дугаар",
-        value: selectedRow.accNumber ?? "",
-      },
+      { label: "Бүтээгдэхүүн авсан тоо", value: selectedRow.Product || "0" },
+      { label: "Банк нэр", value: selectedRow.accName ?? "" },
+      { label: "Дансны дугаар", value: selectedRow.accNumber ?? "" },
     ];
 
     return (
       <div
-        style={{
-          marginTop: "40px",
-          display: "flex",
-          justifyContent: "center",
-        }}
+        style={{ marginTop: "40px", display: "flex", justifyContent: "center" }}
       >
         <div
           style={{
@@ -410,12 +372,8 @@ const Example = () => {
               color={field.color || "primary"}
               sx={{
                 marginBottom: "20px",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                },
-                "& .MuiFormHelperText-root": {
-                  color: "#ff9800",
-                },
+                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                "& .MuiFormHelperText-root": { color: "#ff9800" },
               }}
             />
           ))}
@@ -436,13 +394,9 @@ const Example = () => {
               marginBottom: "20px",
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
-                "&.Mui-error": {
-                  borderColor: "#ff9800",
-                },
+                "&.Mui-error": { borderColor: "#ff9800" },
               },
-              "& .MuiFormHelperText-root": {
-                color: "#ff9800",
-              },
+              "& .MuiFormHelperText-root": { color: "#ff9800" },
             }}
           />
 
@@ -525,45 +479,7 @@ const Example = () => {
 };
 
 const CancelFinance = () => {
-  const { mode } = useColorScheme(); // PromotionTransaction-той ижил
-
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: {
-            main: "rgb(255,122,0)",
-          },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none",
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem",
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink",
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>

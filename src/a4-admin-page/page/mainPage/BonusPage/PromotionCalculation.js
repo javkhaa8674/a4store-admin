@@ -3,9 +3,7 @@ import {
   Button,
   Grid,
   CircularProgress,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
   Typography,
 } from "@mui/material";
 import { db } from "refrence/realConfig";
@@ -18,6 +16,7 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import { read, utils } from "xlsx";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import dayjs from "dayjs";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Урамшуулал-тооцоолол-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
@@ -99,10 +98,7 @@ const Example = () => {
           if (snapshot.exists()) {
             const BlackRef = [];
             snapshot.forEach((childSnapshot) => {
-              BlackRef.push({
-                id: childSnapshot.key,
-                ...childSnapshot.val(),
-              });
+              BlackRef.push({ id: childSnapshot.key, ...childSnapshot.val() });
             });
             resolve(BlackRef);
           } else {
@@ -387,9 +383,7 @@ const Example = () => {
     },
 
     // ★ Paper-ийн overflow-ыг чөлөөлөх
-    muiTablePaperProps: {
-      sx: { overflow: "visible" },
-    },
+    muiTablePaperProps: { sx: { overflow: "visible" } },
 
     // ★ Товчнуудыг toolbar руу зөөх
     renderTopToolbarCustomActions: () => (
@@ -463,32 +457,7 @@ const Example = () => {
 
 // ★ PromotionCalculation — theme + Typography + Example
 const PromotionCalculation = () => {
-  const { mode } = useColorScheme();
-
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: { main: "rgb(255,122,0)" },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: { textTransform: "none", fontSize: "1.2rem" },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
-          },
-          MuiSwitch: {
-            styleOverrides: { thumb: { color: "pink" } },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <ThemeProvider theme={tableTheme}>

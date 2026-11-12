@@ -14,9 +14,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
   TextField,
 } from "@mui/material";
 import {
@@ -45,6 +43,7 @@ import {
 } from "firebase/database";
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const date = new Date();
 
@@ -143,10 +142,7 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["promotion"], (prevUsers = []) => [
           ...prevUsers,
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
+          { ...newUserInfo, id: (Math.random() + 1).toString(36).substring(7) },
         ]);
       },
       onSettled: () =>
@@ -190,10 +186,7 @@ const Example = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        const updatedData = {
-          ...user,
-          ID: Number(user.ID),
-        };
+        const updatedData = { ...user, ID: Number(user.ID) };
         const userRef = ref(db, `promotionTransaction/${updatedData.id}`);
         await update(userRef, updatedData);
         return Promise.resolve();
@@ -313,9 +306,7 @@ const Example = () => {
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? { color: "error", children: "Error loading data" }
       : undefined,
-    muiTableContainerProps: {
-      sx: { minHeight: "500px" },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
 
     // ★ Toolbar-д хэвтээ scroll нэмэх
     muiTopToolbarProps: {
@@ -333,9 +324,7 @@ const Example = () => {
     },
 
     // ★ Paper-ийн overflow-ыг чөлөөлөх (scroll ажиллахын тулд)
-    muiTablePaperProps: {
-      sx: { overflow: "visible" },
-    },
+    muiTablePaperProps: { sx: { overflow: "visible" } },
 
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
@@ -378,10 +367,7 @@ const Example = () => {
             enableSorting
             enableColumnOrdering
             initialState={{ showGlobalFilter: true }}
-            dialogProps={{
-              maxWidth: "sm",
-              fullWidth: true,
-            }}
+            dialogProps={{ maxWidth: "sm", fullWidth: true }}
           />
         </DialogContent>
         <DialogActions>
@@ -507,31 +493,7 @@ const Example = () => {
 };
 
 const PromotionTransaction = () => {
-  const { mode } = useColorScheme();
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: { main: "rgb(255,122,0)" },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: { textTransform: "none", fontSize: "1.2rem" },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
-          },
-          MuiSwitch: {
-            styleOverrides: { thumb: { color: "pink" } },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <QueryClientProvider client={queryClient}>

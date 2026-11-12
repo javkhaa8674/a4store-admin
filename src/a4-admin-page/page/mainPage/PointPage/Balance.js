@@ -15,9 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import {
   QueryClient,
@@ -34,36 +32,19 @@ import dayjs from "dayjs";
 import { ref, remove } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import axios from "storeaxios";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "pointId",
-      displayLabel: "id",
-    },
-    {
-      key: "balance",
-      displayLabel: "Баланс",
-    },
-    {
-      key: "phone",
-      displayLabel: "Утас",
-    },
-    {
-      key: "email",
-      displayLabel: "И-Мэйл",
-    },
-    {
-      key: "lastName",
-      displayLabel: "Овог",
-    },
-    {
-      key: "firstName",
-      displayLabel: "Нэр",
-    },
+    { key: "pointId", displayLabel: "id" },
+    { key: "balance", displayLabel: "Баланс" },
+    { key: "phone", displayLabel: "Утас" },
+    { key: "email", displayLabel: "И-Мэйл" },
+    { key: "lastName", displayLabel: "Овог" },
+    { key: "firstName", displayLabel: "Нэр" },
   ],
   quoteStrings: '"',
 });
@@ -103,11 +84,7 @@ const Example = () => {
 
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "pointId",
-        header: "id",
-        enableClickToCopy: true,
-      },
+      { accessorKey: "pointId", header: "id", enableClickToCopy: true },
       {
         accessorKey: "balance",
         header: "Баланс",
@@ -135,22 +112,10 @@ const Example = () => {
         },
         enableClickToCopy: true,
       },
-      {
-        accessorKey: "phone",
-        header: "Утас",
-      },
-      {
-        accessorKey: "email",
-        header: "И-Мэйл",
-      },
-      {
-        accessorKey: "lastName",
-        header: "Овог",
-      },
-      {
-        accessorKey: "firstName",
-        header: "Нэр",
-      },
+      { accessorKey: "phone", header: "Утас" },
+      { accessorKey: "email", header: "И-Мэйл" },
+      { accessorKey: "lastName", header: "Овог" },
+      { accessorKey: "firstName", header: "Нэр" },
     ],
     [],
   );
@@ -458,12 +423,7 @@ const Example = () => {
         },
       },
     },
-    initialState: {
-      columnVisibility: {
-        pointId: false,
-        email: false,
-      },
-    },
+    initialState: { columnVisibility: { pointId: false, email: false } },
     state: {
       isLoading: isLoading,
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
@@ -506,48 +466,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Balance = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">

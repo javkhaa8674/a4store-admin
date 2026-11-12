@@ -15,9 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import {
   QueryClient,
@@ -42,60 +40,25 @@ import {
   push,
 } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Устгасан Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "deleteAt",
-      displayLabel: "Устгасан огноо",
-    },
-    {
-      key: "MemberId",
-      displayLabel: "Утас",
-    },
-    {
-      key: "QuantityName",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "timeStamp",
-      displayLabel: "Огноо",
-    },
-    {
-      key: "Level",
-      displayLabel: "Шат",
-    },
-    {
-      key: "RankName",
-      displayLabel: "Цол",
-    },
-    {
-      key: "InviterPercent",
-      displayLabel: "Уригчид олгох хувь",
-    },
-    {
-      key: "SponsorId",
-      displayLabel: "Спонсор Id",
-    },
-    {
-      key: "SponsorName",
-      displayLabel: "Спонсорын нэр",
-    },
-    {
-      key: "InviterId",
-      displayLabel: "Уригчийн Id",
-    },
-    {
-      key: "InviterName",
-      displayLabel: "Уригчийн нэр",
-    },
-    {
-      key: "isBlackMember",
-      displayLabel: "BlackVIP",
-    },
+    { key: "deleteAt", displayLabel: "Устгасан огноо" },
+    { key: "MemberId", displayLabel: "Утас" },
+    { key: "QuantityName", displayLabel: "Нэр" },
+    { key: "timeStamp", displayLabel: "Огноо" },
+    { key: "Level", displayLabel: "Шат" },
+    { key: "RankName", displayLabel: "Цол" },
+    { key: "InviterPercent", displayLabel: "Уригчид олгох хувь" },
+    { key: "SponsorId", displayLabel: "Спонсор Id" },
+    { key: "SponsorName", displayLabel: "Спонсорын нэр" },
+    { key: "InviterId", displayLabel: "Уригчийн Id" },
+    { key: "InviterName", displayLabel: "Уригчийн нэр" },
+    { key: "isBlackMember", displayLabel: "BlackVIP" },
   ],
 });
 
@@ -133,10 +96,7 @@ const Example = () => {
         Cell: ({ cell }) =>
           dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
       },
-      {
-        accessorKey: "MemberId",
-        header: "ID",
-      },
+      { accessorKey: "MemberId", header: "ID" },
       {
         accessorKey: "QuantityName",
         header: "Нэр",
@@ -145,58 +105,30 @@ const Example = () => {
           error: !!validationErrors?.name,
           helperText: validationErrors?.name,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              name: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, name: undefined }),
         },
       },
-      {
-        accessorKey: "timeStamp",
-        header: "Бүртгүүлсэн огноо",
-        size: 80,
-      },
-      {
-        accessorKey: "ProductName",
-        header: "Бүтээгдэхүүн сонголт",
-        size: 80,
-      },
-      {
-        accessorKey: "Level",
-        header: "Шат",
-      },
+      { accessorKey: "timeStamp", header: "Бүртгүүлсэн огноо", size: 80 },
+      { accessorKey: "ProductName", header: "Бүтээгдэхүүн сонголт", size: 80 },
+      { accessorKey: "Level", header: "Шат" },
       {
         accessorKey: "InviterPercent",
         header: "Уригчид олгох хувь",
         Cell: ({ cell }) => cell.getValue() ?? "N/A",
       },
-      {
-        accessorKey: "RankName",
-        header: "Зэрэглэлийн нэр",
-        size: 80,
-      },
+      { accessorKey: "RankName", header: "Зэрэглэлийн нэр", size: 80 },
       {
         accessorKey: "SponsorId",
         header: "Спонсор ID",
-        muiEditTextFieldProps: {
-          type: "number",
-        },
+        muiEditTextFieldProps: { type: "number" },
       },
-      {
-        accessorKey: "SponsorName",
-        header: "Спонсор нэр",
-      },
+      { accessorKey: "SponsorName", header: "Спонсор нэр" },
       {
         accessorKey: "InviterId",
         header: "Урьсан хүн ID",
-        muiEditTextFieldProps: {
-          type: "number",
-        },
+        muiEditTextFieldProps: { type: "number" },
       },
-      {
-        accessorKey: "InviterName",
-        header: "Урьсан хүн нэр",
-      },
+      { accessorKey: "InviterName", header: "Урьсан хүн нэр" },
       {
         accessorKey: "isBlackMember",
         header: "BlackMemberShip эсэх",
@@ -217,10 +149,7 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["delete/userInfo"], (prevUsers) => [
           ...(prevUsers || []),
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
+          { ...newUserInfo, id: (Math.random() + 1).toString(36).substring(7) },
         ]);
       },
     });
@@ -528,48 +457,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const DeleteUserInfo = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">

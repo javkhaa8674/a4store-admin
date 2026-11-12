@@ -14,8 +14,6 @@ import {
   TextField,
   Typography,
   ThemeProvider,
-  useColorScheme,
-  createTheme,
   IconButton, // ★ НЭМЭХ
   Tooltip, // ★ НЭМЭХ
 } from "@mui/material";
@@ -44,40 +42,20 @@ import {
 } from "firebase/database";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import { read, utils } from "xlsx";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Гүйлгээний мэдээлэл-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "tranPostedDate",
-      displayLabel: "Гүйлгээний огноо",
-    },
-    {
-      key: "tranDescEdit",
-      displayLabel: "Тайлбар",
-    },
-    {
-      key: "memberId",
-      displayLabel: "Утас",
-    },
-    {
-      key: "tranDesc",
-      displayLabel: "Гүйлгээний утга",
-    },
-    {
-      key: "accName",
-      displayLabel: "Харьцсан дансны нэр",
-    },
-    {
-      key: "accNum",
-      displayLabel: "Харьцсан данс",
-    },
-    {
-      key: "tranAmount",
-      displayLabel: "Мөнгөн дүн",
-    },
+    { key: "tranPostedDate", displayLabel: "Гүйлгээний огноо" },
+    { key: "tranDescEdit", displayLabel: "Тайлбар" },
+    { key: "memberId", displayLabel: "Утас" },
+    { key: "tranDesc", displayLabel: "Гүйлгээний утга" },
+    { key: "accName", displayLabel: "Харьцсан дансны нэр" },
+    { key: "accNum", displayLabel: "Харьцсан данс" },
+    { key: "tranAmount", displayLabel: "Мөнгөн дүн" },
   ],
 });
 
@@ -123,11 +101,7 @@ const Example = () => {
           dayjs(cell.getValue()).format("YYYY-MM-DD HH:mm:ss"),
       },
 
-      {
-        accessorKey: "tranDescEdit",
-        header: "Тайлбар",
-        enableEditing: true,
-      },
+      { accessorKey: "tranDescEdit", header: "Тайлбар", enableEditing: true },
       {
         accessorKey: "memberId",
         header: "Утас",
@@ -156,11 +130,7 @@ const Example = () => {
         type: "number",
         enableEditing: true,
       },
-      {
-        accessorKey: "id",
-        header: "id",
-        enableEditing: true,
-      },
+      { accessorKey: "id", header: "id", enableEditing: true },
     ],
     [],
   );
@@ -525,48 +495,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const DeleteStatements = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <QueryClientProvider client={queryClient}>

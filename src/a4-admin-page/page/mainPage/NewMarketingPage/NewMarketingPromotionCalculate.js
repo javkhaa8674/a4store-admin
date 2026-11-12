@@ -4,8 +4,6 @@ import {
   Button,
   Typography,
   ThemeProvider,
-  useColorScheme,
-  createTheme,
   TextField,
   MenuItem,
 } from "@mui/material";
@@ -19,6 +17,7 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import * as XLSX from "xlsx";
 import { Single, Double, Triple, bankInfo } from "./setData";
 import dayjs from "dayjs";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const NewMarketingPromotionCalculate = () => {
   const [data, setData] = useState([]);
@@ -40,10 +39,7 @@ const NewMarketingPromotionCalculate = () => {
 
       if (fetchedData && fetchedData2) {
         const promotion = generateSummary(
-          Object.entries(fetchedData2).map(([id, data]) => ({
-            id,
-            ...data,
-          })),
+          Object.entries(fetchedData2).map(([id, data]) => ({ id, ...data })),
         );
         const userinfo = getSponsorLevel(
           Object.entries(fetchedData).map(([id, data]) => ({
@@ -343,11 +339,7 @@ const NewMarketingPromotionCalculate = () => {
       `${row.phoneNumber}-${row.type}-${row.set}-${index}`,
 
     // ✅ Transaction-той ижил
-    muiTableContainerProps: {
-      sx: {
-        minHeight: "500px",
-      },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
 
     // ✅ Transaction-той ижил: renderTopToolbarCustomActions
     renderTopToolbarCustomActions: () => (
@@ -390,44 +382,7 @@ const NewMarketingPromotionCalculate = () => {
 
 // ✅ Transaction-той ижил бүтэц: Typography ThemeProvider-ээс ГАДУУР
 const NewMarketingPromotionCalculatePage = () => {
-  const { mode } = useColorScheme();
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: {
-            main: "rgb(255,122,0)",
-          },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none",
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem",
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink",
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <Box>

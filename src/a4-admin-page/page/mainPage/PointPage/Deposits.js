@@ -15,10 +15,8 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useColorScheme,
   ThemeProvider,
   Chip,
-  createTheme,
 } from "@mui/material";
 import {
   QueryClient,
@@ -35,52 +33,23 @@ import dayjs from "dayjs";
 import { ref, set, update, remove } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import axios from "storeaxios";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
   filename: `Хадгаламж-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
-    {
-      key: "id",
-      displayLabel: "id",
-    },
-    {
-      key: "userId",
-      displayLabel: "userId",
-    },
-    {
-      key: "status",
-      displayLabel: "Төлөв",
-    },
-    {
-      key: "phone",
-      displayLabel: "Утас",
-    },
-    {
-      key: "lastName",
-      displayLabel: "Овог",
-    },
-    {
-      key: "firstName",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "interestRate",
-      displayLabel: "Хүү",
-    },
-    {
-      key: "duration",
-      displayLabel: "Хүү",
-    },
-    {
-      key: "startDate",
-      displayLabel: "Эхлэх огноо",
-    },
-    {
-      key: "endDate",
-      displayLabel: "Дуусах огноо",
-    },
+    { key: "id", displayLabel: "id" },
+    { key: "userId", displayLabel: "userId" },
+    { key: "status", displayLabel: "Төлөв" },
+    { key: "phone", displayLabel: "Утас" },
+    { key: "lastName", displayLabel: "Овог" },
+    { key: "firstName", displayLabel: "Нэр" },
+    { key: "interestRate", displayLabel: "Хүү" },
+    { key: "duration", displayLabel: "Хүү" },
+    { key: "startDate", displayLabel: "Эхлэх огноо" },
+    { key: "endDate", displayLabel: "Дуусах огноо" },
   ],
 });
 
@@ -112,14 +81,8 @@ const Example = () => {
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id",
-        header: "id",
-      },
-      {
-        accessorKey: "userId",
-        header: "userId",
-      },
+      { accessorKey: "id", header: "id" },
+      { accessorKey: "userId", header: "userId" },
       {
         accessorKey: "status",
         header: "Төлөв",
@@ -144,22 +107,10 @@ const Example = () => {
           return <Chip label={label} color={color} size="small" />;
         },
       },
-      {
-        accessorKey: "phone",
-        header: "Утас",
-      },
-      {
-        accessorKey: "lastName",
-        header: "Овог",
-      },
-      {
-        accessorKey: "firstName",
-        header: "Нэр",
-      },
-      {
-        accessorKey: "amount",
-        header: "Дүн",
-      },
+      { accessorKey: "phone", header: "Утас" },
+      { accessorKey: "lastName", header: "Овог" },
+      { accessorKey: "firstName", header: "Нэр" },
+      { accessorKey: "amount", header: "Дүн" },
       {
         accessorKey: "duration",
         header: "Хугацаа",
@@ -207,10 +158,7 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["deposits"], (prevUsers) => [
           ...(prevUsers || []),
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
+          { ...newUserInfo, id: (Math.random() + 1).toString(36).substring(7) },
         ]);
       },
     });
@@ -226,9 +174,7 @@ const Example = () => {
             console.log("fetchAll enabled");
             const result = await axios.post(
               `/getDeposits`,
-              {
-                senderId: null,
-              },
+              { senderId: null },
               {
                 headers: {
                   "Content-Type": "application/json",
@@ -242,9 +188,7 @@ const Example = () => {
             console.log(searchTerm);
             const result = await axios.post(
               `/getDepositById?phone=${searchTerm}`,
-              {
-                senderId: null,
-              },
+              { senderId: null },
               {
                 headers: {
                   "Content-Type": "application/json",
@@ -476,12 +420,7 @@ const Example = () => {
         },
       },
     },
-    initialState: {
-      columnVisibility: {
-        id: false,
-        userId: false,
-      },
-    },
+    initialState: { columnVisibility: { id: false, userId: false } },
     state: {
       isLoading: isLoading,
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
@@ -522,48 +461,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Deposits = () => {
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">

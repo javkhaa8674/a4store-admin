@@ -18,9 +18,7 @@ import {
   MenuItem,
   Tooltip,
   IconButton,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import { db } from "refrence/realConfig";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -29,6 +27,7 @@ import TugrikFormatter from "../../components/TugrikFormatter";
 import NewMarketingTeamStructure from "./TeamStructure";
 import DoneIcon from "@mui/icons-material/Done";
 import { Single, Double, Triple } from "./setData";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const ReactMaterialTable = ({ setCurrentPage, setData }) => {
   const [memberList, setMemberList] = useState([]);
@@ -135,13 +134,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         header: "Идэвхийн урамшуулал",
         size: 100,
         Cell: ({ cell, row }) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             {row.original.level <= receivedMoney.promoEffortStatus && (
               <DoneIcon color="success" />
             )}
@@ -163,13 +156,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         size: 100,
         Cell: ({ cell }) => {
           return (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: "1rem",
-              }}
-            >
+            <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
               <span>
                 <TugrikFormatter amount={cell.getValue()} />
               </span>
@@ -209,13 +196,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
           },
         }),
         Cell: ({ cell, row }) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             {row.original.level <= receivedMoney.invite1personStatus && (
               <DoneIcon color="success" />
             )}
@@ -243,13 +224,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
           },
         }),
         Cell: ({ cell, row }) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             {row.original.level <= receivedMoney.invite2personStatus && (
               <DoneIcon color="success" />
             )}
@@ -277,13 +252,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
           },
         }),
         Cell: ({ cell, row }) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             {row.original.level <= receivedMoney.invite3personStatus && (
               <DoneIcon color="success" />
             )}
@@ -311,13 +280,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
           },
         }),
         Cell: ({ cell, row }) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             {row.original.level <= receivedMoney.invite4personStatus && (
               <DoneIcon color="success" />
             )}
@@ -383,10 +346,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
 
       if (memberResult.exists()) {
         let memberData = Object.entries(memberResult.val()).map(
-          ([id, data]) => ({
-            id,
-            ...data,
-          }),
+          ([id, data]) => ({ id, ...data }),
         );
 
         if (memberData.length > 0) {
@@ -451,10 +411,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
 
       if (promotionResult.exists()) {
         let promotionData = Object.entries(promotionResult.val()).map(
-          ([id, data]) => ({
-            id,
-            ...data,
-          }),
+          ([id, data]) => ({ id, ...data }),
         );
         promotionData.filter((obj) => obj.Set === currentType);
         promotionData.forEach((element) => {
@@ -567,16 +524,11 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         left: ["mrt-row-expand", "mrt-row-select"],
         right: ["mrt-row-actions"],
       },
-      pagination: {
-        pageSize: 20,
-      },
+      pagination: { pageSize: 20 },
     },
     paginationDisplayMode: "pages",
     positionToolbarAlertBanner: "bottom",
-    muiSearchTextFieldProps: {
-      size: "small",
-      variant: "outlined",
-    },
+    muiSearchTextFieldProps: { size: "small", variant: "outlined" },
     muiPaginationProps: {
       color: "secondary",
       rowsPerPageOptions: [20, 30, 40],
@@ -585,19 +537,10 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
     },
 
     // ✅ өмнөх загвартай ижил: table container
-    muiTableContainerProps: {
-      sx: {
-        minHeight: "500px",
-      },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
 
     muiTableFooterRowProps: {
-      sx: {
-        "& .MuiTableCell-root": {
-          fontSize: "18px",
-          fontWeight: "bold",
-        },
-      },
+      sx: { "& .MuiTableCell-root": { fontSize: "18px", fontWeight: "bold" } },
     },
 
     // ✅ өмнөх загвартай ижил: toolbar background lighten
@@ -672,46 +615,7 @@ const NewMarketingCalculate = () => {
   const [currentPage, setCurrentPage] = useState("table");
   const [data, setData] = useState([]);
 
-  // ✅ өмнөх загвартай ижил: useColorScheme + createTheme + ThemeProvider
-  const { mode } = useColorScheme();
-
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          info: {
-            main: "rgb(255,122,0)",
-          },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none",
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem",
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink",
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>

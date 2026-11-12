@@ -14,9 +14,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
   TextField,
 } from "@mui/material";
 import {
@@ -43,7 +41,7 @@ import {
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
 import { RiFileExcel2Fill } from "react-icons/ri";
-
+import { useTableTheme } from "../../../../theme/useTableTheme";
 // ---------- Firebase зам ----------
 const EBARIMT_PATH = "ebarimt";
 
@@ -88,10 +86,7 @@ const Example = () => {
           error: !!validationErrors?.firstName,
           helperText: validationErrors?.firstName,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              firstName: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, firstName: undefined }),
         },
       },
       {
@@ -104,19 +99,14 @@ const Example = () => {
           error: !!validationErrors?.phone,
           helperText: validationErrors?.phone,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              phone: undefined,
-            }),
+            setValidationErrors({ ...validationErrors, phone: undefined }),
         },
       },
       {
         accessorKey: "Count",
         header: "Тоо хэмжээ",
         size: 80,
-        muiEditTextFieldProps: {
-          type: "number",
-        },
+        muiEditTextFieldProps: { type: "number" },
       },
       {
         accessorKey: "TimeStamps",
@@ -148,10 +138,7 @@ const Example = () => {
           return d.isValid() ? d.format("YYYY-MM-DD HH:mm:ss") : "—";
         },
       },
-      {
-        accessorKey: "Description",
-        header: "Тайлбар",
-      },
+      { accessorKey: "Description", header: "Тайлбар" },
     ],
     [validationErrors],
   );
@@ -366,9 +353,7 @@ const Example = () => {
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? { color: "error", children: "Error loading data" }
       : undefined,
-    muiTableContainerProps: {
-      sx: { minHeight: "500px" },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateUser,
     onEditingRowCancel: () => setValidationErrors({}),
@@ -444,9 +429,7 @@ const Example = () => {
         // Гар утасны scroll-ыг гөлгөр болгох
         WebkitOverflowScrolling: "touch",
         // Scrollbar-ыг нимгэн болгох (сонголтоор)
-        "&::-webkit-scrollbar": {
-          height: "6px",
-        },
+        "&::-webkit-scrollbar": { height: "6px" },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "rgba(0,0,0,0.3)",
           borderRadius: "3px",
@@ -493,32 +476,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const Ebarimt = () => {
-  const { mode } = useColorScheme();
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-
-          info: { main: "rgb(255,122,0)" },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: { textTransform: "none", fontSize: "1.2rem" },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
-          },
-          MuiSwitch: {
-            styleOverrides: { thumb: { color: "pink" } },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <QueryClientProvider client={queryClient}>

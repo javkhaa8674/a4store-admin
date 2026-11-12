@@ -15,9 +15,7 @@ import {
   Tooltip,
   TextField,
   Typography,
-  useColorScheme,
   ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import {
   QueryClient,
@@ -42,6 +40,7 @@ import {
   query,
 } from "firebase/database";
 import { db } from "refrence/realConfig";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 // ---------- Black мөрүүдэд автоматаар оноох утгууд ----------
 const BLACK_DEFAULT_PRODUCT = "Скийнбүүстер";
@@ -516,9 +515,7 @@ const Example = () => {
         // Гар утасны scroll-ыг гөлгөр болгох
         WebkitOverflowScrolling: "touch",
         // Scrollbar-ыг нимгэн болгох (сонголтоор)
-        "&::-webkit-scrollbar": {
-          height: "6px",
-        },
+        "&::-webkit-scrollbar": { height: "6px" },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "rgba(0,0,0,0.3)",
           borderRadius: "3px",
@@ -579,32 +576,7 @@ const Example = () => {
 const queryClient = new QueryClient();
 
 const CombinedUserInfo = () => {
-  const { mode } = useColorScheme();
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-
-          info: { main: "rgb(255,122,0)" },
-          background: {
-            default: mode === "light" ? "rgb(254,255,244)" : "#000",
-          },
-        },
-        typography: {
-          button: { textTransform: "none", fontSize: "1.2rem" },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: { tooltip: { fontSize: "1.1rem" } },
-          },
-          MuiSwitch: {
-            styleOverrides: { thumb: { color: "pink" } },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   return (
     <QueryClientProvider client={queryClient}>

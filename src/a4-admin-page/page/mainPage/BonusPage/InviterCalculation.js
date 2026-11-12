@@ -1,13 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import {
-  Button,
-  Typography,
-  Paper,
-  Grid,
-  ThemeProvider,
-  useColorScheme,
-  createTheme,
-} from "@mui/material";
+import { Button, Typography, Paper, Grid, ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -18,6 +10,7 @@ import { ref, onValue } from "firebase/database";
 import { MaterialReactTable } from "material-react-table";
 import * as XLSX from "xlsx";
 import "dayjs/locale/mn";
+import { useTableTheme } from "../../../../theme/useTableTheme";
 
 dayjs.extend(localizedFormat);
 
@@ -25,48 +18,7 @@ const InviterCalculation = () => {
   const [data, setData] = useState([]);
   const [membersData, setMembersData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
-  const { mode } = useColorScheme(); //(optional) if you already have a theme defined in your app root, you can import here
-  const tableTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode, //let's use the same dark/light mode as the global theme
-
-          info: {
-            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
-          },
-          background: {
-            default:
-              mode === "light"
-                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
-                : "#000", //pure black table in dark mode for fun
-          },
-        },
-        typography: {
-          button: {
-            textTransform: "none", //customize typography styles for all buttons in table by default
-            fontSize: "1.2rem",
-          },
-        },
-        components: {
-          MuiTooltip: {
-            styleOverrides: {
-              tooltip: {
-                fontSize: "1.1rem", //override to make tooltip font size larger
-              },
-            },
-          },
-          MuiSwitch: {
-            styleOverrides: {
-              thumb: {
-                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
-              },
-            },
-          },
-        },
-      }),
-    [mode],
-  );
+  const tableTheme = useTableTheme();
 
   // Handle Date change
   const handleDateChange = (newValue) => {
