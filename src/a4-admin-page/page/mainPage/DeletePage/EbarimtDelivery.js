@@ -1,11 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  // createRow,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -13,10 +8,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  TextField,
+  ThemeProvider,
   Tooltip,
   Typography,
-  ThemeProvider,
-  TextField,
 } from "@mui/material";
 import {
   QueryClient,
@@ -25,21 +20,26 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import {
-  ref,
-  get,
-  update,
-  remove,
-  orderByChild,
-  equalTo,
-  query,
-} from "firebase/database";
-import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import {
+  equalTo,
+  get,
+  orderByChild,
+  query,
+  ref,
+  remove,
+  update,
+} from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  // createRow,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
 import { RiFileExcel2Fill } from "react-icons/ri";
+import { db } from "refrence/realConfig";
 import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
@@ -145,7 +145,7 @@ const Example = () => {
   function useCreateUser() {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
+      mutationFn: async () => {
         //send api update request here
         await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
         return Promise.resolve();
@@ -337,7 +337,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"

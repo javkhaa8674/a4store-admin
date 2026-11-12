@@ -1,22 +1,18 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState, useRef } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
+  Chip,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
-  Tooltip,
   TextField,
-  Typography,
   ThemeProvider,
-  Chip,
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import {
   QueryClient,
@@ -25,16 +21,20 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { RiFileExcel2Fill } from "react-icons/ri";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import dayjs from "dayjs";
-import { ref, update, remove } from "firebase/database";
-import { db, auth } from "refrence/realConfig";
-import { read, utils } from "xlsx";
-import axiosA4 from "storeaxios";
 import axios from "axios";
+import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import { ref, remove, update } from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useRef, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
+import { auth, db } from "refrence/realConfig";
+import axiosA4 from "storeaxios";
+import { read, utils } from "xlsx";
 import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const csvConfig = mkConfig({
@@ -53,7 +53,7 @@ const csvConfig = mkConfig({
   quoteStrings: '"',
 });
 
-function validateUser(user) {
+function validateUser() {
   return {};
 }
 
@@ -273,7 +273,7 @@ const Example = () => {
     useDeleteUser();
 
   // ★ handleCreateTransactions - createUser ашиглах
-  const handleCreateTransactions = async ({ values, table }) => {
+  const handleCreateTransactions = async ({ table }) => {
     if (!importData || importData.length === 0) {
       alert("Файл оруулаагүй байна.");
       return;

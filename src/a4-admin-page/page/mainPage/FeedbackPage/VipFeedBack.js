@@ -1,10 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -12,10 +8,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  Tooltip,
   TextField,
-  Typography,
   ThemeProvider,
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import {
   QueryClient,
@@ -24,14 +20,18 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { RiFileExcel2Fill } from "react-icons/ri";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
-import { ref, get, set, update, remove } from "firebase/database";
-import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import "dayjs/locale/mn";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import { get, ref, remove, set, update } from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
+import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const status = ["Active", "Inactive"];
@@ -53,7 +53,7 @@ const csvConfig = mkConfig({
   ],
 });
 
-function validateUser(user) {
+function validateUser() {
   return {};
 }
 
@@ -359,7 +359,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"

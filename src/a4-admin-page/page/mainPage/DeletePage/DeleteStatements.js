@@ -1,24 +1,18 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete"; // ★ НЭМЭХ
+import EditIcon from "@mui/icons-material/Edit"; // ★ НЭМЭХ
 import {
   Box,
   Button,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   TextField,
+  ThemeProvider, // ★ НЭМЭХ
+  Tooltip,
   Typography,
-  ThemeProvider,
-  IconButton, // ★ НЭМЭХ
-  Tooltip, // ★ НЭМЭХ
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit"; // ★ НЭМЭХ
-import DeleteIcon from "@mui/icons-material/Delete"; // ★ НЭМЭХ
 import {
   QueryClient,
   QueryClientProvider,
@@ -26,20 +20,26 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { RiFileExcel2Fill } from "react-icons/ri";
 import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
 import {
-  ref,
+  equalTo,
   get,
+  orderByChild,
+  push,
+  query,
+  ref,
+  remove,
   set,
   update,
-  remove,
-  push,
-  orderByChild,
-  equalTo,
-  query,
 } from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import { read, utils } from "xlsx";
 import { useTableTheme } from "../../../../theme/useTableTheme";
@@ -59,7 +59,7 @@ const csvConfig = mkConfig({
   ],
 });
 
-function validateUser(user) {
+function validateUser() {
   return {};
 }
 
@@ -423,7 +423,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"

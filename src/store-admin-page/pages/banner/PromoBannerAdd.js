@@ -1,24 +1,24 @@
-import React, { useState } from "react";
+import AddIcon from "@mui/icons-material/Add";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
+  Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   IconButton,
+  TextField,
   Tooltip,
   Typography,
-  Box,
-  CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { doc, updateDoc, arrayUnion } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { firestore, storage } from "../../../refrence/storeConfig"; // Ensure this is correctly set up
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { firestore, storage } from "../../../refrence/storeConfig"; // Ensure this is correctly set up
 const HeroBannerAdd = ({ open, onClose }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -29,7 +29,7 @@ const HeroBannerAdd = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false); // Loading state
 
   // Styled Components
-  const StyledButton = styled(Button)(({ theme }) => ({
+  const StyledButton = styled(Button)(() => ({
     padding: "10px 20px",
     borderRadius: "8px",
     transition: "all 0.3s ease",

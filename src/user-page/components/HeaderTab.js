@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   AppBar,
   Avatar,
@@ -10,10 +9,11 @@ import {
   Typography,
   styled,
 } from "@mui/material";
+import { useState } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
-import { logout } from "../auth/Logout"; // Import the reusable logout function
 import { useNavigate } from "react-router-dom"; // Import useNavigate
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
+import { logout } from "../auth/Logout"; // Import the reusable logout function
+const StyledAppBar = styled(AppBar)(() => ({
   background: "theme.palette.primary.main",
   marginBottom: "40px",
 }));

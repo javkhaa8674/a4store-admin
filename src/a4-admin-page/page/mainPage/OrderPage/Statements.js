@@ -1,10 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -12,10 +8,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  Tooltip,
   TextField,
-  Typography,
   ThemeProvider,
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import {
   QueryClient,
@@ -24,22 +20,26 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { RiFileExcel2Fill } from "react-icons/ri";
 import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
 import {
-  ref,
+  equalTo,
   get,
+  orderByChild,
+  push,
+  query,
+  ref,
+  remove,
   set,
   update,
-  remove,
-  push,
-  orderByChild,
-  equalTo,
-  query,
 } from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
 import { db } from "refrence/realConfig"; // Adjust the import path as needed
 import { read, utils } from "xlsx";
 import { useTableTheme } from "../../../../theme/useTableTheme";
@@ -59,7 +59,7 @@ const csvConfig = mkConfig({
   ],
 });
 
-function validateUser(user) {
+function validateUser() {
   return {};
 }
 
@@ -397,7 +397,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"

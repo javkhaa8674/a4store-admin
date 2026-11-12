@@ -1,23 +1,20 @@
-import React, { useState } from "react";
 import {
   Box,
   Button,
   Card,
   CardContent,
   Container,
-  IconButton,
   InputAdornment,
-  Stepper,
   Step,
   StepLabel,
+  Stepper,
   TextField,
   Typography,
-  useTheme,
   styled,
-  CircularProgress,
 } from "@mui/material";
-import { MdPhone, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { MdPhone } from "react-icons/md";
 import { useNavigate } from "react-router-dom"; // Import react-router-dom for navigation
 
 const StyledCard = styled(Card, {
@@ -49,18 +46,15 @@ const Background = styled(Box)(({ theme }) => ({
 }));
 
 const RegisterStepper = () => {
-  const theme = useTheme();
   const navigate = useNavigate(); // Use the navigate function to navigate between pages
   const [activeStep, setActiveStep] = useState(0);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     registerNumber: "",
   });
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const steps = ["Phone Number", "OTP Confirmation", "User Details"];
@@ -73,7 +67,6 @@ const RegisterStepper = () => {
         return;
       }
       setErrors({});
-      setOtpSent(true);
     } else if (activeStep === 1) {
       // Validate OTP
       if (!otp || otp.length !== 6) {
@@ -120,6 +113,7 @@ const RegisterStepper = () => {
                     width: 150,
                     height: 100,
                   }}
+                  alt="mycardurl"
                 />
                 <Typography
                   component="h1"
@@ -168,13 +162,7 @@ const RegisterStepper = () => {
                         variant="contained"
                         sx={{ mt: 3 }}
                         onClick={handleNext}
-                      >
-                        {loading ? (
-                          <CircularProgress size={24} />
-                        ) : (
-                          "OTP Илгээх"
-                        )}
-                      </Button>
+                      ></Button>
                     </Box>
                   )}
 
@@ -198,13 +186,7 @@ const RegisterStepper = () => {
                         variant="contained"
                         sx={{ mt: 3 }}
                         onClick={handleNext}
-                      >
-                        {loading ? (
-                          <CircularProgress size={24} />
-                        ) : (
-                          "Баталгаажуулах"
-                        )}
-                      </Button>
+                      ></Button>
                     </Box>
                   )}
 

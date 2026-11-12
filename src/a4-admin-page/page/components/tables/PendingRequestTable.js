@@ -1,18 +1,18 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo } from "react";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { useMemo } from "react";
 
 //MRT Imports
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  MaterialReactTable,
-  useMaterialReactTable,
-  MRT_GlobalFilterTextField,
-  MRT_ToggleFiltersButton,
-  MRT_ShowHideColumnsButton,
-  MRT_ToggleDensePaddingButton,
-  MRT_ToggleFullScreenButton,
-} from "material-react-table";
+  Box,
+  Grid,
+  lighten,
+  ListItemIcon,
+  MenuItem,
+  TextField,
+} from "@mui/material";
 import {
   QueryClient,
   QueryClientProvider,
@@ -20,25 +20,25 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import {
+  equalTo,
   get,
+  orderByChild,
   query,
   ref,
-  equalTo,
-  orderByChild,
   remove,
   update,
 } from "firebase/database";
 import {
-  Box,
-  lighten,
-  TextField,
-  Grid,
-  MenuItem,
-  ListItemIcon,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import dayjs from "dayjs";
+  MaterialReactTable,
+  MRT_GlobalFilterTextField,
+  MRT_ShowHideColumnsButton,
+  MRT_ToggleDensePaddingButton,
+  MRT_ToggleFiltersButton,
+  MRT_ToggleFullScreenButton,
+  useMaterialReactTable,
+} from "material-react-table";
 import { db } from "refrence/realConfig";
 import MUIStepper from "../../components/MUIStepper";
 
@@ -129,7 +129,7 @@ const ReactAdvancedMaterialTable = () => {
         ],
       },
     ],
-    []
+    [],
   );
 
   //call CREATE hook
@@ -201,7 +201,7 @@ const ReactAdvancedMaterialTable = () => {
     },
 
     onCreatingRowSave: handleCreateRequest,
-    renderRowActionMenuItems: ({ table, row, closeMenu }) => [
+    renderRowActionMenuItems: ({ row, closeMenu }) => [
       <MenuItem
         key={500}
         onClick={() => {
@@ -246,7 +246,7 @@ const ReactAdvancedMaterialTable = () => {
                       }}
                     />
                   </Grid>
-                )
+                ),
             )}
           </Grid>
         </>
@@ -287,7 +287,7 @@ const ReactAdvancedMaterialTable = () => {
   function useCreateRequest() {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
+      mutationFn: async () => {
         //send api update request here
         await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
         return Promise.resolve();
@@ -329,7 +329,7 @@ const ReactAdvancedMaterialTable = () => {
           const que = query(
             ref(db, "request"),
             orderByChild(approver_status),
-            equalTo("Хүлээгдэж байна")
+            equalTo("Хүлээгдэж байна"),
           );
           const snapshot = await get(que);
           snapshot.forEach((childSnapshot) => {
@@ -361,8 +361,8 @@ const ReactAdvancedMaterialTable = () => {
       onMutate: (newRequestInfo) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
           prevRequests?.map((prevRequest) =>
-            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest
-          )
+            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
@@ -385,7 +385,7 @@ const ReactAdvancedMaterialTable = () => {
       //client side optimistic update
       onMutate: (requestId) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
-          prevRequests?.filter((request) => request.id !== requestId)
+          prevRequests?.filter((request) => request.id !== requestId),
         );
       },
       onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo

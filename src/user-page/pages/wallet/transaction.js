@@ -1,36 +1,36 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Box,
-  Stepper,
-  Step,
-  StepLabel,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  InputAdornment,
-  CircularProgress,
-  Alert,
-  Card,
-  CardContent,
-  IconButton,
-} from "@mui/material";
-import { styled } from "@mui/system";
-import { FiPhone, FiUser, FiCheck, FiX } from "react-icons/fi";
-import { FaCoins } from "react-icons/fa";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
-  doc,
-  onSnapshot,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  Paper,
+  Step,
+  StepLabel,
+  Stepper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import a4axios from "a4axios";
+import {
   collection,
+  doc,
+  getDocs,
+  onSnapshot,
   query,
   where,
-  getDocs,
 } from "firebase/firestore";
-import { auth, firestore } from "refrence/storeConfig";
+import { useCallback, useEffect, useState } from "react";
+import { FaCoins } from "react-icons/fa";
+import { FiCheck, FiPhone, FiUser, FiX } from "react-icons/fi";
 import { MdOutlineDescription } from "react-icons/md";
-import a4axios from "a4axios";
 import { useNavigate } from "react-router-dom";
+import { auth, firestore } from "refrence/storeConfig";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -56,14 +56,14 @@ const ContentWrapper = styled(CardContent)({
   padding: "32px 24px",
   color: "#fff",
 });
-const StyledPaper = styled(Paper)(({ theme }) => ({
+const StyledPaper = styled(Paper)(() => ({
   padding: "2rem",
   maxWidth: "1170px",
   margin: "2rem auto",
   borderRadius: "12px",
   marginBottom: "100px",
 }));
-const StyledButton = styled(Button)(({ theme }) => ({
+const StyledButton = styled(Button)(() => ({
   margin: "1rem 0.5rem",
   minWidth: "120px",
 }));

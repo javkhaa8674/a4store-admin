@@ -5,44 +5,44 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 // Material UI Imports
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
   CircularProgress,
-  Typography,
-  Stack,
-  Tooltip,
   IconButton,
-  TextField,
   InputAdornment,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
 // Firestore Imports
 import {
   collection,
+  doc,
   getDocs,
   query,
-  where,
-  doc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 // Date Picker Imports
+import EditIcon from "@mui/icons-material/Edit";
+import { CssBaseline } from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import EditIcon from "@mui/icons-material/Edit";
 import {
   QueryClient,
   QueryClientProvider,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import dayjs from "dayjs";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { CssBaseline } from "@mui/material";
-import { RiFileExcel2Fill } from "react-icons/ri";
 import TugrikFormatter from "components/TugrikFormatter";
+import dayjs from "dayjs";
+import { RiFileExcel2Fill } from "react-icons/ri";
 import { firestore } from "refrence/storeConfig"; // Adjust the path to your Firestore config
 
 const Example = () => {
@@ -104,7 +104,7 @@ const Example = () => {
             wallets: walletsData ?? 0,
             points: pointsData ?? 0,
           };
-        })
+        }),
       );
 
       let realData = [];
@@ -142,14 +142,7 @@ const Example = () => {
         };
 
         const userRef = doc(firestore, `users/${updatedData.id}`);
-        const {
-          id,
-          name,
-          package: userPackage,
-          Оноо,
-          Хэтэвч,
-          ...rest
-        } = updatedData; // Destructure to remove id
+        const { ...rest } = updatedData; // Destructure to remove id
         console.log("updatedData", rest);
         await updateDoc(userRef, rest);
         return Promise.resolve();
@@ -157,8 +150,8 @@ const Example = () => {
       onMutate: (newUserInfo) => {
         queryClient.setQueryData(["users"], (prevUsers) =>
           prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["users"]), // Refetch users after mutation
@@ -205,7 +198,7 @@ const Example = () => {
                 ...doc.data(),
               })),
             };
-          })
+          }),
         );
 
         setTableData(combinedData);
@@ -442,10 +435,10 @@ const Example = () => {
             },
             filterFn: (row, columnId, filterValue) => {
               const rowValue = dayjs(row.getValue(columnId)).format(
-                "YYYY-MM-DD"
+                "YYYY-MM-DD",
               );
               const filterDate = dayjs(filterValue, "MM/DD/YYYY").format(
-                "YYYY-MM-DD"
+                "YYYY-MM-DD",
               );
               return rowValue === filterDate;
             },
@@ -471,7 +464,7 @@ const Example = () => {
         ],
       },
     ],
-    [tableDataLength, TotalMemberCount, totalWalletBalance, totalPointBalance]
+    [tableDataLength, TotalMemberCount, totalWalletBalance, totalPointBalance],
   );
 
   const columnsTransaction = [
@@ -623,7 +616,7 @@ const Example = () => {
                 (transaction, index) => ({
                   ...transaction,
                   id: transaction.statementId || index, // Ensure there's a unique id for each row
-                })
+                }),
               ) || []
             }
             columns={columnsTransaction}

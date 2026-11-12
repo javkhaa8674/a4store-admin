@@ -1,10 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -12,10 +8,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  Tooltip,
   TextField,
-  Typography,
   ThemeProvider,
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import {
   QueryClient,
@@ -24,13 +20,17 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { RiFileExcel2Fill } from "react-icons/ri";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
 import { ref, remove } from "firebase/database";
-import { db, auth } from "refrence/realConfig";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
+import { auth, db } from "refrence/realConfig";
 import axios from "storeaxios";
 import { useTableTheme } from "../../../../theme/useTableTheme";
 
@@ -49,7 +49,7 @@ const csvConfig = mkConfig({
   quoteStrings: '"',
 });
 
-function validateUser(user) {
+function validateUser() {
   return {};
 }
 
@@ -124,12 +124,12 @@ const Example = () => {
   const useCreateUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
+      mutationFn: async () => {
         // const newUserRef = ref(db, "userInfo");
         // await set(newUserRef.push(), user);
         return Promise.resolve();
       },
-      onMutate: (newUserInfo) => {
+      onMutate: () => {
         // queryClient.setQueryData(["balance"], (prevUsers) => [
         //   ...(prevUsers || []),
         //   {
@@ -196,7 +196,7 @@ const Example = () => {
   const useUpdateUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
+      mutationFn: async () => {
         // const updatedData = {
         //   ...user, // Spread the original row data
         //   MemberId: Number(user.MemberId),
@@ -211,7 +211,7 @@ const Example = () => {
         // await update(userRef, sendData);
         return Promise.resolve();
       },
-      onMutate: (newUserInfo) => {
+      onMutate: () => {
         // queryClient.setQueryData(["balance"], (prevUsers) =>
         //   prevUsers?.map((prevUser) =>
         //     prevUser.id === newUserInfo.id ? newUserInfo : prevUser
@@ -399,7 +399,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"

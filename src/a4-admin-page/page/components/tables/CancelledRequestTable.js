@@ -1,18 +1,10 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo} from "react";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { useMemo } from "react";
 
 //MRT Imports
-import {
-  MaterialReactTable,
-  useMaterialReactTable,
-  MRT_GlobalFilterTextField,
-  MRT_ToggleFiltersButton,
-  MRT_ShowHideColumnsButton,
-  MRT_ToggleDensePaddingButton,
-  MRT_ToggleFullScreenButton,
-} from "material-react-table";
+import { Box, Grid, lighten, TextField } from "@mui/material";
 import {
   QueryClient,
   QueryClientProvider,
@@ -20,27 +12,29 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import {
+  equalTo,
   get,
+  orderByChild,
   query,
   ref,
-  equalTo,
-  orderByChild,
   update,
 } from "firebase/database";
 import {
-  Box,
-  lighten,
-  TextField,
-  Grid,
-} from "@mui/material";
+  MaterialReactTable,
+  MRT_GlobalFilterTextField,
+  MRT_ShowHideColumnsButton,
+  MRT_ToggleDensePaddingButton,
+  MRT_ToggleFiltersButton,
+  MRT_ToggleFullScreenButton,
+  useMaterialReactTable,
+} from "material-react-table";
 import { db } from "refrence/realConfig";
-import dayjs from "dayjs";
 import MUIStepper from "../../components/MUIStepper";
 
 const ReactAdvancedMaterialTable = () => {
-
-const userInfo = JSON.parse(localStorage.getItem("user"));
+  const userInfo = JSON.parse(localStorage.getItem("user"));
 
   const columns = useMemo(
     () => [
@@ -127,7 +121,7 @@ const userInfo = JSON.parse(localStorage.getItem("user"));
         ],
       },
     ],
-    []
+    [],
   );
 
   //call CREATE hook
@@ -209,7 +203,7 @@ const userInfo = JSON.parse(localStorage.getItem("user"));
             {Object.keys(row.original.Extra[0]).map(
               (key) =>
                 row.original.Extra[0][key] && (
-                  <Grid size={{xs:12, sm:3}} key={key}>
+                  <Grid size={{ xs: 12, sm: 3 }} key={key}>
                     <TextField
                       value={row.original.Extra[0][key]}
                       label={key}
@@ -218,7 +212,7 @@ const userInfo = JSON.parse(localStorage.getItem("user"));
                       }}
                     />
                   </Grid>
-                )
+                ),
             )}
           </Grid>
         </>
@@ -258,7 +252,7 @@ const userInfo = JSON.parse(localStorage.getItem("user"));
   function useCreateRequest() {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
+      mutationFn: async () => {
         //send api update request here
         await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
         return Promise.resolve();
@@ -300,7 +294,7 @@ const userInfo = JSON.parse(localStorage.getItem("user"));
           const que = query(
             ref(db, "request"),
             orderByChild(approver_status),
-            equalTo("Цуцлагдсан")
+            equalTo("Цуцлагдсан"),
           );
           const snapshot = await get(que);
           snapshot.forEach((childSnapshot) => {
@@ -332,8 +326,8 @@ const userInfo = JSON.parse(localStorage.getItem("user"));
       onMutate: (newRequestInfo) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
           prevRequests?.map((prevRequest) =>
-            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest
-          )
+            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
@@ -355,5 +349,3 @@ const CancelledRequestTable = ({ data }) => (
 );
 
 export default CancelledRequestTable;
-
-

@@ -1,10 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -12,13 +8,15 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  Tooltip,
   TextField,
-  useTheme,
   ThemeProvider,
-  createTheme,
+  Tooltip,
   Typography,
+  createTheme,
+  useTheme,
 } from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   QueryClient,
   QueryClientProvider,
@@ -26,16 +24,17 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { RiFileExcel2Fill } from "react-icons/ri";
 import dayjs from "dayjs";
-import { doc, deleteDoc } from "firebase/firestore";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
 import { firestore } from "../../../../refrence/storeConfig";
-import { getDocs, collection } from "firebase/firestore";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const csvConfig = mkConfig({
   filename: `Төлбөрийн-түүх-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
@@ -304,7 +303,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"

@@ -1,22 +1,18 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
+  Chip,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
-  Tooltip,
   TextField,
-  Typography,
   ThemeProvider,
-  Chip,
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import {
   QueryClient,
@@ -25,13 +21,17 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { RiFileExcel2Fill } from "react-icons/ri";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
-import { ref, set, update, remove } from "firebase/database";
-import { db, auth } from "refrence/realConfig";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import { ref, remove, set, update } from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
+import { auth, db } from "refrence/realConfig";
 import axios from "storeaxios";
 import { useTableTheme } from "../../../../theme/useTableTheme";
 
@@ -53,7 +53,7 @@ const csvConfig = mkConfig({
   ],
 });
 
-function validateUser(user) {
+function validateUser() {
   return {};
 }
 
@@ -396,7 +396,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"

@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from "react";
 import {
-  Card,
-  CardContent,
-  Typography,
   Box,
   Button,
+  Card,
+  CardContent,
   Stack,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { FaCoins } from "react-icons/fa";
-import { MdHistory } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore"; // Ensure you're importing firestore methods
+import { useEffect, useState } from "react";
+import { FaCoins, FaShoppingCart } from "react-icons/fa";
+import { MdHistory, MdOutlineSavings } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import { auth, firestore } from "refrence/storeConfig";
-import { FaShoppingCart } from "react-icons/fa";
-import { MdOutlineSavings } from "react-icons/md";
 import { getUserData } from "../../../utils/functions";
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -49,7 +47,7 @@ const PointsWrapper = styled(Box)({
   marginTop: 10,
 });
 
-const ActionButton = styled(Button)(({ theme }) => ({
+const ActionButton = styled(Button)(() => ({
   borderRadius: 8,
   color: "#fff",
   background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",
@@ -62,7 +60,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const HistoryButton = styled(Button)(({ theme }) => ({
+const HistoryButton = styled(Button)(() => ({
   borderRadius: 8,
   color: "#fff",
   background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",
@@ -76,7 +74,7 @@ const HistoryButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const SavingsButton = styled(Button)(({ theme }) => ({
+const SavingsButton = styled(Button)(() => ({
   borderRadius: 8,
   color: "#fff",
   background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",

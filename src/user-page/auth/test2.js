@@ -1,32 +1,31 @@
-import * as React from "react";
-import { AppProvider } from "@toolpad/core/AppProvider";
-import { useTheme } from "@mui/material/styles";
-import { auth, firestore } from "../../refrence/storeConfig";
 import {
-  getAuth,
-  setPersistence,
-  browserLocalPersistence,
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-import {
-  CircularProgress,
-  Snackbar,
   Alert,
-  TextField,
   Button,
   Card,
-  Typography,
-  InputAdornment,
+  CircularProgress,
   IconButton,
+  InputAdornment,
+  Snackbar,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
+import { AppProvider } from "@toolpad/core/AppProvider";
+import {
+  browserLocalPersistence,
+  createUserWithEmailAndPassword,
+  setPersistence,
+} from "firebase/auth";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
+import * as React from "react";
+import { auth } from "../../refrence/storeConfig";
+
 import BadgeIcon from "@mui/icons-material/Badge";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import EmailIcon from "@mui/icons-material/Email";
 import KeyIcon from "@mui/icons-material/Key";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 const BRANDING = {
   logo: (
     <img
@@ -52,7 +51,6 @@ export default function BrandingSignUpPage() {
   const [firstNameError, setFirstNameError] = React.useState("");
   const [lastNameError, setLastNameError] = React.useState("");
   const [passwordVisible, setPasswordVisible] = React.useState(false);
-  const navigation = useNavigate();
 
   const signUp = async ({ firstName, lastName, email, password }) => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -74,7 +72,7 @@ export default function BrandingSignUpPage() {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
 
       console.log("User signed up successfully:", userCredential.user);
@@ -95,7 +93,6 @@ export default function BrandingSignUpPage() {
       // Example: firebase.firestore().collection('users').doc(userCredential.user.uid).set({ firstName, lastName });
 
       // Navigate to the home page after successful signup
-      
     } catch (error) {
       // Provide a more user-friendly error message
       const errorCode = error.code;
@@ -338,9 +335,12 @@ export default function BrandingSignUpPage() {
                 style: { fontSize: "14px", padding: "12px" },
               }}
               style={{ backgroundColor: "#fff" }}
-              error={!!confirmPasswordError || !isPasswordValid(confirmPassword)}
+              error={
+                !!confirmPasswordError || !isPasswordValid(confirmPassword)
+              }
               helperText={
-                confirmPasswordError || (confirmPassword && !isPasswordValid(confirmPassword))
+                confirmPasswordError ||
+                (confirmPassword && !isPasswordValid(confirmPassword))
               }
               InputProps={{
                 endAdornment: (
@@ -365,7 +365,6 @@ export default function BrandingSignUpPage() {
                 ),
               }}
             />
-           
 
             {/* Sign Up Button */}
             <Button

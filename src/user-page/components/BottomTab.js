@@ -1,12 +1,12 @@
-import React, { useState } from "react";
 import {
-  Paper,
   BottomNavigation,
   BottomNavigationAction,
-  useTheme,
+  Paper,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { styled } from "@mui/system";
+import { useState } from "react";
 import { FaUser, FaWallet } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -86,7 +86,7 @@ const BottomNavigationBar = () => {
           backgroundColor: theme.vars.palette.background.paper,
         }}
       >
-        {navigationItems.map((item, index) => (
+        {navigationItems.map((item) => (
           <BottomNavigationAction
             key={item.label}
             label={item.label}

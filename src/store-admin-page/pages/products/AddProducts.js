@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { firestore, storage } from "../../../refrence/storeConfig";
-import { collection, addDoc, getDocs } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import {
-  Button,
-  Box,
-  Typography,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  IconButton,
-  CircularProgress,
-  Alert,
-  Snackbar,
-} from "@mui/material";
 import { CloudUpload as CloudUploadIcon } from "@mui/icons-material"; // for icon
 import ClearIcon from "@mui/icons-material/Clear";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  FormControl,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Snackbar,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { addDoc, collection, getDocs } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { useEffect, useState } from "react";
+import { firestore, storage } from "../../../refrence/storeConfig";
 
 const AddProductDialog = ({ open, onClose }) => {
   const [categories, setCategories] = useState([]);
@@ -100,7 +100,7 @@ const AddProductDialog = ({ open, onClose }) => {
 
     try {
       setLoading(true);
-      const uploadImages = async (files, folder) => {
+      const uploadImages = async (files) => {
         const uploadedUrls = [];
         for (let file of files) {
           const fileRef = ref(

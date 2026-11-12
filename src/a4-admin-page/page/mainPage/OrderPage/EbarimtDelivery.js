@@ -1,10 +1,7 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -12,10 +9,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  TextField,
+  ThemeProvider,
   Tooltip,
   Typography,
-  ThemeProvider,
-  TextField,
 } from "@mui/material";
 import {
   QueryClient,
@@ -24,23 +21,26 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import {
-  ref,
-  get,
-  push,
-  update,
-  remove,
-  orderByChild,
-  equalTo,
-  query,
-} from "firebase/database";
-import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import {
+  equalTo,
+  get,
+  orderByChild,
+  push,
+  query,
+  ref,
+  remove,
+  update,
+} from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
 import { RiFileExcel2Fill } from "react-icons/ri";
+import { db } from "refrence/realConfig";
 import { useTableTheme } from "../../../../theme/useTableTheme";
 // ---------- Firebase зам ----------
 const EBARIMT_PATH = "ebarimt";
@@ -147,7 +147,7 @@ const Example = () => {
   function useCreateUser() {
     return useMutation({
       mutationFn: async (values) => {
-        const { id, ...rest } = values;
+        const { ...rest } = values;
         const data = {
           ID: String(rest.ID ?? ""),
           Name: rest.Name ?? "",

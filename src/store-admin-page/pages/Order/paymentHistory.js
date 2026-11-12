@@ -1,10 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -12,14 +8,16 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  Tooltip,
+  Stack,
   TextField,
-  useTheme,
   ThemeProvider,
-  createTheme,
+  Tooltip,
   Typography,
-  Stack
+  createTheme,
+  useTheme,
 } from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   QueryClient,
   QueryClientProvider,
@@ -27,17 +25,18 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { RiFileExcel2Fill } from "react-icons/ri";
-import dayjs from "dayjs";
-import { doc, deleteDoc } from "firebase/firestore";
-import { firestore } from "../../../refrence/storeConfig";
-import { getDocs, collection } from "firebase/firestore";
 import TugrikFormatter from "components/TugrikFormatter";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
+import { RiFileExcel2Fill } from "react-icons/ri";
+import { firestore } from "../../../refrence/storeConfig";
 const csvConfig = mkConfig({
   filename: `Төлбөрийн-түүх-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
@@ -130,22 +129,22 @@ const Example = () => {
   const [searchTerm, setSearchTerm] = useState(""); // User input for search
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers(fetchAll);
-    const totalCredit = useMemo(() => {
-
-      const realData = fetchedUsers.filter((item) => item.type === "Credit");
-      return realData.reduce(
-        (tranAmount, currentAmount) => tranAmount + Number(currentAmount.tranAmount),
-        0
-      );
-    }, [fetchedUsers]);
-    const totalDebit = useMemo(() => {
-
-      const realData = fetchedUsers.filter((item) => item.type === "Debit");
-      return realData.reduce(
-        (tranAmount, currentAmount) => tranAmount + Number(currentAmount.tranAmount),
-        0
-      );
-    }, [fetchedUsers]);
+  const totalCredit = useMemo(() => {
+    const realData = fetchedUsers.filter((item) => item.type === "Credit");
+    return realData.reduce(
+      (tranAmount, currentAmount) =>
+        tranAmount + Number(currentAmount.tranAmount),
+      0,
+    );
+  }, [fetchedUsers]);
+  const totalDebit = useMemo(() => {
+    const realData = fetchedUsers.filter((item) => item.type === "Debit");
+    return realData.reduce(
+      (tranAmount, currentAmount) =>
+        tranAmount + Number(currentAmount.tranAmount),
+      0,
+    );
+  }, [fetchedUsers]);
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "id", size: 80 },
@@ -158,9 +157,7 @@ const Example = () => {
         Footer: () => (
           <Stack>
             Нийт Орлого:
-            <Box color="warning.main">
-              {TugrikFormatter(totalCredit)}₮
-            </Box>
+            <Box color="warning.main">{TugrikFormatter(totalCredit)}₮</Box>
           </Stack>
         ),
       },
@@ -190,9 +187,7 @@ const Example = () => {
         Footer: () => (
           <Stack>
             Нийт Зарлага:
-            <Box color="warning.main">
-              {TugrikFormatter(totalDebit)}₮
-            </Box>
+            <Box color="warning.main">{TugrikFormatter(totalDebit)}₮</Box>
           </Stack>
         ),
       },
@@ -246,16 +241,17 @@ const Example = () => {
         filterFn: (row, columnId, filterValue) => {
           const rowValue = dayjs(row.getValue(columnId)).format("YYYY-MM-DD");
           const filterDate = dayjs(filterValue, "MM/DD/YYYY").format(
-            "YYYY-MM-DD"
+            "YYYY-MM-DD",
           );
           return rowValue === filterDate;
         },
       },
     ],
-    [totalCredit,totalDebit]
+    [totalCredit, totalDebit],
   );
-  const { mutateAsync: deleteUser, //isPending: isDeletingUser// } =
-  }=useDeleteUser();
+  const {
+    mutateAsync: deleteUser, //isPending: isDeletingUser// } =
+  } = useDeleteUser();
   //READ hook (get users from api)
   function useGetUsers(fetchAll = true) {
     return useQuery({
@@ -308,7 +304,7 @@ const Example = () => {
       },
       onMutate: (id) => {
         queryClient.setQueryData(["statements"], (prevUsers) =>
-          prevUsers?.filter((user) => user.id !== id)
+          prevUsers?.filter((user) => user.id !== id),
         );
       },
       onSettled: () => queryClient.invalidateQueries(["statements"]), // Fix query key
@@ -331,7 +327,7 @@ const Example = () => {
         <Typography color="error" key={key}>
           {message}
         </Typography>
-      ) : null
+      ) : null,
     );
   };
 
@@ -403,7 +399,7 @@ const Example = () => {
         </DialogActions>
       </>
     ),
-    renderRowActions: ({ row, table }) => (
+    renderRowActions: ({ row }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
@@ -417,7 +413,7 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           variant="contained"
@@ -516,7 +512,7 @@ const MemberRegistration = () => {
           },
         },
       }),
-    [globalTheme]
+    [globalTheme],
   );
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>

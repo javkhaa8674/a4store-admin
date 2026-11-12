@@ -1,18 +1,18 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo, useState } from "react";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { useMemo, useState } from "react";
 
 //MRT Imports
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  MaterialReactTable,
-  useMaterialReactTable,
-  MRT_GlobalFilterTextField,
-  MRT_ToggleFiltersButton,
-  MRT_ShowHideColumnsButton,
-  MRT_ToggleDensePaddingButton,
-  MRT_ToggleFullScreenButton,
-} from "material-react-table";
+  Box,
+  Grid,
+  lighten,
+  ListItemIcon,
+  MenuItem,
+  TextField,
+} from "@mui/material";
 import {
   QueryClient,
   QueryClientProvider,
@@ -20,25 +20,25 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import {
+  equalTo,
   get,
+  orderByChild,
   query,
   ref,
-  equalTo,
-  orderByChild,
   remove,
   update,
 } from "firebase/database";
 import {
-  Box,
-  lighten,
-  TextField,
-  Grid,
-  MenuItem,
-  ListItemIcon,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import dayjs from "dayjs";
+  MaterialReactTable,
+  MRT_GlobalFilterTextField,
+  MRT_ShowHideColumnsButton,
+  MRT_ToggleDensePaddingButton,
+  MRT_ToggleFiltersButton,
+  MRT_ToggleFullScreenButton,
+  useMaterialReactTable,
+} from "material-react-table";
 import { db } from "refrence/realConfig";
 import MUIStepper from "../../components/MUIStepper";
 
@@ -333,7 +333,7 @@ const ReactAdvancedMaterialTable = () => {
   function useCreateRequest() {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
+      mutationFn: async () => {
         //send api update request here
         await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
         return Promise.resolve();

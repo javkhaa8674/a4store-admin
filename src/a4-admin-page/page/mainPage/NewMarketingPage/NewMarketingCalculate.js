@@ -1,33 +1,33 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useEffect, useMemo, useState } from "react";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { useEffect, useMemo, useState } from "react";
 
 //MRT Imports
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import DoneIcon from "@mui/icons-material/Done";
+import {
+  Box,
+  Button,
+  IconButton,
+  lighten,
+  MenuItem,
+  TextField,
+  ThemeProvider,
+  Tooltip,
+} from "@mui/material";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { equalTo, get, orderByChild, query, ref } from "firebase/database";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { get, ref, orderByChild, equalTo, query } from "firebase/database";
-import {
-  Box,
-  lighten,
-  Button,
-  TextField,
-  MenuItem,
-  Tooltip,
-  IconButton,
-  ThemeProvider,
-} from "@mui/material";
 import { db } from "refrence/realConfig";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AccountTreeIcon from "@mui/icons-material/AccountTree";
-import TugrikFormatter from "../../components/TugrikFormatter";
-import NewMarketingTeamStructure from "./TeamStructure";
-import DoneIcon from "@mui/icons-material/Done";
-import { Single, Double, Triple } from "./setData";
 import { useTableTheme } from "../../../../theme/useTableTheme";
+import TugrikFormatter from "../../components/TugrikFormatter";
+import { Double, Single, Triple } from "./setData";
+import NewMarketingTeamStructure from "./TeamStructure";
 
 const ReactMaterialTable = ({ setCurrentPage, setData }) => {
   const [memberList, setMemberList] = useState([]);
@@ -93,7 +93,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         accessorKey: "level",
         header: "Үе",
         size: 100,
-        muiTableBodyCellProps: ({ cell, row }) => ({
+        muiTableBodyCellProps: ({ row }) => ({
           sx: {
             backgroundColor: row.original.currentLevel
               ? "lightgreen"
@@ -106,7 +106,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Үнийн дүн",
         size: 100,
-        muiTableBodyCellProps: ({ cell, row }) => ({
+        muiTableBodyCellProps: ({ row }) => ({
           sx: {
             backgroundColor: row.original.currentLevel
               ? "lightgreen"
@@ -188,7 +188,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Нэг хүн урихад",
         size: 100,
-        muiTableBodyCellProps: ({ cell, row }) => ({
+        muiTableBodyCellProps: ({ row }) => ({
           sx: {
             backgroundColor: row.original.invite1personLevel
               ? "lightgreen"
@@ -216,7 +216,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Хоёр хүн урихад",
         size: 100,
-        muiTableBodyCellProps: ({ cell, row }) => ({
+        muiTableBodyCellProps: ({ row }) => ({
           sx: {
             backgroundColor: row.original.invite2personLevel
               ? "lightgreen"
@@ -244,7 +244,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Гурван хүн урихад",
         size: 100,
-        muiTableBodyCellProps: ({ cell, row }) => ({
+        muiTableBodyCellProps: ({ row }) => ({
           sx: {
             backgroundColor: row.original.invite3personLevel
               ? "lightgreen"
@@ -272,7 +272,7 @@ const ReactMaterialTable = ({ setCurrentPage, setData }) => {
         filterVariant: "autocomplete",
         header: "Дөрвөн хүн урихад",
         size: 100,
-        muiTableBodyCellProps: ({ cell, row }) => ({
+        muiTableBodyCellProps: ({ row }) => ({
           sx: {
             backgroundColor: row.original.invite4personLevel
               ? "lightgreen"

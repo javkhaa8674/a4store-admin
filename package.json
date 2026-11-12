@@ -55,13 +55,31 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "deploy": "firebase deploy --only hosting"
+    "deploy": "firebase deploy --only hosting",
+    "lint": "eslint src",
+    "lint:fix": "eslint --fix src"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "plugins": [
+      "unused-imports"
+    ],
+    "rules": {
+      "no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "after-used",
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
   },
   "resolutions": {
     "eslint-plugin-react": "^7.33.0"
@@ -79,7 +97,7 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^9.24.0",
+    "eslint": "^8.57.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-unused-imports": "^4.4.1"
   }

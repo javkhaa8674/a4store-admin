@@ -1,14 +1,13 @@
-import * as React from "react";
-import PropTypes from "prop-types";
-import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import dayjs from "dayjs";
+import { useTheme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import { areaElementClasses } from "@mui/x-charts/LineChart";
+import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
+import dayjs from "dayjs";
 import "dayjs/locale/mn";
+import PropTypes from "prop-types";
 
 dayjs.locale("mn");
 
@@ -39,7 +38,7 @@ AreaGradient.propTypes = {
   id: PropTypes.string.isRequired,
 };
 
-function StatCard({ title, value, interval, trend, data }) {
+function StatCard({ value, trend, data }) {
   const theme = useTheme();
   // Set Day.js to use Mongolian locale globally
 

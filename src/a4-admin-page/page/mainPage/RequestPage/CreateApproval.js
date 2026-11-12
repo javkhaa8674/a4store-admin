@@ -1,38 +1,38 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useEffect, useState } from "react";
+import AddIcon from "@mui/icons-material/Add";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import CloseIcon from "@mui/icons-material/Close";
+import RemoveIcon from "@mui/icons-material/Remove";
+import LoadingButton from "@mui/lab/LoadingButton";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   AppBar,
   Box,
+  Divider,
+  Fab,
   FormControl,
   Grid,
   IconButton,
+  List,
+  ListItem,
+  ListItemText,
   MenuItem,
   TextField,
   Toolbar,
   Typography,
-  Fab,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
 } from "@mui/material";
-import LoadingButton from "@mui/lab/LoadingButton";
-import { ThemeProvider } from "@mui/material/styles";
-import CloseIcon from "@mui/icons-material/Close";
 import Dialog from "@mui/material/Dialog";
-import Slide from "@mui/material/Slide";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { get, ref, query, orderByChild, equalTo } from "firebase/database";
 import InputAdornment from "@mui/material/InputAdornment";
-import { AuthStore, addPost } from "store/AuthStore";
-import { db } from "refrence/realConfig";
-import "dayjs/locale/mn";
+import Slide from "@mui/material/Slide";
+import { ThemeProvider } from "@mui/material/styles";
 import dayjs from "dayjs";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import "dayjs/locale/mn";
+import { equalTo, get, orderByChild, query, ref } from "firebase/database";
+import React, { useEffect, useState } from "react";
+import { db } from "refrence/realConfig";
+import { AuthStore, addPost } from "store/AuthStore";
 import { useTableTheme } from "../../../../theme/useTableTheme";
 
 const RequestType = [
@@ -574,7 +574,7 @@ const CreateApproval = ({ open, setOpen }) => {
     return true;
   };
 
-  const handleSubmit = async (e, index) => {
+  const handleSubmit = async () => {
     if (!validation()) {
       AuthStore.update((store) => {
         store.actionText.title = "Амжилтгүй боллоо";

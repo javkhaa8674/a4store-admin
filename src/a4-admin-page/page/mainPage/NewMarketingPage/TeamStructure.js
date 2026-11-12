@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { OrganizationChart } from "primereact/organizationchart";
 import PersonIcon from "@mui/icons-material/Person";
+import { OrganizationChart } from "primereact/organizationchart";
+import { useEffect, useState } from "react";
 
-const TeamStructure = ({ setCurrentPage, data }) => {
+const TeamStructure = ({ data }) => {
   const [selection, setSelection] = useState([]);
   const [strucruredData, setStructuredData] = useState([
     {
@@ -21,11 +21,11 @@ const TeamStructure = ({ setCurrentPage, data }) => {
     setStructuredData(buildNestedStructure(data, phoneNumber));
   }, [data]);
 
-  const buildNestedStructure = (arr, value) => {
+  const buildNestedStructure = (arr) => {
     let map = {};
     let roots = [];
-    arr[0].SponsorId=null;
-    arr[0].SponsorName=null;
+    arr[0].SponsorId = null;
+    arr[0].SponsorName = null;
     // Build the map
     arr.forEach((item) => {
       map[item.Name + item.phoneNumber] = {
@@ -42,7 +42,7 @@ const TeamStructure = ({ setCurrentPage, data }) => {
         roots.push(map[item.Name + item.phoneNumber]);
       } else {
         map[item.SponsorName + item.SponsorId].children.push(
-          map[item.Name + item.phoneNumber]
+          map[item.Name + item.phoneNumber],
         );
       }
     });

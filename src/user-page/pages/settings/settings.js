@@ -1,30 +1,30 @@
-import React, { useState } from "react";
 import {
   Box,
   Button,
-  Modal,
-  TextField,
-  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Menu,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Tooltip,
-  Stack,
+  Modal,
   Paper,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/system";
+import { useState } from "react";
 import {
-  FaFileContract,
-  FaPhoneAlt,
   FaComments,
+  FaFileContract,
   FaGlobe,
+  FaPhoneAlt,
   FaSignOutAlt,
 } from "react-icons/fa";
 import Contact from "../contact/contact";
-const StyledButton = styled(Button)(({ theme }) => ({
+const StyledButton = styled(Button)(() => ({
   margin: "8px",
   padding: "10px 20px",
   borderRadius: "12px",

@@ -1,18 +1,10 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo } from "react";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { useMemo } from "react";
 
 //MRT Imports
-import {
-  MaterialReactTable,
-  useMaterialReactTable,
-  MRT_GlobalFilterTextField,
-  MRT_ToggleFiltersButton,
-  MRT_ShowHideColumnsButton,
-  MRT_ToggleDensePaddingButton,
-  MRT_ToggleFullScreenButton,
-} from "material-react-table";
+import { Box, Grid, lighten, TextField } from "@mui/material";
 import {
   QueryClient,
   QueryClientProvider,
@@ -21,14 +13,22 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  equalTo,
   get,
+  orderByChild,
   query,
   ref,
-  equalTo,
-  orderByChild,
   update,
 } from "firebase/database";
-import { Box, lighten, TextField, Grid } from "@mui/material";
+import {
+  MaterialReactTable,
+  MRT_GlobalFilterTextField,
+  MRT_ShowHideColumnsButton,
+  MRT_ToggleDensePaddingButton,
+  MRT_ToggleFiltersButton,
+  MRT_ToggleFullScreenButton,
+  useMaterialReactTable,
+} from "material-react-table";
 
 import { db } from "refrence/realConfig";
 
@@ -123,7 +123,7 @@ const ReactAdvancedMaterialTable = () => {
         ],
       },
     ],
-    []
+    [],
   );
 
   //call CREATE hook
@@ -141,12 +141,12 @@ const ReactAdvancedMaterialTable = () => {
     useUpdateRequest();
   //CREATE action
   const handleCreateRequest = async ({ values, table }) => {
-       await createUser(values);
+    await createUser(values);
     table.setCreatingRow(null); //exit creating mode
   };
 
   //UPDATE action
-  const handleSaveRequest = async ({ values, table }) => { 
+  const handleSaveRequest = async ({ values, table }) => {
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
   };
@@ -181,8 +181,8 @@ const ReactAdvancedMaterialTable = () => {
       shape: "rounded",
       variant: "outlined",
     },
-   
-    onCreatingRowSave: handleCreateRequest,   
+
+    onCreatingRowSave: handleCreateRequest,
     onEditingRowSave: handleSaveRequest,
     renderDetailPanel: ({ row }) => {
       return (
@@ -204,7 +204,7 @@ const ReactAdvancedMaterialTable = () => {
             {Object.keys(row.original.Extra[0]).map(
               (key) =>
                 row.original.Extra[0][key] && (
-                  <Grid size={{xs:12, sm:3}} key={key}>
+                  <Grid size={{ xs: 12, sm: 3 }} key={key}>
                     <TextField
                       value={row.original.Extra[0][key]}
                       label={key}
@@ -213,7 +213,7 @@ const ReactAdvancedMaterialTable = () => {
                       }}
                     />
                   </Grid>
-                )
+                ),
             )}
           </Grid>
         </>
@@ -254,7 +254,7 @@ const ReactAdvancedMaterialTable = () => {
   function useCreateRequest() {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (user) => {
+      mutationFn: async () => {
         //send api update request here
         await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
         return Promise.resolve();
@@ -296,7 +296,7 @@ const ReactAdvancedMaterialTable = () => {
           const que = query(
             ref(db, "request"),
             orderByChild(approver_status),
-            equalTo("Цуцалсан")
+            equalTo("Цуцалсан"),
           );
           const snapshot = await get(que);
           snapshot.forEach((childSnapshot) => {
@@ -328,8 +328,8 @@ const ReactAdvancedMaterialTable = () => {
       onMutate: (newRequestInfo) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
           prevRequests?.map((prevRequest) =>
-            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest
-          )
+            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest,
+          ),
         );
       },
       onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
@@ -351,4 +351,3 @@ const CancelRequestTable = ({ data }) => (
 );
 
 export default CancelRequestTable;
-
