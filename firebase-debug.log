@@ -1,0 +1,17 @@
+[debug] [2026-11-13T05:00:05.681Z] ----------------------------------------------------------------------
+[debug] [2026-11-13T05:00:05.683Z] Command:       /home/javkhaa8674/nvm/versions/node/v24.21.0/bin/node /home/javkhaa8674/nvm/versions/node/v24.21.0/bin/firebase deploy --only hosting
+[debug] [2026-11-13T05:00:05.683Z] CLI Version:   15.32.1
+[debug] [2026-11-13T05:00:05.683Z] Platform:      linux
+[debug] [2026-11-13T05:00:05.683Z] Node Version:  v24.21.0
+[debug] [2026-11-13T05:00:05.683Z] Detected Agent: unknown
+[debug] [2026-11-13T05:00:05.684Z] Time:          Fri Nov 13 2026 13:00:05 GMT+0800 (Ulaanbaatar Standard Time)
+[debug] [2026-11-13T05:00:05.684Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-11-13T05:00:06.356Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-11-13T05:00:06.356Z] > authorizing via signed-in user (javkhaa8674@gmail.com)
+[debug] [2026-11-13T05:00:06.356Z] [iam] checking project a4youandme-store for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-11-13T05:00:06.366Z] Checked if tokens are valid: true, expires at: 1794548587973
+[debug] [2026-11-13T05:00:06.366Z] Checked if tokens are valid: true, expires at: 1794548587973
+[debug] [2026-11-13T05:00:06.367Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions [none]
+[debug] [2026-11-13T05:00:06.367Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions  x-goog-user-project=a4youandme-store
+[debug] [2026-11-13T05:00:06.367Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}

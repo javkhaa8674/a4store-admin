@@ -45,11 +45,15 @@ import { useMemo, useState } from "react";
 import { RiFileExcel2Fill } from "react-icons/ri";
 import { db } from "refrence/realConfig";
 import { useTableTheme } from "../../../../theme/useTableTheme";
+
 // ---------- Firebase замууд ----------
 const RESET_PATH = "productdelivery";
 const BLACK_PATH = "BlackMembers/ProductDelivery";
 
-// ---------- CSV config (нэгтгэсэн) ----------
+const getColumnKey = (c) =>
+  c?.props?.cell?.column?.columnDef?.accessorKey ?? c?.props?.cell?.column?.id;
+
+// ---------- CSV config ----------
 const csvConfig = mkConfig({
   filename: `Бүтээгдэхүүн-Олголт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
@@ -76,10 +80,20 @@ const Example = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [fetchAll, setFetchAll] = useState(false);
 
+  // 🔹 Динамик columnVisibility
+  const [columnVisibility, setColumnVisibility] = useState({
+    id: false,
+    "272Code": false,
+    OldCode: false,
+    totalCode: false,
+    HospitalTimeStamp: false,
+    _source: false,
+  });
+
   const { mode } = useColorScheme();
   const isDark = mode === "dark";
 
-  // ---------- Fetch: хоёр замаас зэрэг татаж нэгтгэнэ ----------
+  // ---------- Fetch ----------
   function useGetUsers() {
     return useQuery({
       queryKey: ["combinedProductDelivery", searchTerm, fetchAll],
@@ -149,7 +163,6 @@ const Example = () => {
             fetchFrom(BLACK_PATH, "black", "black"),
           ]);
 
-          // 🔹 ReceivedDate-ээр буурах дарааллаар эрэмбэлэх
           const combined = [...resetUsers, ...blackUsers];
 
           combined.sort((a, b) => {
@@ -190,7 +203,6 @@ const Example = () => {
   // ---------- Columns ----------
   const columns = useMemo(
     () => [
-      // 🔹 id багана — enableHiding: true (initialState-аар нуугдана)
       {
         accessorKey: "id",
         header: "id",
@@ -199,8 +211,6 @@ const Example = () => {
         size: 80,
         enableHiding: true,
       },
-
-      // 🔹 phase
       {
         accessorKey: "phase",
         header: "Phase",
@@ -219,8 +229,6 @@ const Example = () => {
           return "—";
         },
       },
-
-      // ===== Ижил утгатай нэгтгэсэн баганууд =====
       {
         accessorKey: "MemberId",
         header: "Утас",
@@ -252,7 +260,6 @@ const Example = () => {
           type: "datetime-local",
           InputLabelProps: { shrink: true },
         },
-
         Cell: ({ cell }) => {
           const v = cell.getValue();
           if (!v) return "—";
@@ -261,8 +268,6 @@ const Example = () => {
         },
       },
       { accessorKey: "Description", header: "Тайлбар" },
-
-      // ===== Зөвхөн Black-д байдаг баганууд =====
       {
         accessorKey: "272Code",
         header: "Эхний 272 хүн эсэх",
@@ -286,30 +291,23 @@ const Example = () => {
         size: 100,
         muiEditTextFieldProps: { type: "number" },
       },
-
-      // 🔹 Check багана — ЗӨВХӨН CHECKBOX UI
       {
         accessorKey: "Check",
         header: "Тулгасан эсэх",
         size: 80,
-        // засварлах боломжтой checkbox
         muiEditTextFieldProps: { type: "checkbox" },
-        // харуулах хэсэг — checkbox
         Cell: ({ cell }) => {
           const v = cell.getValue();
           const checked = v === true || v === 1 || v === "true";
           return <Checkbox checked={checked} size="small" sx={{ p: 0 }} />;
         },
       },
-
       {
         accessorKey: "HospitalTimeStamp",
         header: "Эмнэлэг огноо",
         size: 120,
         muiEditTextFieldProps: { type: "text" },
       },
-
-      // ===== Зөвхөн reset-д байдаг багана =====
       {
         accessorKey: "Requester_TimeStamps",
         header: "Хүсэлт гаргасан огноо",
@@ -649,32 +647,64 @@ const Example = () => {
 
     onCreatingRowSave: handleCreateUser,
     onEditingRowSave: handleSaveUser,
-    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h3">Бүтээгдэхүүн олголт нэмэх</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
-          {internalEditComponents}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
-    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h3">Бүтээгдэхүүн олголт засварлах</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        >
-          {internalEditComponents}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
+
+    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => {
+      const filtered = internalEditComponents.filter(
+        (c) => columnVisibility[getColumnKey(c)] !== false,
+      );
+      return (
+        <>
+          <DialogTitle variant="h3">Бүтээгдэхүүн олголт нэмэх</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            {filtered}
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={row} />
+          </DialogActions>
+        </>
+      );
+    },
+
+    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => {
+      const filtered = internalEditComponents.filter(
+        (c) => columnVisibility[getColumnKey(c)] !== false,
+      );
+      return (
+        <>
+          <DialogTitle variant="h3">Бүтээгдэхүүн олголт засварлах</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          >
+            {filtered}
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={row} />
+          </DialogActions>
+        </>
+      );
+    },
+
+    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => {
+      const filtered = internalEditComponents.filter(
+        (c) => columnVisibility[c.key] !== false,
+      );
+      return (
+        <>
+          <DialogTitle variant="h3">Бүтээгдэхүүн олголт засварлах</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          >
+            {filtered}
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={row} />
+          </DialogActions>
+        </>
+      );
+    },
+
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
@@ -708,22 +738,15 @@ const Example = () => {
       </Box>
     ),
 
-    initialState: {
-      columnVisibility: {
-        id: false, // 🔹 id багана харагдахгүй
-        "272Code": false,
-        OldCode: false,
-        totalCode: false,
-        HospitalTimeStamp: false,
-        _source: false,
-      },
-    },
+    // 🔹 initialState-ийн оронд state + onColumnVisibilityChange
     state: {
+      columnVisibility,
       isLoading: isLoadingUsers,
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
     },
+    onColumnVisibilityChange: setColumnVisibility,
   });
 
   return (

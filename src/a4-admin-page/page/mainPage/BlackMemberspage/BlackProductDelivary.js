@@ -1,23 +1,19 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo, useState } from "react";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
+  CssBaseline,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  TextField,
+  ThemeProvider,
   Tooltip,
   Typography,
   useColorScheme,
-  ThemeProvider,
-  TextField,
-  CssBaseline,
 } from "@mui/material";
 import {
   QueryClient,
@@ -26,26 +22,34 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  ref,
-  get,
-  push,
-  update,
-  remove,
-  orderByChild,
-  equalTo,
-  query,
-} from "firebase/database";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
+import { download, generateCsv, mkConfig } from "export-to-csv";
+import {
+  equalTo,
+  get,
+  orderByChild,
+  push,
+  query,
+  ref,
+  remove,
+  update,
+} from "firebase/database";
+import {
+  MRT_EditActionButtons,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMemo, useState } from "react";
 import { RiFileExcel2Fill } from "react-icons/ri";
+import { db } from "refrence/realConfig";
 import { useTableTheme } from "../../../../theme/useTableTheme";
 
 // ---------- Firebase зам ----------
 const PRODUCT_PATH = "BlackMembers/ProductDelivery";
+
+// ---------- Dialog доторх нуугдсан баганыг тодорхойлох helper ----------
+const getColumnKey = (c) =>
+  c?.props?.cell?.column?.columnDef?.accessorKey ?? c?.props?.cell?.column?.id;
 
 const csvConfig = mkConfig({
   filename: `Бүтээгдэхүүн-Олголт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
@@ -70,6 +74,14 @@ const Example = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [fetchAll, setFetchAll] = useState(false);
+
+  // 🔹 Динамик columnVisibility
+  const [columnVisibility, setColumnVisibility] = useState({
+    id: false,
+    totalCode: false,
+    OldCode: false,
+    HospitalTimeStamp: false,
+  });
 
   // 🔹 Dark горим
   const { mode } = useColorScheme();
@@ -255,7 +267,6 @@ const Example = () => {
         return Promise.resolve();
       },
 
-      // 🔹 Бүх productdelivery query-д optimistic update
       onMutate: (newUserInfo) => {
         queryClient.setQueriesData(
           { queryKey: ["productdelivery"] },
@@ -266,7 +277,6 @@ const Example = () => {
         );
       },
 
-      // 🔹 refetch — бүх query
       onSettled: () =>
         queryClient.invalidateQueries({ queryKey: ["productdelivery"] }),
     });
@@ -380,7 +390,6 @@ const Example = () => {
       ? { color: "error", children: "Error loading data" }
       : undefined,
 
-    // 🔹 Хүснэгтийн цаас
     muiTablePaperProps: {
       sx: {
         backgroundColor: isDark ? darkColors.paper : undefined,
@@ -394,7 +403,6 @@ const Example = () => {
         backgroundColor: isDark ? darkColors.paper : undefined,
       },
     },
-    // 🔹 Толгой
     muiTableHeadCellProps: {
       sx: {
         backgroundColor: isDark ? darkColors.head : undefined,
@@ -411,7 +419,6 @@ const Example = () => {
         },
       },
     },
-    // 🔹 Мөр
     muiTableBodyRowProps: {
       sx: {
         backgroundColor: isDark ? darkColors.rowEven : undefined,
@@ -429,7 +436,6 @@ const Example = () => {
         },
       },
     },
-    // 🔹 Toolbar
     muiTopToolbarProps: {
       sx: {
         backgroundColor: isDark ? darkColors.toolbar : undefined,
@@ -446,32 +452,44 @@ const Example = () => {
 
     onCreatingRowSave: handleCreateUser,
     onEditingRowSave: handleSaveUser,
-    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h3">Бүтээгдэхүүн олголт нэмэх</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
-          {internalEditComponents}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
-    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h3">Бүтээгдэхүүн олголт засварлах</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        >
-          {internalEditComponents}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
+
+    // 🔹 Dialog дотор нуугдсан баганыг шүүх
+    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => {
+      const filtered = internalEditComponents.filter(
+        (c) => columnVisibility[getColumnKey(c)] !== false,
+      );
+      return (
+        <>
+          <DialogTitle variant="h3">Бүтээгдэхүүн олголт нэмэх</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            {filtered}
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={row} />
+          </DialogActions>
+        </>
+      );
+    },
+    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => {
+      const filtered = internalEditComponents.filter(
+        (c) => columnVisibility[getColumnKey(c)] !== false,
+      );
+      return (
+        <>
+          <DialogTitle variant="h3">Бүтээгдэхүүн олголт засварлах</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          >
+            {filtered}
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={row} />
+          </DialogActions>
+        </>
+      );
+    },
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
@@ -497,20 +515,16 @@ const Example = () => {
         </Button>
       </Box>
     ),
-    initialState: {
-      columnVisibility: {
-        id: false,
-        totalCode: false,
-        OldCode: false,
-        HospitalTimeStamp: false,
-      },
-    },
+
+    // 🔹 initialState-ийн оронд state + onColumnVisibilityChange
     state: {
+      columnVisibility,
       isLoading: isLoadingUsers,
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
     },
+    onColumnVisibilityChange: setColumnVisibility,
   });
 
   return (
