@@ -686,25 +686,6 @@ const Example = () => {
       );
     },
 
-    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => {
-      const filtered = internalEditComponents.filter(
-        (c) => columnVisibility[c.key] !== false,
-      );
-      return (
-        <>
-          <DialogTitle variant="h3">Бүтээгдэхүүн олголт засварлах</DialogTitle>
-          <DialogContent
-            sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-          >
-            {filtered}
-          </DialogContent>
-          <DialogActions>
-            <MRT_EditActionButtons variant="text" table={table} row={row} />
-          </DialogActions>
-        </>
-      );
-    },
-
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
