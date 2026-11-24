@@ -228,6 +228,20 @@ const ReactAdvancedMaterialTable = () => {
     setWorkerList(list);
   };
 
+  /**
+   * Тухайн хэрэглэгч аль approver шатанд байгааг тодорхойлно.
+   * Approver_ID (сүүлийн шат) = Level 5 гэж үзнэ.
+   * Бусад нь ApproverN_ID талбараар тодорхойлогдоно.
+   */
+  const determineApproverLevel = (data, userEmail) => {
+    if (data.Approver_ID === userEmail) return 5;
+    if (data.Approver4_ID === userEmail) return 4;
+    if (data.Approver3_ID === userEmail) return 3;
+    if (data.Approver2_ID === userEmail) return 2;
+    if (data.Approver1_ID === userEmail) return 1;
+    return null;
+  };
+
   const handleActionSubmit = async (values, table, modalButtonTitle) => {
     const data = values.original;
     const date = new Date();
@@ -312,55 +326,41 @@ const ReactAdvancedMaterialTable = () => {
         await addPost("cancelContract/", addData);
       }
     } else if (modalButtonTitle === "цуцлах") {
-      if (
-        ["E-баримт олголт", "Бүтээгдэхүүн олголт"].includes(data.ApprovalType)
-      ) {
-        // Хуучин finance-ийн цуцлах логик
-        updateData = {
-          Approver_Avatar: userInfo.photoURL,
-          Approver_Comment: comment,
-          Approver_ID: userInfo.email,
-          Approver_Status: "Цуцалсан",
-          Approver_TimeStamps: date.getTime(),
-          Status: "Цуцалсан",
-          Requester_Status: "Цуцлагдсан",
-        };
-      } else if (
-        [
-          "Нууц үг солиулах",
-          "Худалдан авалт хийж болохгүй байгаа",
-          "Дансны дугаар солих",
-          "Овог солих",
-          "Нэр солих",
-          "Бусад",
-          "Уригч солих",
-          "Спонсор солих",
-        ].includes(data.ApprovalType)
-      ) {
-        updateData = {
-          Approver_Avatar: userInfo.photoURL,
-          Approver_Comment: comment,
-          Approver_ID: userInfo.email,
-          Approver_Status: "Цуцалсан",
-          Approver_TimeStamps: date.getTime(),
-          Status: "Цуцалсан",
-          Requester_Status: "Цуцлагдсан",
-          Approver1_Status: "Цуцлагдсан",
-        };
-      } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
-        updateData = {
-          Approver_Avatar: userInfo.photoURL,
-          Approver_Comment: comment,
-          Approver_ID: userInfo.email,
-          Approver_Status: "Цуцалсан",
-          Approver_TimeStamps: date.getTime(),
-          Status: "Цуцалсан",
-          Requester_Status: "Цуцлагдсан",
-          Approver1_Status: "Цуцлагдсан",
-          Approver2_Status: "Цуцлагдсан",
-          Approver4_Status: "Цуцлагдсан",
-        };
+      // Тухайн хэрэглэгч аль шатанд байгааг тодорхойлно
+      const level = determineApproverLevel(data, userInfo.email);
+
+      if (level === null) {
+        console.warn(
+          "Хэрэглэгчийн approver шат тодорхойгүй:",
+          userInfo.email,
+          data,
+        );
       }
+
+      // Тухайн шатны талбарт "Цуцалсан", бусад шатнуудад "Цуцлагдсан"
+      const statusUpdate = {};
+      const approverFields = [
+        "Approver1_Status",
+        "Approver2_Status",
+        "Approver3_Status",
+        "Approver4_Status",
+        "Approver_Status", // сүүлийн шат
+      ];
+
+      approverFields.forEach((field, index) => {
+        const fieldLevel = index + 1;
+        statusUpdate[field] = fieldLevel === level ? "Цуцалсан" : "Цуцлагдсан";
+      });
+
+      updateData = {
+        ...statusUpdate,
+        Approver_Avatar: userInfo.photoURL,
+        Approver_Comment: comment,
+        Approver_ID: userInfo.email,
+        Approver_TimeStamps: date.getTime(),
+        Status: "Цуцалсан",
+        Requester_Status: "Цуцлагдсан",
+      };
     } else if (modalButtonTitle === "буцаах") {
       if (selectedWorkerMajor === "cs") {
         updateData = {
