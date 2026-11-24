@@ -204,7 +204,6 @@ const ReactAdvancedMaterialTable = () => {
   //DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
-      console.log("inside openDeleteConfirmModal", row);
       deleteUser(row.original.id);
     }
   };
@@ -240,7 +239,6 @@ const ReactAdvancedMaterialTable = () => {
         ["E-баримт олголт", "Бүтээгдэхүүн олголт"].includes(data.ApprovalType)
       ) {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -284,7 +282,6 @@ const ReactAdvancedMaterialTable = () => {
         ].includes(data.ApprovalType)
       ) {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -294,7 +291,6 @@ const ReactAdvancedMaterialTable = () => {
         };
       } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -321,7 +317,6 @@ const ReactAdvancedMaterialTable = () => {
       ) {
         // Хуучин finance-ийн цуцлах логик
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -343,7 +338,6 @@ const ReactAdvancedMaterialTable = () => {
         ].includes(data.ApprovalType)
       ) {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -355,7 +349,6 @@ const ReactAdvancedMaterialTable = () => {
         };
       } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -371,7 +364,6 @@ const ReactAdvancedMaterialTable = () => {
     } else if (modalButtonTitle === "буцаах") {
       if (selectedWorkerMajor === "cs") {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -382,7 +374,6 @@ const ReactAdvancedMaterialTable = () => {
         };
       } else if (selectedWorkerMajor === "cs менежер") {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -393,7 +384,6 @@ const ReactAdvancedMaterialTable = () => {
         };
       } else if (selectedWorkerMajor === "санхүү") {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -404,7 +394,6 @@ const ReactAdvancedMaterialTable = () => {
         };
       } else if (selectedWorkerMajor === "удирдлага") {
         updateData = {
-          ...data,
           Approver_Avatar: userInfo.photoURL,
           Approver_Comment: comment,
           Approver_ID: userInfo.email,
@@ -416,7 +405,8 @@ const ReactAdvancedMaterialTable = () => {
       }
     }
 
-    await updateUser(updateData);
+    // updateData дотор id байх ёсгүй — mutationFn дотор тусад нь салгана
+    await updateUser({ id: data.id, ...updateData });
     table.setEditingRow(null);
   };
 
@@ -558,7 +548,6 @@ const ReactAdvancedMaterialTable = () => {
     onCreatingRowSave: handleCreateRequest,
     onEditingRowSave: handleSaveRequest,
     renderDetailPanel: ({ row }) => {
-      console.log("row.original", row.original);
       return (
         <>
           <Box
@@ -1251,14 +1240,18 @@ const ReactAdvancedMaterialTable = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (request) => {
-        const requestRef = ref(db, `request/${request.id}/`);
-        await update(requestRef, request);
+        // id-г тусад нь салгаж, зөвхөн өөрчлөгдсөн талбаруудыг бичнэ
+        const { id, ...fields } = request;
+        const requestRef = ref(db, `request/${id}/`);
+        await update(requestRef, fields);
         return Promise.resolve();
       },
       onMutate: (newRequestInfo) => {
         queryClient.setQueryData(["request"], (prevRequests) =>
           prevRequests?.map((prevRequest) =>
-            prevRequest.id === newRequestInfo.id ? newRequestInfo : prevRequest,
+            prevRequest.id === newRequestInfo.id
+              ? { ...prevRequest, ...newRequestInfo }
+              : prevRequest,
           ),
         );
       },

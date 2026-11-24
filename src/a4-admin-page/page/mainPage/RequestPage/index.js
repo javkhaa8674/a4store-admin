@@ -1,28 +1,28 @@
-import { Button, Typography, Fab, Grid } from "@mui/material";
-import Badge from "@mui/material/Badge";
-import React, { useState } from "react";
-import { styled } from "@mui/material/styles";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
 import Add from "@mui/icons-material/Add";
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
-import DoDisturbAltIcon from "@mui/icons-material/DoDisturbAlt";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import DoDisturbAltIcon from "@mui/icons-material/DoDisturbAlt";
 import DoneIcon from "@mui/icons-material/Done";
-import CreateApproval from "./CreateApproval";
-import { AuthStore, readPost } from "store/AuthStore";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import { Button, Fab, Grid, Typography } from "@mui/material";
+import Badge from "@mui/material/Badge";
+import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+import { useState } from "react";
+import { AuthStore, readPost } from "store/AuthStore";
+import AllCancelledApproval from "./AllCancelledApproval";
+import AllConfirmedApproval from "./AllConfirmedApproval";
+import AllResolveApproval from "./AllResolveApproval";
+import CancelApproval from "./CancelApproval";
+import CancelledApproval from "./CancelledApproval";
+import ConfirmedApproval from "./ConfirmedApproval";
+import CreateApproval from "./CreateApproval";
 import PendingApproval from "./PendingApproval";
 import ResolveApproval from "./ResolveApproval";
-import CancelledApproval from "./CancelledApproval";
-import CancelApproval from "./CancelApproval";
-import ConfirmedApproval from "./ConfirmedApproval";
 import ReturnedApproval from "./ReturnedApproval";
-import AllResolveApproval from "./AllResolveApproval";
-import AllConfirmedApproval from "./AllConfirmedApproval";
-import AllCancelledApproval from "./AllCancelledApproval";
 
 const Item = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(1),
@@ -99,9 +99,9 @@ const Approval = () => {
           userTotal.Sent_Request.push(el);
         } else if (el.Requester_Status === "Шийдвэрлэсэн") {
           userTotal.Closed_Request.push(el);
-        } else if (el.Requester_Status === "Цуцалсан") {
-          userTotal.Cancelled_Request.push(el);
         } else if (el.Requester_Status === "Цуцлагдсан") {
+          userTotal.Cancelled_Request.push(el);
+        } else if (el.Requester_Status === "Цуцалсан") {
           userTotal.Declined_Request.push(el);
         } else if (
           el.Requester_Status === "Буцаасан" ||
@@ -110,6 +110,7 @@ const Approval = () => {
           userTotal.Reasigned_Request.push(el);
         }
       });
+      console.log("userData", userTotal);
       setSumData(total);
       setUserData(userTotal);
       AuthStore.update((store) => {
@@ -217,7 +218,7 @@ const Approval = () => {
               }
               onClick={() => setOpenCancelledApproval(!openCancelledApproval)}
             >
-              Цуцалсан хүсэлт
+              Цуцлагдсан хүсэлт
             </Button>
           </Item>
           <Item>
@@ -235,7 +236,7 @@ const Approval = () => {
               }
               onClick={() => setOpenCancelApproval(!openCancelApproval)}
             >
-              Цуцлагдсан хүсэлт
+              Цуцалсан хүсэлт
             </Button>
           </Item>
           <Item>
@@ -298,7 +299,7 @@ const Approval = () => {
                 setAllOpenCancelledApproval(!allOpenCancelledApproval)
               }
             >
-              Цуцалсан хүсэлт
+              Цуцласан хүсэлт
             </Button>
           </Item>
           <Item>

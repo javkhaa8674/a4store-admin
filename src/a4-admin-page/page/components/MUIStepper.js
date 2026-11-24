@@ -1,17 +1,17 @@
-import React, { useMemo } from "react";
-import PropTypes from "prop-types";
-import { styled } from "@mui/material/styles";
-import Stack from "@mui/material/Stack";
-import Stepper from "@mui/material/Stepper";
-import Step from "@mui/material/Step";
-import StepLabel from "@mui/material/StepLabel";
 import Check from "@mui/icons-material/Check";
+import { Box, Card, CardContent, Tooltip, Typography } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
+import Stack from "@mui/material/Stack";
+import Step from "@mui/material/Step";
 import StepConnector, {
   stepConnectorClasses,
 } from "@mui/material/StepConnector";
-import { Typography, Tooltip, Box, Card, CardContent } from "@mui/material";
+import StepLabel from "@mui/material/StepLabel";
+import Stepper from "@mui/material/Stepper";
+import { styled } from "@mui/material/styles";
 import dayjs from "dayjs";
+import PropTypes from "prop-types";
+import { useMemo } from "react";
 
 // ---------------------------------------------------------------------------
 // Туслах: ApprovalType болон байгаа Approver талбаруудаас шатны төрлийг тодорхойлно
@@ -114,9 +114,34 @@ const getStepperConfig = (data) => {
 };
 
 // ---------------------------------------------------------------------------
-// Туслах: Тухайн approver-ийн талбаруудыг авах (direct = Approver_*)
+// Туслах: Цуцлалтын төлөв эсэхийг шалгана
 // ---------------------------------------------------------------------------
-const getApproverFields = (data, n) => {
+const cancelStatuses = ["Цуцалсан", "Цуцлагдсан", "cancelled"];
+
+const isCancel = (status) => cancelStatuses.includes(status);
+
+// ---------------------------------------------------------------------------
+// Туслах: Цуцлалтыг эхлүүлсэн approver-ийн дугаарыг тодорхойлно
+// Approver_Status нь цуцлалтын төлөвтэй бол Level-тэй тохирох N-ийг буцаана
+// ---------------------------------------------------------------------------
+const getCancellerStepNumber = (data) => {
+  if (!data || !isCancel(data.Approver_Status)) return null;
+
+  // Approver_* нь цуцлалтыг эхлүүлсэн хүний мэдээлэл.
+  // Аль шатанд хамаарахыг Level-ээр тодорхойлно.
+  const level = Number(data.Level);
+  if (!Number.isFinite(level) || level < 1) return null;
+
+  // config.steps дотор Level-тэй тохирох approver байгаа эсэхийг шалгана
+  // (Level 1 = requester, Level 2 = эхний approver, ...)
+  return level;
+};
+
+// ---------------------------------------------------------------------------
+// Туслах: Тухайн approver-ийн талбаруудыг авах (direct = Approver_*)
+// Цуцлалтыг эхлүүлсэн хүн дээр л direct-ийн comment/цагийг харуулна
+// ---------------------------------------------------------------------------
+const getApproverFields = (data, n, cancellerStep) => {
   if (n === "direct") {
     return {
       id: data.Approver_ID,
@@ -127,14 +152,28 @@ const getApproverFields = (data, n) => {
       timeStamps: data.Approver_TimeStamps,
     };
   }
+
   const p = `Approver${n}_`;
+  const ownComment = data[`${p}Comment`];
+  const ownTimeStamps = data[`${p}TimeStamps`];
+  const ownStatus = data[`${p}Status`];
+
+  // Энэ шат нь цуцлалтыг эхлүүлсэн хүн мөн эсэх
+  const isCanceller =
+    cancellerStep !== null && Number(n) === Number(cancellerStep);
+
+  // Цуцлалтыг эхлүүлсэн хүн бол direct-ийн comment/цагийг ашиглана
+  const comment = ownComment || (isCanceller ? data.Approver_Comment : "");
+  const timeStamps =
+    ownTimeStamps ?? (isCanceller ? data.Approver_TimeStamps : null);
+
   return {
-    id: data[`${p}ID`],
-    avatar: data[`${p}Avatar`],
-    major: data[`${p}Major`],
-    status: data[`${p}Status`],
-    comment: data[`${p}Comment`],
-    timeStamps: data[`${p}TimeStamps`],
+    id: data[`${p}ID`] || (isCanceller ? data.Approver_ID : ""),
+    avatar: data[`${p}Avatar`] || (isCanceller ? data.Approver_Avatar : ""),
+    major: data[`${p}Major`] || (isCanceller ? data.Approver_Major : ""),
+    status: ownStatus || (isCanceller ? data.Approver_Status : ""),
+    comment: comment || "",
+    timeStamps: timeStamps ?? null,
   };
 };
 
@@ -142,10 +181,103 @@ const successStatuses = ["Шийдвэрлэсэн", "Илгээсэн", "approv
 
 const isSuccess = (status) => successStatuses.includes(status);
 
+// ---------------------------------------------------------------------------
+// Styled компонентууд (компонентын гадна тодорхойлж, дахин үүсэхээс сэргийлнэ)
+// ---------------------------------------------------------------------------
+const QontoStepIconRoot = styled("div")(({ theme, ownerState }) => ({
+  color: theme.palette.mode === "dark" ? theme.palette.grey[700] : "#eaeaf0",
+  display: "flex",
+  height: 22,
+  alignItems: "center",
+  ...(ownerState.active && {
+    color: "#784af4",
+  }),
+  "& .QontoStepIcon-completedIcon": {
+    color: "#784af4",
+    zIndex: 1,
+    fontSize: 18,
+  },
+  "& .QontoStepIcon-circle": {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    backgroundColor: "currentColor",
+  },
+}));
+
+function QontoStepIcon(props) {
+  const { active, completed, className } = props;
+  return (
+    <QontoStepIconRoot ownerState={{ active }} className={className}>
+      {completed ? (
+        <Check className="QontoStepIcon-completedIcon" />
+      ) : (
+        <div className="QontoStepIcon-circle" />
+      )}
+    </QontoStepIconRoot>
+  );
+}
+
+QontoStepIcon.propTypes = {
+  active: PropTypes.bool,
+  className: PropTypes.string,
+  completed: PropTypes.bool,
+};
+
+const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
+  [`&.${stepConnectorClasses.alternativeLabel}`]: {
+    top: 22,
+  },
+  [`&.${stepConnectorClasses.active}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      backgroundImage:
+        "linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%)",
+    },
+  },
+  [`&.${stepConnectorClasses.completed}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      backgroundImage:
+        "linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%)",
+    },
+  },
+  [`& .${stepConnectorClasses.line}`]: {
+    height: 3,
+    border: 0,
+    backgroundColor:
+      theme.palette.mode === "dark" ? theme.palette.grey[800] : "#eaeaf0",
+    borderRadius: 1,
+  },
+}));
+
+const ColorlibStepIconRoot = styled("div")(({ theme, ownerState }) => ({
+  backgroundColor:
+    theme.palette.mode === "dark" ? theme.palette.grey[700] : "#ccc",
+  zIndex: 1,
+  color: "#fff",
+  width: 50,
+  height: 50,
+  display: "flex",
+  borderRadius: "50%",
+  justifyContent: "center",
+  alignItems: "center",
+  ...(ownerState.active && {
+    backgroundImage:
+      "linear-gradient( 136deg, rgb(242,113,33) 0%, rgb(233,64,87) 50%, rgb(138,35,135) 100%)",
+    boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
+  }),
+  ...(ownerState.completed && {
+    backgroundImage:
+      "linear-gradient( 136deg, rgb(242,113,33) 0%, rgb(233,64,87) 50%, rgb(138,35,135) 100%)",
+  }),
+}));
+
 export default function CustomizedSteppers({ row }) {
   const data = row.original;
 
   const config = useMemo(() => getStepperConfig(data), [data]);
+
+  // Цуцлалтыг эхлүүлсэн approver-ийн дугаар (Level)
+  const cancellerStep = useMemo(() => getCancellerStepNumber(data), [data]);
 
   // Requester + Approver-уудын нийт шат
   const totalSteps = config.steps.length;
@@ -158,94 +290,6 @@ export default function CustomizedSteppers({ row }) {
     if (idx > totalSteps - 1) return totalSteps - 1;
     return idx;
   }, [data.Level, totalSteps]);
-
-  // --------------------------- Styled компонентууд ---------------------------
-  const QontoStepIconRoot = styled("div")(({ theme, ownerState }) => ({
-    color: theme.palette.mode === "dark" ? theme.palette.grey[700] : "#eaeaf0",
-    display: "flex",
-    height: 22,
-    alignItems: "center",
-    ...(ownerState.active && {
-      color: "#784af4",
-    }),
-    "& .QontoStepIcon-completedIcon": {
-      color: "#784af4",
-      zIndex: 1,
-      fontSize: 18,
-    },
-    "& .QontoStepIcon-circle": {
-      width: 8,
-      height: 8,
-      borderRadius: "50%",
-      backgroundColor: "currentColor",
-    },
-  }));
-
-  function QontoStepIcon(props) {
-    const { active, completed, className } = props;
-    return (
-      <QontoStepIconRoot ownerState={{ active }} className={className}>
-        {completed ? (
-          <Check className="QontoStepIcon-completedIcon" />
-        ) : (
-          <div className="QontoStepIcon-circle" />
-        )}
-      </QontoStepIconRoot>
-    );
-  }
-
-  QontoStepIcon.propTypes = {
-    active: PropTypes.bool,
-    className: PropTypes.string,
-    completed: PropTypes.bool,
-  };
-
-  const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
-    [`&.${stepConnectorClasses.alternativeLabel}`]: {
-      top: 22,
-    },
-    [`&.${stepConnectorClasses.active}`]: {
-      [`& .${stepConnectorClasses.line}`]: {
-        backgroundImage:
-          "linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%)",
-      },
-    },
-    [`&.${stepConnectorClasses.completed}`]: {
-      [`& .${stepConnectorClasses.line}`]: {
-        backgroundImage:
-          "linear-gradient( 95deg,rgb(242,113,33) 0%,rgb(233,64,87) 50%,rgb(138,35,135) 100%)",
-      },
-    },
-    [`& .${stepConnectorClasses.line}`]: {
-      height: 3,
-      border: 0,
-      backgroundColor:
-        theme.palette.mode === "dark" ? theme.palette.grey[800] : "#eaeaf0",
-      borderRadius: 1,
-    },
-  }));
-
-  const ColorlibStepIconRoot = styled("div")(({ theme, ownerState }) => ({
-    backgroundColor:
-      theme.palette.mode === "dark" ? theme.palette.grey[700] : "#ccc",
-    zIndex: 1,
-    color: "#fff",
-    width: 50,
-    height: 50,
-    display: "flex",
-    borderRadius: "50%",
-    justifyContent: "center",
-    alignItems: "center",
-    ...(ownerState.active && {
-      backgroundImage:
-        "linear-gradient( 136deg, rgb(242,113,33) 0%, rgb(233,64,87) 50%, rgb(138,35,135) 100%)",
-      boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
-    }),
-    ...(ownerState.completed && {
-      backgroundImage:
-        "linear-gradient( 136deg, rgb(242,113,33) 0%, rgb(233,64,87) 50%, rgb(138,35,135) 100%)",
-    }),
-  }));
 
   // --------------------------- Step Icon ---------------------------
   function ColorlibStepIcon(props) {
@@ -264,7 +308,7 @@ export default function CustomizedSteppers({ row }) {
         </Tooltip>
       );
     } else if (stepConfig.kind === "approver") {
-      const f = getApproverFields(data, stepConfig.n);
+      const f = getApproverFields(data, stepConfig.n, cancellerStep);
       avatarNode = (
         <Tooltip title={f.id || ""}>
           <Avatar alt={`Approver ${stepConfig.n}`} src={f.avatar || ""} />
@@ -291,53 +335,24 @@ export default function CustomizedSteppers({ row }) {
 
   // --------------------------- Нэг шатны Card ---------------------------
   const renderStepCard = (stepConfig) => {
-    if (stepConfig.kind === "requester") {
-      const status = data.Requester_Status;
-      return (
-        <Card sx={{ minWidth: 100 }}>
-          <CardContent
-            component="div"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Box
-              component="span"
-              sx={(theme) => ({
-                backgroundColor: isSuccess(status)
-                  ? theme.palette.success.main
-                  : theme.palette.warning.dark,
-                borderRadius: "0.25rem",
-                color: "#fff",
-                maxWidth: "14ch",
-                p: "0.25rem",
-              })}
-            >
-              {status}
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              {data.Requester_Major}
-            </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ marginTop: 1 }}
-            >
-              {data.Requester_TimeStamps &&
-                dayjs(data.Requester_TimeStamps).format("YYYY/MM/DD HH:mm:ss")}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {data.Requester_Comment}
-            </Typography>
-          </CardContent>
-        </Card>
-      );
-    }
+    const isRequester = stepConfig.kind === "requester";
+    const f = isRequester
+      ? null
+      : getApproverFields(data, stepConfig.n, cancellerStep);
 
-    // approver
-    const f = getApproverFields(data, stepConfig.n);
+    const status = isRequester ? data.Requester_Status : f.status;
+    const major = isRequester ? data.Requester_Major : f.major;
+    const comment = isRequester ? data.Requester_Comment : f.comment;
+    const timeStamps = isRequester ? data.Requester_TimeStamps : f.timeStamps;
+
+    // Өнгө: амжилттай = ногоон, цуцлагдсан = улаан, бусад = шар
+    const bgColor = (theme) =>
+      isSuccess(status)
+        ? theme.palette.success.main
+        : isCancel(status)
+          ? theme.palette.error.main
+          : theme.palette.warning.dark;
+
     return (
       <Card sx={{ minWidth: 100 }}>
         <CardContent
@@ -351,29 +366,27 @@ export default function CustomizedSteppers({ row }) {
           <Box
             component="span"
             sx={(theme) => ({
-              backgroundColor: isSuccess(f.status)
-                ? theme.palette.success.main
-                : theme.palette.warning.dark,
+              backgroundColor: bgColor(theme),
               borderRadius: "0.25rem",
               color: "#fff",
               maxWidth: "14ch",
               p: "0.25rem",
             })}
           >
-            {f.status}
+            {status || "—"}
           </Box>
           <Typography variant="body2" color="text.secondary">
-            {f.major}
+            {major || "—"}
           </Typography>
           <Typography
             variant="caption"
             color="text.secondary"
             sx={{ marginTop: 1 }}
           >
-            {f.timeStamps && dayjs(f.timeStamps).format("YYYY/MM/DD HH:mm:ss")}
+            {timeStamps ? dayjs(timeStamps).format("YYYY/MM/DD HH:mm:ss") : "—"}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {f.comment}
+            {comment || "—"}
           </Typography>
         </CardContent>
       </Card>
@@ -399,3 +412,9 @@ export default function CustomizedSteppers({ row }) {
     </Stack>
   );
 }
+
+CustomizedSteppers.propTypes = {
+  row: PropTypes.shape({
+    original: PropTypes.object,
+  }).isRequired,
+};
