@@ -192,6 +192,7 @@ const ReactAdvancedMaterialTable = () => {
     onCreatingRowSave: handleCreateRequest,
     onEditingRowSave: handleSaveRequest,
     renderDetailPanel: ({ row }) => {
+      console.log("row", row.original);
       return (
         <>
           <Box

@@ -207,12 +207,35 @@ const ReactAdvancedMaterialTable = () => {
       deleteUser(row.original.id);
     }
   };
-  // Зөвхөн system role-той хүн бүх асуудлыг шийдвэрлэдэг
+
+  /**
+   * Одоо "Шийдвэрлэж байна" төлөвтэй шатыг олно.
+   * Хуучин олон шаттай хүсэлтүүдэд зориулсан.
+   * Буцаана: { prefix: "ApproverN_", level: N } эсвэл null
+   */
+  const getCurrentApproverPrefix = (data) => {
+    const fields = [
+      { prefix: "Approver1_", level: 1 },
+      { prefix: "Approver2_", level: 2 },
+      { prefix: "Approver3_", level: 3 },
+      { prefix: "Approver4_", level: 4 },
+      { prefix: "Approver_", level: 5 },
+    ];
+    for (const item of fields) {
+      if (data[`${item.prefix}Status`] === "Шийдвэрлэж байна") {
+        return item;
+      }
+    }
+    return null;
+  };
+
+  // Одоогийн шатны comment-ийг авна
   const handleCommentRequest = (row) => {
-    if (row.original.Level === 2) {
-      setComment(row.original.Approver1_Comment);
-    } else if (row.original.Level === 5) {
-      setComment(row.original.Approver4_Comment);
+    const current = getCurrentApproverPrefix(row.original);
+    if (current) {
+      setComment(row.original[`${current.prefix}Comment`] || "");
+    } else {
+      setComment("");
     }
   };
 
@@ -228,37 +251,34 @@ const ReactAdvancedMaterialTable = () => {
     setWorkerList(list);
   };
 
-  /**
-   * Тухайн хэрэглэгч аль approver шатанд байгааг тодорхойлно.
-   * Approver_ID (сүүлийн шат) = Level 5 гэж үзнэ.
-   * Бусад нь ApproverN_ID талбараар тодорхойлогдоно.
-   */
-  const determineApproverLevel = (data, userEmail) => {
-    if (data.Approver_ID === userEmail) return 5;
-    if (data.Approver4_ID === userEmail) return 4;
-    if (data.Approver3_ID === userEmail) return 3;
-    if (data.Approver2_ID === userEmail) return 2;
-    if (data.Approver1_ID === userEmail) return 1;
-    return null;
-  };
-
   const handleActionSubmit = async (values, table, modalButtonTitle) => {
     const data = values.original;
     const date = new Date();
     let updateData = {};
     let addData = {};
+
     if (modalButtonTitle === "зөвшөөрөх") {
-      // Эхлээд E-баримт / Бүтээгдэхүүн олголтыг шалгана (хуучин finance-ийн логик)
+      const current = getCurrentApproverPrefix(data);
+      const prefix = current?.prefix; // жишээ нь "Approver2_"
+
+      // Хуучин олон шаттай хүсэлт бол тухайн шатны талбарыг бичнэ.
+      // Шинэ 1 шаттай хүсэлт бол (prefix олдохгүй) зөвхөн үндсэн Status-ийг солино.
+      const approverUpdate = prefix
+        ? {
+            [`${prefix}Avatar`]: userInfo.photoURL,
+            [`${prefix}Comment`]: comment,
+            [`${prefix}ID`]: userInfo.email,
+            [`${prefix}Status`]: "Шийдвэрлэсэн",
+            [`${prefix}TimeStamps`]: date.getTime(),
+          }
+        : {};
+
       if (
         ["E-баримт олголт", "Бүтээгдэхүүн олголт"].includes(data.ApprovalType)
       ) {
         updateData = {
-          Approver_Avatar: userInfo.photoURL,
-          Approver_Comment: comment,
-          Approver_ID: userInfo.email,
-          Approver_Status: "Шийдвэрлэсэн",
-          Approver_TimeStamps: date.getTime(),
-          Status: "Шийдвэрлэсэн",
+          ...approverUpdate,
+          Status: "Шийдвэрлэсэн", // ⬅ үндсэн Status шууд
         };
         if (["E-баримт олголт"].includes(data.ApprovalType)) {
           addData = {
@@ -296,21 +316,13 @@ const ReactAdvancedMaterialTable = () => {
         ].includes(data.ApprovalType)
       ) {
         updateData = {
-          Approver_Avatar: userInfo.photoURL,
-          Approver_Comment: comment,
-          Approver_ID: userInfo.email,
-          Approver_Status: "Шийдвэрлэсэн",
-          Approver_TimeStamps: date.getTime(),
-          Status: "Шийдвэрлэсэн",
+          ...approverUpdate,
+          Status: "Шийдвэрлэсэн", // ⬅ үндсэн Status шууд
         };
       } else if (["Буцаалт хийх"].includes(data.ApprovalType)) {
         updateData = {
-          Approver_Avatar: userInfo.photoURL,
-          Approver_Comment: comment,
-          Approver_ID: userInfo.email,
-          Approver_Status: "Шийдвэрлэсэн",
-          Approver_TimeStamps: date.getTime(),
-          Status: "Шийдвэрлэсэн",
+          ...approverUpdate,
+          Status: "Шийдвэрлэсэн", // ⬅ үндсэн Status шууд
         };
         addData = {
           Requester_TimeStamps: data.Requester_TimeStamps,
@@ -326,39 +338,44 @@ const ReactAdvancedMaterialTable = () => {
         await addPost("cancelContract/", addData);
       }
     } else if (modalButtonTitle === "цуцлах") {
-      // Тухайн хэрэглэгч аль шатанд байгааг тодорхойлно
-      const level = determineApproverLevel(data, userInfo.email);
+      const current = getCurrentApproverPrefix(data);
 
-      if (level === null) {
-        console.warn(
-          "Хэрэглэгчийн approver шат тодорхойгүй:",
-          userInfo.email,
-          data,
-        );
-      }
-
-      // Тухайн шатны талбарт "Цуцалсан", бусад шатнуудад "Цуцлагдсан"
+      // Одоогийн шатыг "Цуцалсан", хойшхи шатуудыг "Цуцлагдсан" болгоно.
+      // Өмнөх (аль хэдийн шийдвэрлэсэн) шатуудыг хөндөхгүй.
       const statusUpdate = {};
       const approverFields = [
-        "Approver1_Status",
-        "Approver2_Status",
-        "Approver3_Status",
-        "Approver4_Status",
-        "Approver_Status", // сүүлийн шат
+        { field: "Approver1_Status", level: 1 },
+        { field: "Approver2_Status", level: 2 },
+        { field: "Approver3_Status", level: 3 },
+        { field: "Approver4_Status", level: 4 },
+        { field: "Approver_Status", level: 5 },
       ];
 
-      approverFields.forEach((field, index) => {
-        const fieldLevel = index + 1;
-        statusUpdate[field] = fieldLevel === level ? "Цуцалсан" : "Цуцлагдсан";
+      approverFields.forEach(({ field, level }) => {
+        if (!current) return;
+        if (level === current.level) {
+          statusUpdate[field] = "Цуцалсан"; // өөрөө
+        } else if (level > current.level) {
+          statusUpdate[field] = "Цуцлагдсан"; // хойшхи
+        }
+        // level < current.level → хөндөхгүй
       });
+
+      // Цуцалж буй хүний мэдээллийг тухайн шатны талбарт бичнэ
+      const prefix = current?.prefix;
+      const approverUpdate = prefix
+        ? {
+            [`${prefix}Avatar`]: userInfo.photoURL,
+            [`${prefix}Comment`]: comment,
+            [`${prefix}ID`]: userInfo.email,
+            [`${prefix}TimeStamps`]: date.getTime(),
+          }
+        : {};
 
       updateData = {
         ...statusUpdate,
-        Approver_Avatar: userInfo.photoURL,
-        Approver_Comment: comment,
-        Approver_ID: userInfo.email,
-        Approver_TimeStamps: date.getTime(),
-        Status: "Цуцалсан",
+        ...approverUpdate,
+        Status: "Цуцалсан", // ⬅ үндсэн Status шууд
         Requester_Status: "Цуцлагдсан",
       };
     } else if (modalButtonTitle === "буцаах") {
@@ -405,7 +422,6 @@ const ReactAdvancedMaterialTable = () => {
       }
     }
 
-    // updateData дотор id байх ёсгүй — mutationFn дотор тусад нь салгана
     await updateUser({ id: data.id, ...updateData });
     table.setEditingRow(null);
   };
